@@ -85,40 +85,40 @@ function npc_refund_install()
 
 
 
-function npc_refund_key()
-{
-    // 文件名前缀
-    $prefix = 'key_';
-    // json 文件后缀名
-    $suffix = '.pem';
-    // 目录路径
-    $dir_path = plugin_dir_path(__FILE__) . 'inc/cert/';
-    //网络路径
-    $dir_url = plugin_dir_url(__FILE__) . 'inc/cert/';
-
-    // 获取符合条件的 json 文件名
-    $file_array = glob($dir_path . $prefix . '*' . $suffix);
-
-    if (!empty($file_array)) {
-        // 输出第一个符合条件的文件名
-        $filename = basename($file_array[0]);
-    } else {
-        // 生成一个唯一的文件名
-        $filename = $prefix . uniqid() . $suffix;
-
-        // 生成文件路径
-        $filepath = $dir_path . $filename;
-
-        touch($filepath);
-    }
-
-    // 准备目录
-    $path =  $dir_path . $filename;
-    $url = $dir_url . $filename;
-
-    // 返回结果
-    return array("path" => $path, "url" => $url);
-}
+//function npc_refund_key()
+//{
+//    // 文件名前缀
+//    $prefix = 'key_';
+//    // json 文件后缀名
+//    $suffix = '.pem';
+//    // 目录路径
+//    $dir_path = plugin_dir_path(__FILE__) . 'inc/cert/';
+//    //网络路径
+//    $dir_url = plugin_dir_url(__FILE__) . 'inc/cert/';
+//
+//    // 获取符合条件的 json 文件名
+//    $file_array = glob($dir_path . $prefix . '*' . $suffix);
+//
+//    if (!empty($file_array)) {
+//        // 输出第一个符合条件的文件名
+//        $filename = basename($file_array[0]);
+//    } else {
+//        // 生成一个唯一的文件名
+//        $filename = $prefix . uniqid() . $suffix;
+//
+//        // 生成文件路径
+//        $filepath = $dir_path . $filename;
+//
+//        touch($filepath);
+//    }
+//
+//    // 准备目录
+//    $path =  $dir_path . $filename;
+//    $url = $dir_url . $filename;
+//
+//    // 返回结果
+//    return array("path" => $path, "url" => $url);
+//}
 
 
 
