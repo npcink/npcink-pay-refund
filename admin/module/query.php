@@ -5,20 +5,18 @@
 add_action('admin_menu', 'npcink_query_menu');
 function npcink_query_menu()
 {
-    $user = get_option('npc_refund_user');
-    //管理员或指定ID的人员可访问此菜单
-    if (current_user_can('manage_options') || in_array(get_current_user_id(), $user)) {
-        // 添加一个菜单到 WordPress 后台的“设置”菜单下
-        add_submenu_page(
-            'index.php',
-            '订单退款',
-            '订单退款',
-            'manage_options',
-            'refund_querys',
-            'npcink_query_callback',
-            '200'
-        );
-    }
+
+
+    // 添加一个菜单到 WordPress 后台的“设置”菜单下
+    add_submenu_page(
+        'index.php',
+        '订单退款',
+        '订单退款',
+        'manage_options',
+        'refund_querys',
+        'npcink_query_callback',
+        '200'
+    );
 }
 
 
@@ -35,8 +33,8 @@ function npcink_query_callback()
         <!--标题-->
         <h2><?php echo esc_html(get_admin_page_title()); ?></h2>
         <ul style="list-style-type: auto;padding: 0 1em;">
-        <li>每天晚上12点账户清零，可尝试下午进行退款操作</li>
-        <li>支付时间超过7天的订单无法使用本功能进行退款</li>
+            <li>每天晚上12点账户清零，可尝试下午进行退款操作</li>
+            <li>支付时间超过7天的订单无法使用本功能进行退款</li>
         </ul>
 
         <h2><?php echo $wx_icon; ?>微信订单查询</h2>
