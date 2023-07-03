@@ -202,29 +202,76 @@ add_action('admin_init', 'mqzj_restrict_access');
 function mqzj_restrict_access()
 {
     $user = wp_get_current_user();
-    $a = get_option('npc_refund_user'); // 设置允许访问的用户ID
+    $users = get_option('npc_refund_user'); // 设置允许访问的用户ID
+
+
+    // 创建一个空数组用于存储结果
+
+    $a = array();
 
     // 如果 $a 为空或为字符串，则将其赋值为空数组
-    if (empty($a) || is_string($a)) {
+    if (empty($users) || is_string($users)) {
         $a = array();
+    } else {
+        //类型正常，排除掉ID为1的管理员
+        foreach ($users as $value) {
+
+            // 如果值不是1,则将其添加到结果数组中
+
+            if ($value !== 1) {
+
+                $a[] = $value;
+            }
+        }
     }
 
-    if (in_array($user->ID, $a)) {
+    //if (in_array($user->ID, $a)) {
 
+    //    if ((isset($_GET['page']) && $_GET['page'] == 'refund_querys') || (isset($_GET['page']) && $_GET['page'] == 'b2_orders_list')) {
+    //        return;
+    //    } elseif (preg_match('/^\/wp-admin\/(admin-ajax\.php|admin-post\.php)/', $_SERVER['PHP_SELF'])) {
+    //        // 如果是 admin-ajax.php 或 admin-post.php，则不拦截
+    //        return;
+    //    } else {
+    //        //跳转
+    //        //wp_safe_redirect(admin_url('index.php?page=refund_querys'));
+    //        wp_die('您暂无授权访问此页面，请联系管理员授权！
+    //        <ul>
+    //        <li><a href="https://dongbd.com/wp-admin/admin.php?page=b2_orders_list&order_state=f">订单管理</a></li>
+    //        <li><a href="https://dongbd.com/wp-admin/index.php?page=refund_querys">订单退款</a></li>
+    //        </ul>
+    //        ');
+    //        exit;
+    //    }
+    //}
+
+    //是限定 ID 
+    if (in_array($user->ID, $a)) {
+        //在访问限定菜单
         if ((isset($_GET['page']) && $_GET['page'] == 'refund_querys') || (isset($_GET['page']) && $_GET['page'] == 'b2_orders_list')) {
             return;
-        } elseif (preg_match('/^\/wp-admin\/(admin-ajax\.php|admin-post\.php)/', $_SERVER['PHP_SELF'])) {
+        } elseif (
             // 如果是 admin-ajax.php 或 admin-post.php，则不拦截
+            preg_match('/^\/wp-admin\/(admin-ajax\.php|admin-post\.php)/', $_SERVER['PHP_SELF'])
+        ) {
+
             return;
         } else {
             //跳转
-            //wp_safe_redirect(admin_url('index.php?page=refund_querys'));
-            wp_die('您暂无授权访问此页面，请联系管理员授权！
-            <ul>
-            <li><a href="https://dongbd.com/wp-admin/admin.php?page=b2_orders_list&order_state=f">订单管理</a></li>
-            <li><a href="https://dongbd.com/wp-admin/index.php?page=refund_querys">订单退款</a></li>
-            </ul>
-            ');
+            $adminPage = get_admin_url() . 'admin.php';
+            $refundPage = get_admin_url() . 'index.php';
+            $message = '
+        您暂无授权访问此页面，请联系管理员授权！ 
+        <ul> 
+        <li>
+        <a href="' . $adminPage . '?page=b2_orders_list">订单管理</a>
+        </li> 
+        <li>
+        <a href="' . $refundPage . '?page=refund_querys">订单退款</a>
+        </li> 
+        </ul>
+        ';
+            wp_die($message);
             exit;
         }
     }

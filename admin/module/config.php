@@ -29,6 +29,7 @@ function sandbox_menu_page_displays()
             <li>因为安全问题，仅支持7天内的订单进行退款操作，还请注意</li>
             <li>退款原因仅自己可见</li>
             <li>请勿关闭 REST API 功能</li>
+            <li>不会限制ID为1的人员</li>
         </ul>
         <p>退款操作界面在“仪表盘” -> “订单退款”中操作</p>
         <div id="app_refund"></div>
