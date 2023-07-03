@@ -2,7 +2,7 @@
 /*
 Plugin Name: 魔法退款
 Description: 提供微信和支付宝退款功能，使用官方提供的SDK，未使用第三方框架，联系方式：qq - 1355471563
-Version: 1.0.5
+Version: 1.0.6
 Author: Muze
 */
 
