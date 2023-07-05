@@ -226,10 +226,10 @@ function npcink_refund_wx()
                 echo "退款关闭";
                 break;
             case "ABNORMAL": // 退款异常
-                echo "退款异常";
+                echo "退款异常 - 联系管理员试试";
                 break;
             default:
-                echo "我不知道发生了什么，但是您可以重来一下试试";
+                echo "可能账户昨天提现后没钱了，您可以晚一点再试试";
         }
     }
 

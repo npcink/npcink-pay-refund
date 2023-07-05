@@ -33,7 +33,7 @@ function npcink_query_callback()
         <!--标题-->
         <h2><?php echo esc_html(get_admin_page_title()); ?></h2>
         <ul style="list-style-type: auto;padding: 0 1em;">
-            <li>每天晚上12点账户清零，可尝试下午进行退款操作</li>
+            <li>每天晚上12点账户清零，可尝试下午或有用户支付后，再进行退款操作</li>
             <li>支付时间超过7天的订单无法使用本功能进行退款</li>
         </ul>
 
