@@ -1,0 +1,26 @@
+/*配置样式*/
+.npc_style svg {
+  width: 26px;
+  height: auto;
+  vertical-align: middle;
+  padding-right: 20px;
+}
+.npc_style pre {
+  display: inline-block;
+}
+.npc_style .ul_meat {
+  list-style-type: auto;
+  padding: 0 1em;
+}
+.npc_style .table_style {
+  padding: 1em 0;
+  font-size: 18px;
+  line-height: 2em;
+}
+.npc_style .table_style table {
+  font-size: 26px;
+  line-height: 2em;
+}
+.npc_style #dataTable {
+  max-width: 1200px;
+}

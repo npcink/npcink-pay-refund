@@ -14,7 +14,7 @@ jQuery(document).ready(function ($) {
 
   $("#my-plugin-button").click(function () {
     var data = {
-      action: "my_plugin_request_data",
+      action: "zfb_order_query",
       param: trimHyphen($("#my-plugin-input").val()),
     };
     //console.log(data.param);
@@ -32,7 +32,7 @@ jQuery(document).ready(function ($) {
   //支付宝退款
   $(document).on("click", "#order-btn", function () {
     const data = {
-      action: "my_plugin_order_detail",
+      action: "zfb_order_refund",
       order_id: $(this).data("order-id"), //订单号
       order_time: $(this).data("order-time"), // 获取订单时间
       order_amount: $(this).data("order-amount"), // 获取订单总金额
@@ -62,7 +62,7 @@ jQuery(document).ready(function ($) {
   //微信支付查询
   $("#npcink-wx-button").click(function () {
     var data = {
-      action: "my_plugin_request_wx",
+      action: "wx_order_query",
       order_id: trimHyphen($("#npcink-wx-input").val()),
     };
 
@@ -79,7 +79,7 @@ jQuery(document).ready(function ($) {
   //微信退款
   $(document).on("click", "#wx-order-btn", function () {
     const data = {
-      action: "npcink_refund_wx",
+      action: "wx_order_refund",
       order_id: $(this).data("order-id"), //订单号
       order_amount: $(this).data("order-amount"), // 获取订单总金额
       order_reason: $("#npcink-wx-reason").val(), //获取退款原因
@@ -107,83 +107,36 @@ jQuery(document).ready(function ($) {
   });
 
   //数据展示
+  const dataTableBody = $("#dataTable tbody"); // 获取表格的 tbody 元素
+  const dataArray = JSON.parse(public.data);
+  dataArray.forEach(function (data) {
+    // 创建一个新行的 HTML 代码
+    let newRow =
+      "<tr>" +
+      "<td>" +
+      data.id +
+      "</td>" +
+      "<td>" +
+      data.amount +
+      "</td>" +
+      "<td>" +
+      data.time +
+      "</td>" +
+      "<td>" +
+      data.order +
+      "</td>" +
+      "<td>" +
+      data.user +
+      "</td>" +
+      "<td>" +
+      data.type +
+      "</td>" +
+      "<td>" +
+      data.reason +
+      "</td>" +
+      "</tr>";
 
-  $.ajax({
-    url: public.json,
-    dataType: "json",
-    headers: {
-      "Cache-Control": "no-cache, no-store, must-revalidate",
-      Pragma: "no-cache",
-      Expires: "0",
-    },
-
-    success: function (data) {
-      //console.table(data.data);
-      var result = "";
-
-      result +=
-        '<table class="wp-list-table widefat fixed striped" style="max-width: 1200px;"><tr><th>ID</th><th>金额</th><th>时间</th><th>订单号</th><th>操作员</th><th>原因</th><th>类型</th></tr>';
-
-      // 使用slice方法获取最后10条数据，并倒序排序
-      var lastTenData = data.data.slice(-10).reverse();
-
-      // 遍历最后10条数据，构造HTML表格内容
-      lastTenData.forEach(function (item) {
-        result +=
-          "<tr>" +
-          "<td>" +
-          item.id +
-          "</td>" +
-          "<td>" +
-          item.amount +
-          "元</td>" +
-          "<td>" +
-          item.time +
-          "</td>" +
-          "<td>" +
-          item.order +
-          "</td>" +
-          "<td>" +
-          item.user +
-          "</td>" +
-          "<td>" +
-          item.reason +
-          "</td>" +
-          "<td>" +
-          item.type +
-          "</td>" +
-          "</tr>";
-      });
-
-      result += "</table>";
-
-      $("#result").html(result);
-    },
-
-    error: function (jqXHR, textStatus, errorThrown) {
-      console.log("Error: " + textStatus + " " + errorThrown);
-    },
-  });
-
-  //表格下载JSON数据
-
-  $("#export-btn").click(function () {
-    $.ajax({
-      url: public.json,
-      dataType: "json",
-      success: function (data) {
-        var keys = Object.keys(data.data[0]);
-        var csvString = keys.join(",") + "\n";
-        data.data.forEach(function (item) {
-          var row = [];
-          keys.forEach(function (key) {
-            row.push(item[key]);
-          });
-          csvString += row.join(",") + "\n";
-        });
-        var blob = new Blob([csvString], { type: "text/csv;charset=utf-8" });
-        saveAs(blob, "退款订单操作记录.csv");
-      },
-    });
+    // 将新行添加到表格的 tbody 中
+    dataTableBody.append(newRow);
   });
 });
