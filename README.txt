@@ -1,4 +1,4 @@
-=== Plugin Name ===
+=== Magick Refund ===
 Contributors: (this should be a list of wordpress.org userid's)
 Donate link: https://www.npc.ink
 Tags: comments, spam
