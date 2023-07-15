@@ -1,19 +1,8 @@
-=== Magick Refund ===
-Contributors: (this should be a list of wordpress.org userid's)
-Donate link: https://www.npc.ink
-Tags: comments, spam
-Requires at least: 3.0.1
-Tested up to: 3.4
-Stable tag: 4.3
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+此插件免费，QQ联系方式：1355471563
 
-此插件免费，联系方式：1355471563
-
-## 改进
+## 待改进
 - 添加控制权限人员仅能访问指定页面功能
 - 完善微信支付，可以在类中加载，而无需额外实例化
-- 用户权限控制有问题
 
 ## 功能
 - 可进行支付宝退款
