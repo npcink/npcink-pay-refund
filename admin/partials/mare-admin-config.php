@@ -4,13 +4,14 @@ if (!class_exists('Mare_Admin_Config')) {
     class Mare_Admin_Config
     {
 
-
+        public static $plugin_name;
+        public static $plugin_version;
 
         public static function run($name, $version)
         {
-            global $plugin_name, $plugin_version;
-            $plugin_name = $name;
-            $plugin_version = $version;
+
+            self::$plugin_name = $name;
+            self::$plugin_version = $version;
             //添加配置菜单
             add_action('admin_menu', array(__CLASS__, 'config_menu'));
             //加载 CSS 和 JS 资源
@@ -66,18 +67,16 @@ if (!class_exists('Mare_Admin_Config')) {
          */
         public static function load_admin_script($hook)
         {
-            global $plugin_name, $plugin_version;
-
-            $ver = $plugin_version;
-            $name = $plugin_name;
+            $ver = self::$plugin_version;
+            $name = self::$plugin_name;
             //是否是指定页面
             if ('settings_page_refun_config' != $hook) {
                 return;
             }
 
             wp_enqueue_style($name, plugin_dir_url(dirname(__DIR__)) . 'vite/dist/index.css', array(), $ver, false);
-            wp_enqueue_script($name, plugin_dir_url(dirname(__DIR__)) . 'vite/dist/index.js', array(), $ver, false);
-            wp_enqueue_script($name . '-download', plugin_dir_url(dirname(__DIR__)) . 'admin/js/mare-download.js', array(), $ver, false);
+            wp_enqueue_script($name, plugin_dir_url(dirname(__DIR__)) . 'vite/dist/index.js', array(), $ver, true);
+            wp_enqueue_script($name . '-download', plugin_dir_url(dirname(__DIR__)) . 'admin/js/mare-download.js', array(), $ver, true);
 
 
             $pf_api_translation_array = array(
@@ -87,6 +86,7 @@ if (!class_exists('Mare_Admin_Config')) {
             );
             wp_localize_script($name, 'dataLocal', $pf_api_translation_array); //传给vite项目
 
+            //准备传的值
             $download_api = array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
             );

@@ -68,11 +68,13 @@ class Mare_Admin
 		require_once plugin_dir_path(__FILE__) . 'partials/mare-admin-config.php';
 		//接口文件
 		require_once plugin_dir_path(__FILE__) . 'partials/mare-admin-interface.php';
+		//权限控制文件
+		require_once plugin_dir_path(__FILE__) . 'partials/mare-admin-authority.php';
 		//微信支付文件
 		//require_once plugin_dir_path(__FILE__) . 'pay/mare-admin-wxs.php';
 		//支付宝支付文件
 		require_once plugin_dir_path(__FILE__) . 'pay/mare-admin-zfb.php';
-		//选项配置用文件
+		//公用函数文件
 		require_once plugin_dir_path(__FILE__) . 'pay/mare-admin-public.php';
 	}
 
@@ -87,6 +89,8 @@ class Mare_Admin
 		Mare_Admin_Config::run($this->plugin_name, $this->version);
 		//接口
 		Mare_Admin_Interface::run();
+		//权限控制
+		Mare_Admin_Authority::run();
 
 		//微信支付接口
 		//Mare_Admin_Wx::run();
@@ -94,7 +98,7 @@ class Mare_Admin
 		//支付宝支付接口
 		Mare_Admin_Zfb::run();
 
-		//临时使用
+		//公用函数文件
 		Mare_Admin_Public::run();
 	}
 

@@ -120,7 +120,7 @@ if (!class_exists('Mare_Admin_Query')) {
             }
 
             wp_enqueue_style($name, plugin_dir_url(dirname(__DIR__)) . 'admin/css/mare-admin.css', array(), $ver, false);
-            wp_enqueue_script($name, plugin_dir_url(dirname(__DIR__)) . 'admin/js/mare-admin.js', array(), $ver, false);
+            wp_enqueue_script($name, plugin_dir_url(dirname(__DIR__)) . 'admin/js/mare-admin.js', array(), $ver, true);
             wp_localize_script($name, 'public', array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
                 //20条退款记录
