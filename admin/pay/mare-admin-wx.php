@@ -68,7 +68,7 @@ if (!class_exists('Mare_Admin_Wx')) {
             $stack->push($wechatpayMiddleware, 'wechatpay');
 
             // 创建Guzzle HTTP Client时，将HandlerStack传入
-            
+
             self::$client = new GuzzleHttp\Client(['handler' => $stack]);
         }
 
@@ -83,7 +83,7 @@ if (!class_exists('Mare_Admin_Wx')) {
             $mchid = get_option('npc_wx_mch_id'); // 获取传递的商家ID
 
             // 发送请求
-           
+
             try {
                 $resp = self::$client->request(
                     'GET',
@@ -145,10 +145,10 @@ if (!class_exists('Mare_Admin_Wx')) {
 
 ?>
                         <p>退款原因：<input type="text" id="npcink-wx-reason" placeholder="请输入退款原因"></p>
+                        <p>点击退款按钮后请稍等<b style="color: red;">15秒</b>进行退款处理</p>
                         <?php
                         echo "
                         <button id='wx-order-btn' class='button button-primary refund ' data-order-id='" . $data->out_trade_no . "' data-order-amount='" . $data->amount->payer_total . "'>微信全额退款</button>
-                        
                         ";
                     } else {
                         if ($data->trade_state === "SUCCESS" && !Mare_Admin_Public::contrast_time($time)) {
@@ -179,7 +179,7 @@ if (!class_exists('Mare_Admin_Wx')) {
             $order_refund_id =  $order_id . "-refund";
 
             // 发送请求
-            
+
             try {
                 $resp = self::$client->post(
                     'https://api.mch.weixin.qq.com/v3/refund/domestic/refunds', // 请求URL
@@ -223,16 +223,18 @@ if (!class_exists('Mare_Admin_Wx')) {
                 //switch ("PROCESSING") {
                 switch ($data->status) {
                     case "PROCESSING": // 退款处理中，进行退款查询
-                        echo "退款处理中";
                         //添加数据进数据库文件
                         Mare_Admin_Public::add_data($time_now, $user, $amount, $order, $reason, '微信');
+                        //延迟10秒后执行
+                        sleep(15);
                         //二次查询并记录
-                        echo self::query_refunds_two($order);
+                        echo self::query_refunds($order);
                         break;
                     case "SUCCESS": // 退款成功，进行退款查询
-                        echo self::query_refunds($data->out_trade_no);
-                        //添加数据进JSON文件
+                        //添加数据进数据库文件
                         Mare_Admin_Public::add_data($time, $user, $amount, $order, $reason, '微信');
+                        echo self::query_refunds($data->out_trade_no);
+
                         break;
                     case "CLOSED": // 退款关闭
                         echo "退款关闭";
@@ -248,62 +250,7 @@ if (!class_exists('Mare_Admin_Wx')) {
             wp_die();
         }
 
-        //二次查询，以便记录
-        public static function query_refunds_two($id)
-        {
-            //延迟10秒后执行
-            sleep(9);
-            //对ID进行处理，组合为商户退款订单号
 
-            $id =  $id . "-refund";
-
-           
-            try {
-                $resp = self::$client->request(
-                    'GET',
-                    'https://api.mch.weixin.qq.com/v3/refund/domestic/refunds/' . $id, //请求URL
-                    [
-                        'headers' => ['Accept' => 'application/json']
-                    ]
-                );
-            } catch (RequestException $e) {
-                // 进行错误处理
-
-                if ($e->hasResponse()) {
-
-                    $data = json_decode($e->getResponse()->getBody()); // 转换成 PHP 对象
-
-
-
-                    //退款状态为成功才记录
-
-                    $time = self::handle_time($data->success_time);
-
-                    //获取登录用户名
-                    $current_user = wp_get_current_user();
-                    $user = $current_user->display_name;
-
-                    $amount = $data->amount->payer_refund / 100;
-                    $order = $data->out_trade_no;
-
-
-                    if ($data->status === "SUCCESS") {
-                        //添加数据进JSON文件
-                        //npc_add_json($time,$user,$amount,$order,'微信');
-
-                        $table_html = "<table>";
-                        $table_html .= "<tr><td>订单号-二次退款查询：</td><td>" . $order . "</td></tr>";
-                        $table_html .= "<tr><td>退款时间：</td><td>" .  $time . "</td></tr>";
-                        $table_html .= "<tr><td>退款金额：</td><td>" . $amount . "元</td></tr>";
-                        $table_html .= "<tr><td>退款状态：</td><td><span class='green'>退款成功</span></td></tr>";
-                        $table_html .= "</table>";
-
-                        return $table_html;
-                    }
-                }
-            }
-            wp_die();
-        }
 
         //退款返回
         //应答的微信支付签名验证失败 failed,resp code = 200 return body = {"amount":{"currency":"CNY","discount_refund":0,"from":[],"payer_refund":1,"payer_total":1,"refund":1,"refund_fee":0,"settlement_refund":1,"settlement_total":1,"total":1},"channel":"ORIGINAL","create_time":"2023-06-05T11:57:41+08:00","funds_account":"AVAILABLE","out_refund_no":"refund-D605289669435254","out_trade_no":"D605289669435254","promotion_detail":[],"refund_id":"50300705862023060535316073583","status":"PROCESSING","transaction_id":"4200001882202306054652664747","user_received_account":"工商银行借记卡5167"} 
@@ -323,7 +270,7 @@ if (!class_exists('Mare_Admin_Wx')) {
 
             $id =  $id . "-refund";
 
-           
+
             try {
                 $resp = self::$client->request(
                     'GET',

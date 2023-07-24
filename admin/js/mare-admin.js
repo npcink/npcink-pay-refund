@@ -78,6 +78,16 @@ jQuery(document).ready(function ($) {
 
   //微信退款
   $(document).on("click", "#wx-order-btn", function () {
+    var $button = $(this);
+
+    // 禁用按钮
+    $button.prop("disabled", true);
+
+    // 恢复按钮可用状态
+    setTimeout(function () {
+      $button.prop("disabled", false);
+    }, 20000); // 10秒后恢复按钮可用状态
+
     const data = {
       action: "wx_order_refund",
       order_id: $(this).data("order-id"), //订单号
