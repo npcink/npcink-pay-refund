@@ -16,7 +16,7 @@
  * Plugin Name:       魔法退款 - 新架构
  * Plugin URI:        https://www.npc.ink/277376.html
  * Description:       支持支付宝官方和微信官方退款功能，使用官方提供的SDK，带权限控制，删除此插件会同时删除退款记录表，请谨慎。
- * Version:           1.0.8
+ * Version:           1.0.9
  * Author:            Muze
  * Author URI:        https://www.npc.ink
  * License:           GPL-2.0+
@@ -35,7 +35,7 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('MARE_VERSION', '1.0.8');
+define('MARE_VERSION', '1.0.9');
 
 /**
  * The code that runs during plugin activation.
