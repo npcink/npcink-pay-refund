@@ -1,6 +1,6 @@
 <script setup lang="ts">
 //设置选项
-import { reactive, ref } from "vue";
+import { reactive,  } from "vue";
 
 const form = reactive({
   value1: true,

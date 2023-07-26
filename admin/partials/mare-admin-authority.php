@@ -17,7 +17,7 @@ if (!class_exists('Mare_Admin_Authority')) {
         public static function restrict_access()
         {
             $user = wp_get_current_user();
-            $users = get_option('npc_refund_user'); // 设置允许访问的用户ID
+            $users = get_option('npc_user_user'); // 设置允许访问的用户ID
 
 
             // 创建一个空数组用于存储结果
