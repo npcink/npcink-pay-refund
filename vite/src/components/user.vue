@@ -15,6 +15,14 @@ watchEffect(() => {
 
 //拿到选项值
 const optionss = ref(store.config.user);
+
+//添加框
+const inputCount = ref(2);
+const inputs = ref([]);
+
+const addInput = () => {
+  inputCount.value++;
+};
 </script>
 
 <template>
@@ -41,6 +49,25 @@ const optionss = ref(store.config.user);
         </el-text>
       </el-col>
     </el-form-item>
+    <el-form-item label="访问页面：">
+      <el-col :span="12">
+        <el-button @click="addInput">添加新页面</el-button>
+        <div class="item_input" v-for="index in inputCount" :key="index">
+          <el-input v-model="inputs[index - 1]" placeholder="请输入网址">
+            <template #prepend
+              >http(s)://xx.com/wp-admin/admin.php?page=</template
+            >
+          </el-input>
+        </div>
+        <el-text class="mx-1" type="info">
+          选中的操作员仅能访问以上页面
+        </el-text>
+      </el-col>
+    </el-form-item>
   </el-form>
 </template>
-<style scoped></style>
+<style scoped>
+.item_input {
+  padding: 1em 0;
+}
+</style>

@@ -2,6 +2,7 @@
 import wx from "./components/wx.vue";
 import zfb from "./components/zfb.vue";
 import user from "./components/user.vue";
+import config from "./components/config.vue";
 import { mainStore } from "./store/store.js";
 import { onMounted } from "vue";
 //实例化
@@ -29,6 +30,9 @@ onMounted(async () => {
       </el-tab-pane>
       <el-tab-pane label="用户">
         <user></user>
+      </el-tab-pane>
+      <el-tab-pane label="设置">
+        <config></config>
       </el-tab-pane>
     </el-tabs>
     
