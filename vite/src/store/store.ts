@@ -32,9 +32,9 @@ export const mainStore = defineStore("main", () => {
   //}
 
   //初始数据
- //const config = {
- //  user: dataLocal.user,
- //};
+  //const config = {
+  //  user: dataLocal.user,
+  //};
 
   //存储数据
   let datas = reactive({
@@ -53,8 +53,8 @@ export const mainStore = defineStore("main", () => {
       npc_user_link: [""],
     },
     config: {
-      npc_config_mysql: false,
-      npc_config_config: false,
+      npc_config_mysql: "1",
+      npc_config_config: "1",
     },
   });
 
@@ -90,8 +90,8 @@ export const mainStore = defineStore("main", () => {
           npc_user_link: userLink = [],
         } = {},
         config: {
-          npc_config_mysql: configMysql = true,
-          npc_config_config: configConfig = true,
+          npc_config_mysql: configMysql = "1",
+          npc_config_config: configConfig = "1",
         } = {},
       } = responseData;
 
@@ -134,5 +134,5 @@ export const mainStore = defineStore("main", () => {
       });
   };
 
-  return { datas,  getData, saveData };
+  return { datas, getData, saveData };
 });

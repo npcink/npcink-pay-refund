@@ -60,11 +60,14 @@ const configB2 = () => {
         >
 
         <div class="item_input" v-for="index in inputCount" :key="index">
-          <el-input v-model="inputs[index - 1]" placeholder="请输入链接">
-            <template #prepend
-              >http(s)://xx.com/wp-admin/admin.php?page=</template
+          <span>
+            http(s)://xx.com</span><el-input
+              v-model="inputs[index - 1]"
+              placeholder="请输入链接"
             >
-          </el-input>
+              <template #prepend>/wp-admin/admin.php?page=</template>
+            </el-input>
+          
         </div>
         <el-text class="mx-1" type="info">
           被选中的操作员仅能访问以上页面
@@ -75,6 +78,6 @@ const configB2 = () => {
 </template>
 <style scoped>
 .item_input {
-  padding: 1em 0;
+  padding: 1em 0 0;
 }
 </style>
