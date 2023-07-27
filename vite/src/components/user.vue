@@ -55,7 +55,6 @@ const configDelt = (index: number) => {
 </script>
 
 <template>
-  {{ active }}{{ options }}
   <el-form label-width="100px">
     <el-form-item label="退款操作员：">
       <el-col :span="12">

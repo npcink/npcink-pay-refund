@@ -17,8 +17,7 @@ jQuery(document).ready(function ($) {
           alert("暂无数据可供下载");
           return;
         }
-        console.log("拿到的值：");
-        console.log(data);
+        
 
         // 定义自定义列名的映射对象
         const columnMapping = {

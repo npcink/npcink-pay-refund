@@ -3,7 +3,6 @@ import wx from "./components/wx.vue";
 import zfb from "./components/zfb.vue";
 import user from "./components/user.vue";
 import config from "./components/config.vue";
-import test from "./components/test.vue";
 import { mainStore } from "./store/store.js";
 import { onMounted } from "vue";
 //实例化
@@ -44,9 +43,6 @@ const showData = () => {
       <el-tab-pane label="设置">
         <config></config>
       </el-tab-pane>
-      <el-tab-pane label="测试">
-        <test></test>
-      </el-tab-pane>
     </el-tabs>
 
     <p class="submit">
@@ -63,7 +59,7 @@ const showData = () => {
 
 <style scoped>
 .tabCard {
-  max-width: 1200px;
+  max-width: 700px;
 }
 .tabCard :deep(input) {
   border: none;

@@ -17,7 +17,7 @@ jQuery(document).ready(function ($) {
       action: "zfb_order_query",
       param: trimHyphen($("#my-plugin-input").val()),
     };
-    //console.log(data.param);
+   
     $.ajax({
       url: public.ajaxurl,
       type: "POST",
