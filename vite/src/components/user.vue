@@ -55,9 +55,9 @@ const configDelt = (index: number) => {
 </script>
 
 <template>
-  <el-form label-width="100px">
+  <el-form label-width="auto">
     <el-form-item label="退款操作员：">
-      <el-col :span="12">
+      <el-col :span="18">
         <el-select
           v-model="active"
           multiple
@@ -79,7 +79,7 @@ const configDelt = (index: number) => {
       </el-col>
     </el-form-item>
     <el-form-item label="访问页面：">
-      <el-col :span="12">
+      <el-col :span="18">
         快捷配置：
         <el-button type="primary" size="default" round @click="configB2()">
           B2
@@ -126,6 +126,6 @@ const configDelt = (index: number) => {
 .delt {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
 }
 </style>

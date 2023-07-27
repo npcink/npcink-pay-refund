@@ -12,7 +12,7 @@ const form = computed(() =>store.configData.npc_refund_config.config);
   <h3>删除插件的同时</h3>
   <el-form :model="form" label-width="200px">
     <el-form-item label="删除数据库">
-      <el-col :span="12">
+      <el-col :span="18">
         <el-switch
           v-model="form.mysql"
           active-value="1"
@@ -22,7 +22,7 @@ const form = computed(() =>store.configData.npc_refund_config.config);
       </el-col>
     </el-form-item>
     <el-form-item label="清空设置选项">
-      <el-col :span="12">
+      <el-col :span="18">
         <el-switch
           v-model="form.config"
           active-value="1"

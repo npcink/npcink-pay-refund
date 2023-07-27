@@ -59,7 +59,7 @@ const showData = () => {
 
 <style scoped>
 .tabCard {
-  max-width: 700px;
+  max-width: 900px;
 }
 .tabCard :deep(input) {
   border: none;
