@@ -46,7 +46,7 @@ export const mainStore = defineStore("main", () => {
         cert_key: "",
       },
       user: {
-        user: [],
+        user: [] as Number[],
         link: [
           {
             title: "",

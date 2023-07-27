@@ -1,29 +1,33 @@
 <script setup lang="ts">
 //作者输入框
-import { ref, toRef, watchEffect, computed } from "vue";
+import { toRef, computed } from "vue";
 import { Delete } from "@element-plus/icons-vue";
 import { mainStore } from "../store/store.js";
 //实例化
 const store = mainStore();
+//用到的数据
+const userData = store.configData.npc_refund_config.user;
 //拿到数据
-const data = computed(() => store.configData.npc_refund_config.user);
+const form = computed(() => userData);
+
 //用户数据
 const options = store.userList;
+
+console.log(form.value.user);
+console.log(store.configData.npc_refund_config)
 //选中的数据
-const active = ref([]);
-
+//const userActive = toRef(userData, "user");
 //监听下
-watchEffect(() => {
-  data.value.user = active.value;
-});
-
+//watchEffect(() => {
+//  userActive.value = active.value;
+//});
+TODO:选项无法获取和保存
 /**
  * 可访问链接
  */
-//拿到链接选项值
-//添加框的数量
+
 //拿到默认值
-const inputs = toRef(data.value, "link");
+const inputs = toRef(userData, "link");
 
 //B2主题选项
 const configB2 = () => {
@@ -55,11 +59,13 @@ const configDelt = (index: number) => {
 </script>
 
 <template>
-  <el-form label-width="auto">
+  <el-form :model="form" label-width="auto">
+    选中的值 {{ form.user }}<br />
+    拿到的默认值{{ form }}
     <el-form-item label="退款操作员：">
       <el-col :span="18">
         <el-select
-          v-model="active"
+          v-model="form.user"
           multiple
           filterable
           style="width: 100%"
