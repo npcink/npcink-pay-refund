@@ -10,6 +10,10 @@ export const mainStore = defineStore("main", () => {
       id: string;
       name: string;
     }[];
+    link: {
+      title: string;
+      url: string;
+    }[];
   }
 
   let dataLocal: DataLocal;
@@ -50,7 +54,7 @@ export const mainStore = defineStore("main", () => {
     },
     user: {
       npc_user_user: dataLocal.user as DataLocal["user"],
-      npc_user_link: [""],
+      npc_user_link: [] as DataLocal["link"],
     },
     config: {
       npc_config_mysql: "1",

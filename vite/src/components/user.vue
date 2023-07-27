@@ -18,17 +18,28 @@ watchEffect(() => {
  * 可访问链接
  */
 //拿到链接选项值
-//添加框
+//添加框的数量
 const inputCount = ref(5);
+//拿到默认值
 const inputs = toRef(data, "npc_user_link");
 
 //B2主题选项
 const configB2 = () => {
-  inputs.value = ["b2_orders_list", "refund_querys"];
+  inputs.value = [
+    {
+      title: "订单管理",
+      url: "b2_orders_list",
+    },
+    {
+      title: "退款",
+      url: "refund_querys",
+    },
+  ];
 };
 </script>
 
 <template>
+  {{ inputs[1] }}
   <el-form label-width="100px">
     <el-form-item label="退款操作员：">
       <el-col :span="12">
@@ -60,14 +71,14 @@ const configB2 = () => {
         >
 
         <div class="item_input" v-for="index in inputCount" :key="index">
-          <span>
-            http(s)://xx.com</span><el-input
-              v-model="inputs[index - 1]"
-              placeholder="请输入链接"
-            >
-              <template #prepend>/wp-admin/admin.php?page=</template>
-            </el-input>
+         
           
+          <el-input v-model="inputs[index - 1]" placeholder="请输入链接名">
+            <template #prepend>名称</template>
+          </el-input>
+          <el-input v-model="inputs[index - 1]" placeholder="请输入链接">
+            <template #prepend>链接</template>
+          </el-input>
         </div>
         <el-text class="mx-1" type="info">
           被选中的操作员仅能访问以上页面

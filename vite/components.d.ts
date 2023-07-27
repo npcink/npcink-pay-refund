@@ -20,6 +20,7 @@ declare module 'vue' {
     ElTabs: typeof import('element-plus/es')['ElTabs']
     ElText: typeof import('element-plus/es')['ElText']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
+    Test: typeof import('./src/components/test.vue')['default']
     User: typeof import('./src/components/user.vue')['default']
     Wx: typeof import('./src/components/wx.vue')['default']
     Zfb: typeof import('./src/components/zfb.vue')['default']

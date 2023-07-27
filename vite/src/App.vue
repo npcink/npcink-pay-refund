@@ -3,6 +3,7 @@ import wx from "./components/wx.vue";
 import zfb from "./components/zfb.vue";
 import user from "./components/user.vue";
 import config from "./components/config.vue";
+import test from "./components/test.vue";
 import { mainStore } from "./store/store.js";
 import { onMounted } from "vue";
 //实例化
@@ -20,7 +21,6 @@ onMounted(async () => {
 
 <template>
   <div class="tabCard">
-    
     <el-tabs type="border-card">
       <el-tab-pane label="支付宝">
         <zfb></zfb>
@@ -34,8 +34,10 @@ onMounted(async () => {
       <el-tab-pane label="设置">
         <config></config>
       </el-tab-pane>
+      <el-tab-pane label="测试">
+        <test></test>
+      </el-tab-pane>
     </el-tabs>
-    
 
     <p class="submit">
       <input
