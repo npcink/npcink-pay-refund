@@ -17,6 +17,14 @@ const saveConfig = () => {
 onMounted(async () => {
   await store.getData();
 });
+
+//打印数组
+const showData = () => {
+  console.log(store.configData);
+  console.log(store.configData.npc_refund_config);
+  console.log(store.configData.npc_refund_config.zfb);
+  console.log(store.configData.npc_refund_config.zfb.private_key);
+};
 </script>
 
 <template>
@@ -28,9 +36,11 @@ onMounted(async () => {
       <el-tab-pane label="微信">
         <wx></wx>
       </el-tab-pane>
+
       <el-tab-pane label="用户">
         <user></user>
       </el-tab-pane>
+
       <el-tab-pane label="设置">
         <config></config>
       </el-tab-pane>
@@ -47,6 +57,7 @@ onMounted(async () => {
         @click="saveConfig()"
       />
     </p>
+    <button @click="showData()">打印</button>
   </div>
 </template>
 

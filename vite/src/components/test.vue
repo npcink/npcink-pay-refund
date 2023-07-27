@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { reactive, ref,  watch } from "vue";
+import { reactive, ref, watch } from "vue";
 import { mainStore } from "../store/store.js";
 
 const store = mainStore();
-const data = store.datas.user;
+const data = store.configData.npc_refund_config.user;
 
 const inputCount = ref(5);
-const inputs = reactive(Array.from({ length: inputCount.value }, () => ({
-  title: "",
-  url: ""
-})));
+const inputs = reactive(
+  Array.from({ length: inputCount.value }, () => ({
+    title: "",
+    url: "",
+  }))
+);
 
 watch(inputCount, (newVal) => {
   for (let i = inputs.length; i < newVal; i++) {
@@ -20,8 +22,8 @@ watch(inputCount, (newVal) => {
   }
 });
 
-if (data && Array.isArray(data.npc_user_link)) {
-  const defaultValues = data.npc_user_link;
+if (data && Array.isArray(data.link)) {
+  const defaultValues = data.link;
   for (let i = 0; i < inputs.length && i < defaultValues.length; i++) {
     inputs[i].title = defaultValues[i].title || "";
     inputs[i].url = defaultValues[i].url || "";

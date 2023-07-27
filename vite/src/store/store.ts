@@ -16,6 +16,7 @@ export const mainStore = defineStore("main", () => {
     }[];
   }
 
+  //传来的值
   let dataLocal: DataLocal;
 
   // 在开发环境中使用 VITE_DATA_LOCAL 环境变量
@@ -27,38 +28,36 @@ export const mainStore = defineStore("main", () => {
     dataLocal = (window as any).dataLocal;
   }
 
-  //const dataLocal: DataLocal = (window as any).dataLocal;
-  //
-  //const dataLocal={
-  //route:"http://localhost:5173/",
-  //nonce:"asdf",
-  //user:[{id:1,name:"111"},{id:2,name:"222"}]
-  //}
+  //用户
+  const userList = dataLocal.user;
 
-  //初始数据
-  //const config = {
-  //  user: dataLocal.user,
-  //};
-
-  //存储数据
-  let datas = reactive({
-    zfb: {
-      npc_zfb_appid: "",
-      npc_zfb_private_key: "",
-      npc_zfb_public_key: "",
-    },
-    wx: {
-      npc_wx_mch_id: "",
-      npc_wx_cert_api: "",
-      npc_wx_cert_key: "",
-    },
-    user: {
-      npc_user_user: dataLocal.user as DataLocal["user"],
-      npc_user_link: [] as DataLocal["link"],
-    },
-    config: {
-      npc_config_mysql: "1",
-      npc_config_config: "1",
+  //保存数据
+  const configData = reactive({
+    //选项值
+    npc_refund_config: {
+      zfb: {
+        appid: "",
+        private_key: "",
+        public_key: "",
+      },
+      wx: {
+        mch_id: "",
+        cert_api: "",
+        cert_key: "",
+      },
+      user: {
+        user: [],
+        link: [
+          {
+            title: "",
+            url: "",
+          },
+        ],
+      },
+      config: {
+        mysql: "1",
+        config: "1",
+      },
     },
   });
 
@@ -67,7 +66,7 @@ export const mainStore = defineStore("main", () => {
     try {
       const response = await axios.post(
         `${dataLocal.route}pf/v1/get_option`,
-        datas,
+        configData,
         {
           headers: {
             "X-WP-Nonce": dataLocal.nonce,
@@ -75,43 +74,8 @@ export const mainStore = defineStore("main", () => {
           },
         }
       );
-      const responseData = response.data;
-
-      // 使用解构语法来获取响应数据对象中的属性，并为每个属性提供默认值以避免未定义的属性
-      const {
-        zfb: {
-          npc_zfb_appid: zfbAppid = "",
-          npc_zfb_private_key: zfbPrivateKey = "",
-          npc_zfb_public_key: zfbPublicKey = "",
-        } = {},
-        wx: {
-          npc_wx_mch_id: wxNpcRefundMchId = "",
-          npc_wx_cert_api: wxCertApi = "",
-          npc_wx_cert_key: wxCertKey = "",
-        } = {},
-        user: {
-          npc_user_user: userUser = [],
-          npc_user_link: userLink = [],
-        } = {},
-        config: {
-          npc_config_mysql: configMysql = "1",
-          npc_config_config: configConfig = "1",
-        } = {},
-      } = responseData;
-
-      datas.zfb.npc_zfb_appid = zfbAppid;
-      datas.zfb.npc_zfb_private_key = zfbPrivateKey;
-      datas.zfb.npc_zfb_public_key = zfbPublicKey;
-
-      datas.wx.npc_wx_mch_id = wxNpcRefundMchId;
-      datas.wx.npc_wx_cert_api = wxCertApi;
-      datas.wx.npc_wx_cert_key = wxCertKey;
-
-      datas.user.npc_user_user = userUser;
-      datas.user.npc_user_link = userLink;
-
-      datas.config.npc_config_mysql = configMysql;
-      datas.config.npc_config_config = configConfig;
+      //拿到需要的值
+      configData.npc_refund_config = response.data.npc_refund_config;
     } catch (error) {
       window.alert("连接服务器失败或后台读取出错！数据读取失败");
       console.log(error);
@@ -121,9 +85,9 @@ export const mainStore = defineStore("main", () => {
   //保存数据
   const saveData = () => {
     console.log("保存数据");
-    console.log(datas);
+    console.log(configData);
     axios
-      .post(dataLocal.route + "pf/v1/update_option", datas, {
+      .post(dataLocal.route + "pf/v1/update_option", configData, {
         headers: {
           "X-WP-Nonce": dataLocal.nonce,
         },
@@ -138,5 +102,5 @@ export const mainStore = defineStore("main", () => {
       });
   };
 
-  return { datas, getData, saveData };
+  return { configData, userList, getData, saveData };
 });

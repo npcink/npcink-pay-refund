@@ -1,9 +1,10 @@
 <script setup lang="ts">
 //设置选项
+import { computed } from "vue";
 import { mainStore } from "../store/store.js";
 //实例化
 const store = mainStore();
-const form = store.datas.config;
+const form = computed(() =>store.configData.npc_refund_config.config);
 </script>
 
 <template>
@@ -13,7 +14,7 @@ const form = store.datas.config;
     <el-form-item label="删除数据库">
       <el-col :span="12">
         <el-switch
-          v-model="form.npc_config_mysql"
+          v-model="form.mysql"
           active-value="1"
           inactive-value="0"
         />
@@ -23,7 +24,7 @@ const form = store.datas.config;
     <el-form-item label="清空设置选项">
       <el-col :span="12">
         <el-switch
-          v-model="form.npc_config_config"
+          v-model="form.config"
           active-value="1"
           inactive-value="0"
         />

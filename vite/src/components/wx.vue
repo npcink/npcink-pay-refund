@@ -4,7 +4,8 @@
 import { mainStore } from "../store/store.js";
 //实例化
 const store = mainStore();
-const form = store.datas.wx;
+import { computed } from "vue";
+const form = computed(() =>store.configData.npc_refund_config.wx);
 </script>
 
 <template>
@@ -12,7 +13,7 @@ const form = store.datas.wx;
     <el-form-item label="商户号：">
       <el-col :span="12">
         <el-input
-          v-model="form.npc_wx_mch_id"
+          v-model="form.mch_id"
           placeholder="微信支付商户号"
           clearable
         />
@@ -22,7 +23,7 @@ const form = store.datas.wx;
     <el-form-item label="证书序列号：">
       <el-col :span="12">
         <el-input
-          v-model="form.npc_wx_cert_api"
+          v-model="form.cert_api"
           :rows="2"
           type="textarea"
           placeholder="商户证书序列号"
@@ -35,7 +36,7 @@ const form = store.datas.wx;
     <el-form-item label="商户私钥：">
       <el-col :span="12">
         <el-input
-          v-model="form.npc_wx_cert_key"
+          v-model="form.cert_key"
           :rows="2"
           type="textarea"
           placeholder="商户私钥"

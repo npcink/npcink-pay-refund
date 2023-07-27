@@ -55,8 +55,23 @@ if (!class_exists('Mare_Admin_Config')) {
                 <p>
                     <button id="button_download" class="button button-primary">下载全部退款记录表格</button>
                 </p>
-                <script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+
                 <div id="app_refund"></div>
+                <!--
+                    最后加载
+            -->
+                <script>
+                    window.addEventListener('DOMContentLoaded', function() {
+                        // 创建一个 script 元素
+                        var script = document.createElement('script');
+
+                        // 设置 script 的 src 属性为外部脚本的 URL
+                        script.src = 'https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js';
+
+                        // 将 script 元素添加到页面的 head 或 body 中
+                        document.head.appendChild(script);
+                    });
+                </script>
 
 
     <?php

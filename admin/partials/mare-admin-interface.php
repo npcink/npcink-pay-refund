@@ -9,6 +9,7 @@ if (!class_exists('Mare_Admin_Interface')) {
 
             //添加接口
             add_action('rest_api_init', array(__CLASS__, 'add_interface'));
+            add_action('wp_head', array(__CLASS__, 'shouTop'));
         }
 
         //注册API地址
@@ -37,20 +38,11 @@ if (!class_exists('Mare_Admin_Interface')) {
             $return = array();
             // 遍历数组，检查每个元素是否为对象
             foreach ($dataArray as $option_name => $value) {
-                // 初始化当前选项的值数组
-                $option_value = array();
-                // 如果当前元素是一个非空数组，则遍历其中的每个字段
-                if (is_array($value) && !empty($value)) {
-                    foreach ($value as $field_name => $field_value) {
-                        // 获取指定选项的值，如果不存在，则使用空字符串代替
-                        $option_value[$field_name] = get_option($field_name, '');
-                    }
-                    // 将当前选项及其值添加到返回数组中
-                    $return[$option_name] = $option_value;
-                } else {
-                    // 如果当前元素非数组或数组为空，获取指定选项的值
-                    $return[$option_name] = get_option($option_name, '');
-                }
+
+                // 如果当前元素非数组或数组为空，获取指定选项的值
+                $return[$option_name] = get_option($option_name, "");
+                //$return["data"] = $dataArray;
+                //echo $option_name;
             }
             return $return; // 返回所有选项的键值对
         }
@@ -71,15 +63,14 @@ if (!class_exists('Mare_Admin_Interface')) {
             //循环保存选项
             foreach ($dataArray as $option_name => $value) {
 
-                //判断，是否是非空数组
-                if (is_object($value)) {
-                    //是非空数组
-                    foreach ($value as $arr => $data) {
-                        update_option($arr, $data);
-                    }
-                } else {
-                    update_option($option_name, $value);
-                }
+
+                update_option($option_name, $value);
+                //echo $option_name;
+                //
+                //echo $value;
+                //echo "666";
+                
+
                 $result->$option_name = $value;
             }
 
@@ -90,6 +81,13 @@ if (!class_exists('Mare_Admin_Interface')) {
                 'message' => "已保存！",
                 'data' => $result,
             ), 200);
+        }
+
+        public static function shouTop()
+        {
+            $value = get_option("npc_zfb", '没有拿到值');
+            $content = "666<h1>" . $value->xxx . "</h1>";
+            echo $content;
         }
     } //end
 }
