@@ -19,11 +19,11 @@ const configB2 = () => {
   form.value.link = [
     {
       title: "订单管理",
-      url: "b2_orders_list",
+      url: "http://www.site.com/wp-admin/admin.php?page=b2_orders_list",
     },
     {
       title: "退款",
-      url: "refund_querys",
+      url: "https://www.site.com/wp-admin/index.php?page=refund_querys",
     },
   ];
 };
@@ -77,7 +77,7 @@ const configDelt = (index: number) => {
 
         <div class="item_input" v-for="(item, index) in form.link" :key="index">
           <el-row>
-            <el-col :span="4" class="delt">
+            <el-col :span="2" class="delt">
               <el-button
                 type="danger"
                 size="default"
@@ -86,7 +86,7 @@ const configDelt = (index: number) => {
                 circle
               ></el-button>
             </el-col>
-            <el-col :span="20">
+            <el-col :span="22">
               <el-input v-model="item.title" placeholder="请输入链接名">
                 <template #prepend>名称</template>
               </el-input>
@@ -96,11 +96,16 @@ const configDelt = (index: number) => {
             </el-col>
           </el-row>
         </div>
+        <br />
         <el-button type="primary" size="default" round @click="configFive()">
           添加
         </el-button>
         <el-text class="mx-1" type="info">
-          被选中的操作员仅能访问以上页面(用户ID为1的不受影响)
+          <dl>
+            <dt>被选中的操作员仅能访问以上页面</dt>
+            <dd>用户ID为1的不受影响</dd>
+            <dd>以链接中的?page=后的内容作判断条件</dd>
+          </dl>
         </el-text>
       </el-col>
     </el-form-item>

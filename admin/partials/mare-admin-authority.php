@@ -28,10 +28,7 @@ if (!class_exists('Mare_Admin_Authority')) {
             //当前登录信息
             $logUser = wp_get_current_user();
 
-            //当前网址
-            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-            $now_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-            $site_url = self::get_url($now_url);
+          
 
             // 创建一个空数组用于存储结果
 
@@ -49,10 +46,15 @@ if (!class_exists('Mare_Admin_Authority')) {
                     $arr_url[] = self::get_url($url);
                 }
 
-                // 访问允许的菜单
-                if (in_array($site_url, $arr_url)) {
-                    return;
+                if (isset($_GET['page'])) {
+                    //获取当前链接中的页面查询字段
+                    $site_url = $_GET['page'];
+                    // 访问允许的菜单
+                    if (in_array($site_url, $arr_url)) {
+                        return;
+                    }
                 }
+
 
                 // 如果是 admin-ajax.php 或 admin-post.php，则不拦截（点击按钮提交的请求）
                 if (preg_match('/^\/wp-admin\/(admin-ajax\.php|admin-post\.php)/', $_SERVER['PHP_SELF'])) {
@@ -90,20 +92,18 @@ if (!class_exists('Mare_Admin_Authority')) {
             return $a;
         }
         /**
-         * 处理当前网址，只保留？前内容
+         * 处理当前网址，只保留?page=后的内容
          */
         public static function get_url($url)
         {
-
-            // 使用 parse_url() 函数解析 URL，获取 query 部分
-            $query = parse_url($url, PHP_URL_QUERY);
-
-            // 使用 parse_str() 函数解析 query，并将结果保存在 $params 数组中
-            parse_str($query, $params);
-
-            // 获取 ? 前的内容
-            $content = strtok($url, '?');
-            return $content;
+            // 解析查询字符串
+            parse_str(parse_url($url, PHP_URL_QUERY), $query);
+            $page = "未找到 page 参数";
+            // 获取 "page" 参数的值
+            if (isset($query['page'])) {
+                $page = $query['page'];
+            }
+            return $page;
         }
 
         /**
