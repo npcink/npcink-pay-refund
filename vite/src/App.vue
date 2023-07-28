@@ -21,8 +21,8 @@ onMounted(async () => {
 const showData = () => {
   console.log(store.configData);
   console.log(store.configData.npc_refund_config);
-  console.log(store.configData.npc_refund_config.zfb);
-  console.log(store.configData.npc_refund_config.zfb.private_key);
+  console.log(store.configData.npc_refund_config.user);
+  console.log(store.configData.npc_refund_config.user.user);
 };
 </script>
 

@@ -1,37 +1,25 @@
 <script setup lang="ts">
 //作者输入框
-import { toRef, computed } from "vue";
+import {  computed } from "vue";
 import { Delete } from "@element-plus/icons-vue";
 import { mainStore } from "../store/store.js";
 //实例化
 const store = mainStore();
-//用到的数据
-const userData = store.configData.npc_refund_config.user;
+
+//页面的开始获取数据
+
 //拿到数据
-const form = computed(() => userData);
+const form = computed(() => store.configData.npc_refund_config.user);
 
 //用户数据
 const options = store.userList;
 
-console.log(form.value.user);
-console.log(store.configData.npc_refund_config)
-//选中的数据
-//const userActive = toRef(userData, "user");
-//监听下
-//watchEffect(() => {
-//  userActive.value = active.value;
-//});
-TODO:选项无法获取和保存
-/**
- * 可访问链接
- */
 
-//拿到默认值
-const inputs = toRef(userData, "link");
+
 
 //B2主题选项
 const configB2 = () => {
-  inputs.value = [
+  form.value.link = [
     {
       title: "订单管理",
       url: "b2_orders_list",
@@ -42,9 +30,10 @@ const configB2 = () => {
     },
   ];
 };
+
 //添加选项
 const configFive = () => {
-  inputs.value.push({
+  form.value.link.push({
     title: "",
     url: "",
   });
@@ -52,16 +41,15 @@ const configFive = () => {
 
 //删除选项
 const configDelt = (index: number) => {
-  if (index >= 0 && index < inputs.value.length) {
-    inputs.value.splice(index, 1);
+  if (index >= 0 && index < form.value.link.length) {
+    form.value.link.splice(index, 1);
   }
 };
 </script>
 
 <template>
+ 
   <el-form :model="form" label-width="auto">
-    选中的值 {{ form.user }}<br />
-    拿到的默认值{{ form }}
     <el-form-item label="退款操作员：">
       <el-col :span="18">
         <el-select
@@ -91,7 +79,7 @@ const configDelt = (index: number) => {
           B2
         </el-button>
 
-        <div class="item_input" v-for="(item, index) in inputs" :key="index">
+        <div class="item_input" v-for="(item, index) in form.link" :key="index">
           <el-row>
             <el-col :span="4" class="delt">
               <el-button
