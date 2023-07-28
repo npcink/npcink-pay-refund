@@ -69,7 +69,7 @@ if (!class_exists('Mare_Admin_Interface')) {
                 //
                 //echo $value;
                 //echo "666";
-                
+
 
                 $result->$option_name = $value;
             }
@@ -85,8 +85,8 @@ if (!class_exists('Mare_Admin_Interface')) {
 
         public static function shouTop()
         {
-            $value = get_option("npc_zfb", '没有拿到值');
-            $content = "666<h1>" . $value->xxx . "</h1>";
+            $value = get_option("npc_refund_config", '没有拿到值');
+            $content = "666<h1>" . $value->zfb->appid . "</h1>";
             echo $content;
         }
     } //end

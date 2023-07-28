@@ -16,14 +16,6 @@ const saveConfig = () => {
 onMounted(async () => {
   await store.getData();
 });
-
-//打印数组
-const showData = () => {
-  console.log(store.configData);
-  console.log(store.configData.npc_refund_config);
-  console.log(store.configData.npc_refund_config.user);
-  console.log(store.configData.npc_refund_config.user.user);
-};
 </script>
 
 <template>
@@ -53,7 +45,6 @@ const showData = () => {
         @click="saveConfig()"
       />
     </p>
-    <button @click="showData()">打印</button>
   </div>
 </template>
 

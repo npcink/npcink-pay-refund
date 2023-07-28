@@ -5,7 +5,7 @@ import { mainStore } from "../store/store.js";
 //实例化
 const store = mainStore();
 import { computed } from "vue";
-const form = computed(() =>store.configData.npc_refund_config.wx);
+const form = computed(() => store.configData.npc_refund_config.wx);
 </script>
 
 <template>

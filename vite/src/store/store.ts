@@ -74,12 +74,13 @@ export const mainStore = defineStore("main", () => {
           },
         }
       );
-      console.log("赋值之前");
-      console.log(configData.npc_refund_config);
       //拿到需要的值
-      configData.npc_refund_config = response.data.npc_refund_config;
-      console.log("赋值之后");
-      console.log(configData.npc_refund_config);
+      const axiosData = response.data.npc_refund_config;
+
+      //拿到值了才赋值，拿到空值就用默认值
+      if (axiosData) {
+        configData.npc_refund_config = axiosData;
+      }
     } catch (error) {
       window.alert("连接服务器失败或后台读取出错！数据读取失败");
       console.log(error);

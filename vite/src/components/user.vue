@@ -1,6 +1,6 @@
 <script setup lang="ts">
 //作者输入框
-import {  computed } from "vue";
+import { computed } from "vue";
 import { Delete } from "@element-plus/icons-vue";
 import { mainStore } from "../store/store.js";
 //实例化
@@ -13,9 +13,6 @@ const form = computed(() => store.configData.npc_refund_config.user);
 
 //用户数据
 const options = store.userList;
-
-
-
 
 //B2主题选项
 const configB2 = () => {
@@ -48,7 +45,6 @@ const configDelt = (index: number) => {
 </script>
 
 <template>
- 
   <el-form :model="form" label-width="auto">
     <el-form-item label="退款操作员：">
       <el-col :span="18">
