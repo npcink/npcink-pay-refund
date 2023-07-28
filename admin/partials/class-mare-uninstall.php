@@ -7,10 +7,13 @@ if (!class_exists('Mare_Admin_Uninstall')) {
         //执行
         public static function run()
         {
+            /**
+             * 引入核心类
+             */
+            require_once plugin_dir_path(dirname(__DIR__)) . 'admin/class-mare-admin.php';
             //获取选项值
             //选项值
             $config = Mare_Admin::npcConfig('config');
-
             //数据库状态
             $mySql =  Mare_Admin::get_options($config, 'mysql');
             if ($mySql === 1) {

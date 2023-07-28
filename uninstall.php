@@ -32,15 +32,10 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 
 
 
-//获取选项
-//删除数据库
-//删除选项
-
-
-// 执行需要在删除插件时进行的操作
-
-
-
-// 删除其他数据或执行其他操作
-
-
+require plugin_dir_path(__FILE__) . 'admin/partials/class-mare-uninstall.php';
+function run_mare_uninstall()
+{
+	$plugin = new Mare_Admin_Uninstall();
+	$plugin->run();
+}
+run_mare_uninstall();
