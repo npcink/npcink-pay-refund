@@ -55,8 +55,8 @@ export const mainStore = defineStore("main", () => {
         ],
       },
       config: {
-        mysql: "1",
-        config: "1",
+        mysql: 1,
+        config: 1,
       },
     },
   });

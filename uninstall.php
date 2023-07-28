@@ -32,31 +32,15 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 
 
 
-
-
+//获取选项
+//删除数据库
+//删除选项
 
 
 // 执行需要在删除插件时进行的操作
 
-// 删除数据库表
-// 获取 $wpdb 全局对象
-global $wpdb;
 
-// 定义要删除的数据表名
-$table_name = $wpdb->prefix . 'npc_refund_order';
-
-// 判断数据表是否存在
-if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
-	//数据表不存在！
-	return "";
-} else {
-	// 执行删除数据表操作
-	$wpdb->query("DROP TABLE IF EXISTS $table_name");
-
-	//return "数据表删除成功！";
-}
 
 // 删除其他数据或执行其他操作
 
-// 删除插件设置
-delete_option('your_plugin_options');
+
