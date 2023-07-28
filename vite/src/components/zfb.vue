@@ -11,26 +11,21 @@ const form = computed(() => store.configData.npc_refund_config.zfb);
 <template>
   <el-form :model="form" label-width="100px">
     <el-form-item label="APP ID：">
-      <el-col :span="18">
-        <el-input show-password v-model="form.appid" placeholder="APP ID" />
+      <el-col :xs="24" :span="12">
+        <el-input v-model="form.appid" placeholder="APP ID" clearable />
         <el-text class="mx-1" type="info">支付宝中的APP ID</el-text>
       </el-col>
     </el-form-item>
     <el-form-item label="应用私钥：">
-      <el-col :span="18">
-        <el-input
-          v-model="form.private_key"
-          :rows="5"
-          type="textarea"
-          placeholder="应用私钥"
-        />
+      <el-col :xs="24" :span="12">
+        <el-input v-model="form.private_key" placeholder="应用私钥" clearable />
         <el-text class="mx-1" type="info">
           本主题使用的是 RSA2 算法生成的私钥。请使用 RSA2 算法来生成。
         </el-text>
       </el-col>
     </el-form-item>
     <el-form-item label="支付宝公钥：">
-      <el-col :span="18">
+      <el-col :xs="24" :span="12">
         <el-input
           v-model="form.public_key"
           :rows="5"

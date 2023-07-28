@@ -11,7 +11,7 @@ const form = computed(() => store.configData.npc_refund_config.wx);
 <template>
   <el-form :model="form" label-width="100px">
     <el-form-item label="商户号：">
-      <el-col :span="18">
+      <el-col :xs="24" :span="12">
         <el-input
           v-model="form.mch_id"
           placeholder="微信支付商户号"
@@ -21,12 +21,11 @@ const form = computed(() => store.configData.npc_refund_config.wx);
       </el-col>
     </el-form-item>
     <el-form-item label="证书序列号：">
-      <el-col :span="18">
+      <el-col :xs="24" :span="12">
         <el-input
           v-model="form.cert_api"
-          :rows="2"
-          type="textarea"
           placeholder="商户证书序列号"
+          clearable
         />
         <el-text class="mx-1" type="info">
           请在 账户中心->API安全->申请API证书，找到您的证书序列号。
@@ -34,7 +33,7 @@ const form = computed(() => store.configData.npc_refund_config.wx);
       </el-col>
     </el-form-item>
     <el-form-item label="商户私钥：">
-      <el-col :span="18">
+      <el-col :xs="24" :span="12">
         <el-input
           v-model="form.cert_key"
           :rows="2"

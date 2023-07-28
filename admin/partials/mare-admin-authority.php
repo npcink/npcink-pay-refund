@@ -27,47 +27,27 @@ if (!class_exists('Mare_Admin_Authority')) {
 
             //当前登录信息
             $logUser = wp_get_current_user();
+
             //当前网址
             $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
             $now_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
             $site_url = self::get_url($now_url);
 
-
-
-
-
-
             // 创建一个空数组用于存储结果
 
-            $a = array();
-
-            // 如果 $a 为空或为字符串，则将其赋值为空数组
-            if (empty($users) || is_string($users)) {
-                $a = array();
-            } else {
-                //类型正常，排除掉ID为1的管理员
-                foreach ($users as $value) {
-
-                    // 如果值不是1,则将其添加到结果数组中
-
-                    if ($value !== 1) {
-
-                        $a[] = $value;
-                    }
-                }
-            }
+            //处理用户数组，验证有效性，排除默认管理员
+            $array_user = self::handle_id($users);
 
 
-
-
-            //将网址提取组成数组
-            foreach ($site as $obj) {
-                $url = $obj->url;
-                $arr_url[] = self::get_url($url);
-            }
 
             //是限定 ID 
-            if (in_array($logUser->ID, $a)) {
+            if (in_array($logUser->ID,  $array_user)) {
+
+                //将网址进行处理，并提取组成数组
+                foreach ($site as $obj) {
+                    $url = $obj->url;
+                    $arr_url[] = self::get_url($url);
+                }
 
                 // 访问允许的菜单
                 if (in_array($site_url, $arr_url)) {
@@ -79,26 +59,38 @@ if (!class_exists('Mare_Admin_Authority')) {
                     return;
                 }
 
-                // 跳转
-                $message = '您暂无授权访问此页面，请联系管理员授权！<ul>';
-
-                foreach ($site as $obj) {
-                    $message .= '<li><a href="' . $obj->url . '">' . $obj->title . '</a></li>';
-                }
-
-                $message .= '</ul>';
-
-                print_r($arr_url);
-                
-
-
-                wp_die($message);
+                //展示提示信息
+                self::tips($site);
                 exit;
             }
         }
 
         /**
-         * 获取当前网址
+         * 处理数组，验证有效性，排除默认管理员
+         */
+        public static function handle_id($users)
+        {
+            $a = array();
+
+            // 如果 $a 为空或为字符串，则将其赋值为空数组
+            if (empty($users) || is_string($users)) {
+                $a = array();
+            } else {
+                //类型正常，排除掉ID为1的人员
+                foreach ($users as $value) {
+
+                    // 如果值不是1,则将其添加到结果数组中
+
+                    if ($value !== 1) {
+
+                        $a[] = $value;
+                    }
+                }
+            }
+            return $a;
+        }
+        /**
+         * 处理当前网址，只保留？前内容
          */
         public static function get_url($url)
         {
@@ -112,6 +104,22 @@ if (!class_exists('Mare_Admin_Authority')) {
             // 获取 ? 前的内容
             $content = strtok($url, '?');
             return $content;
+        }
+
+        /**
+         * 提示信息
+         */
+        public static function tips($site)
+        {
+            // 跳转
+            $message = '您暂无授权访问此页面，请联系管理员授权！<ul>';
+
+            foreach ($site as $obj) {
+                $message .= '<li><a href="' . $obj->url . '">' . $obj->title . '</a></li>';
+            }
+
+            $message .= '</ul>';
+            wp_die($message);
         }
     } //end
 }
