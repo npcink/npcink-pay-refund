@@ -34,8 +34,8 @@ if (!class_exists('Mare_Admin_Zfb')) {
         static public function getOptions()
         {
             //准备设置选项
-            $value = get_option("npc_refund_config", '没有拿到值npc_refund_config');
-            $config =  $value->zfb??"";
+            $config =   Mare_Admin::npcConfig('zfb');
+
 
             $options = new Config();
             $options->protocol = 'https';
@@ -43,15 +43,15 @@ if (!class_exists('Mare_Admin_Zfb')) {
             $options->signType = 'RSA2';
 
             //$options->appId = '2021002134609167';
-            $options->appId = $config->appid??"";
+            $options->appId = Mare_Admin::get_options($config, 'appid');
 
             // 为避免私钥随源码泄露，推荐从文件中读取私钥字符串而不是写入源码中
-            $options->merchantPrivateKey = $config->private_key??"";
+            $options->merchantPrivateKey = Mare_Admin::get_options($config, 'private_key');
 
 
 
             //注：如果采用非证书模式，则无需赋值上面的三个证书路径，改为赋值如下的支付宝公钥字符串即可
-            $options->alipayPublicKey = $config->public_key??"";
+            $options->alipayPublicKey = Mare_Admin::get_options($config, 'public_key');
 
             //可设置异步通知接收服务地址（可选）
             $options->notifyUrl = "<-- 请填写您的支付类接口异步通知接收服务地址，例如：https://www.test.com/callback -->";

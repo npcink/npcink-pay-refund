@@ -6,7 +6,7 @@ if (!class_exists('Mare_Admin_Authority')) {
 
         public static function run()
         {
-            //限定指定ID人员仅可访问指定页面
+            //登录时，限定指定ID人员仅可访问指定页面
             add_action('admin_init', array(__CLASS__, 'restrict_access'));
         }
 
@@ -16,8 +16,25 @@ if (!class_exists('Mare_Admin_Authority')) {
 
         public static function restrict_access()
         {
-            $user = wp_get_current_user();
-            $users = get_option('npc_user_user'); // 设置允许访问的用户ID
+            //获取选项值
+            $config = Mare_Admin::npcConfig('user');
+
+            //获取用户ID数组
+            $users =  Mare_Admin::get_options($config, 'user');
+
+            //获取链接数组
+            $site =  Mare_Admin::get_options($config, 'link');
+
+            //当前登录信息
+            $logUser = wp_get_current_user();
+            //当前网址
+            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+            $now_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+            $site_url = self::get_url($now_url);
+
+
+
+
 
 
             // 创建一个空数组用于存储结果
@@ -42,36 +59,59 @@ if (!class_exists('Mare_Admin_Authority')) {
 
 
 
-            //是限定 ID 
-            if (in_array($user->ID, $a)) {
-                //在访问限定菜单
-                if ((isset($_GET['page']) && $_GET['page'] == 'refund_querys') || (isset($_GET['page']) && $_GET['page'] == 'b2_orders_list')) {
-                    return;
-                } elseif (
-                    // 如果是 admin-ajax.php 或 admin-post.php，则不拦截
-                    preg_match('/^\/wp-admin\/(admin-ajax\.php|admin-post\.php)/', $_SERVER['PHP_SELF'])
-                ) {
 
-                    return;
-                } else {
-                    //跳转
-                    $adminPage = get_admin_url() . 'admin.php';
-                    $refundPage = get_admin_url() . 'index.php';
-                    $message = '
-		 您暂无授权访问此页面，请联系管理员授权！ 
-		 <ul> 
-		 <li>
-		 <a href="' . $adminPage . '?page=b2_orders_list">订单管理</a>
-		 </li> 
-		 <li>
-		 <a href="' . $refundPage . '?page=refund_querys">订单退款</a>
-		 </li> 
-		 </ul>
-		 ';
-                    wp_die($message);
-                    exit;
-                }
+            //将网址提取组成数组
+            foreach ($site as $obj) {
+                $url = $obj->url;
+                $arr_url[] = self::get_url($url);
             }
+
+            //是限定 ID 
+            if (in_array($logUser->ID, $a)) {
+
+                // 访问允许的菜单
+                if (in_array($site_url, $arr_url)) {
+                    return;
+                }
+
+                // 如果是 admin-ajax.php 或 admin-post.php，则不拦截（点击按钮提交的请求）
+                if (preg_match('/^\/wp-admin\/(admin-ajax\.php|admin-post\.php)/', $_SERVER['PHP_SELF'])) {
+                    return;
+                }
+
+                // 跳转
+                $message = '您暂无授权访问此页面，请联系管理员授权！<ul>';
+
+                foreach ($site as $obj) {
+                    $message .= '<li><a href="' . $obj->url . '">' . $obj->title . '</a></li>';
+                }
+
+                $message .= '</ul>';
+
+                print_r($arr_url);
+                
+
+
+                wp_die($message);
+                exit;
+            }
+        }
+
+        /**
+         * 获取当前网址
+         */
+        public static function get_url($url)
+        {
+
+            // 使用 parse_url() 函数解析 URL，获取 query 部分
+            $query = parse_url($url, PHP_URL_QUERY);
+
+            // 使用 parse_str() 函数解析 query，并将结果保存在 $params 数组中
+            parse_str($query, $params);
+
+            // 获取 ? 前的内容
+            $content = strtok($url, '?');
+            return $content;
         }
     } //end
 }

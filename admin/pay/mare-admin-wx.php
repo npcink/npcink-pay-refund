@@ -18,6 +18,8 @@ if (!class_exists('Mare_Admin_Wx')) {
          */
         public static $client;
 
+
+
         public static function run()
         {
 
@@ -29,8 +31,11 @@ if (!class_exists('Mare_Admin_Wx')) {
              */
             require_once plugin_dir_path(__FILE__) . 'mare-admin-public.php';
 
+
+
             //准备认证信息
             self::config();
+
 
             //订单查询
             add_action('wp_ajax_wx_order_query', array(__CLASS__, 'wx_order_query'));
@@ -46,18 +51,17 @@ if (!class_exists('Mare_Admin_Wx')) {
 
         public static function config()
         {
+            //选项值
+            $config = Mare_Admin::npcConfig('wx');
+            //私钥
+            $key = Mare_Admin::get_options($config, 'cert_key');
 
-            //准备设置选项
-            $value = get_option("npc_refund_config", '没有拿到值npc_refund_config');
-            $config =  $value->wx??"";
+            $merchantId = Mare_Admin::get_options($config, 'mch_id'); // 商户号
 
+            $merchantSerialNumber =  Mare_Admin::get_options($config, 'cert_api'); // 商户API证书序列号
 
-            $merchantId = $config->mch_id??""; // 商户号
+            $merchantPrivateKey = self::mare_handle_meat($key); // 商户私钥
 
-            $merchantSerialNumber =$config->cert_api??""; // 商户API证书序列号
-
-
-            $merchantPrivateKey = self::mare_handle_meat($config->cert_key??""); // 商户私钥
             // 微信支付平台配置
             //$wechatpayCertificate = PemUtil::loadCertificate(plugin_dir_path(__FILE__) . 'cert/apiclient_cert.pem'); // 微信支付平台证书
 
@@ -79,17 +83,22 @@ if (!class_exists('Mare_Admin_Wx')) {
         }
 
 
+
+
         /**
          * 订单查询
          */
         public static function wx_order_query()
         {
-             //准备设置选项
-             $value = get_option("npc_refund_config", '没有拿到值npc_refund_config');
-             $config =  $value->wx??"";
+            //选项值
+            $config = Mare_Admin::npcConfig('wx');
+            
+            // 获取传递的订单
+            $order_id =  $_REQUEST['order_id'];
 
-            $order_id =  $_REQUEST['order_id']; // 获取传递的订单
-            $mchid = $config->mch_id??""; // 商户号; // 获取传递的商家ID
+            // 商户号; // 获取传递的商家ID
+            $mchid =   Mare_Admin::get_options($config, 'mch_id');
+
 
             // 发送请求
 

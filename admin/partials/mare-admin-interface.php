@@ -9,7 +9,8 @@ if (!class_exists('Mare_Admin_Interface')) {
 
             //添加接口
             add_action('rest_api_init', array(__CLASS__, 'add_interface'));
-            add_action('wp_head', array(__CLASS__, 'shouTop'));
+            //测试用
+            //add_action('wp_head', array(__CLASS__, 'shouTop'));
         }
 
         //注册API地址
@@ -83,12 +84,15 @@ if (!class_exists('Mare_Admin_Interface')) {
             ), 200);
         }
 
+        /**
+         * 测试用
+         */
         public static function shouTop()
         {
             $value = get_option("npc_refund_config", '没有拿到值npc_refund_config');
-            $config =  $value->zfb;
-
-            $content = "666<h1>" . $config->appid . "</h1>";
+            $config =  isset($value->zfb) ? $value->zfb : null;
+            $appid = isset($config->appid) ? $config->appid : "";
+            $content = "666<h1>{$appid}</h1>";
             echo $content;
         }
     } //end

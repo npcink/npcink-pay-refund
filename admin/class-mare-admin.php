@@ -41,6 +41,7 @@ class Mare_Admin
 	 */
 	private $version;
 
+
 	/**
 	 * Initialize the class and set its properties.
 	 *
@@ -53,6 +54,7 @@ class Mare_Admin
 
 		$this->plugin_name = $plugin_name;
 		$this->version = $version;
+
 		$this->load(); //加载所需文件
 		$this->run();
 	}
@@ -103,48 +105,29 @@ class Mare_Admin
 	}
 
 	/**
-	 * Register the stylesheets for the admin area.
-	 *
-	 * @since    1.0.0
+	 * 从对象中提供全局设置
 	 */
-	//public function enqueue_styles()
-	//{
-	//
-	//	/**
-	//	 * This function is provided for demonstration purposes only.
-	//	 *
-	//	 * An instance of this class should be passed to the run() function
-	//	 * defined in Mare_Loader as all of the hooks are defined
-	//	 * in that particular class.
-	//	 *
-	//	 * The Mare_Loader will then create the relationship
-	//	 * between the defined hooks and the functions defined in this
-	//	 * class.
-	//	 */
-	//
-	//	wp_enqueue_style($this->plugin_name, plugin_dir_url(__FILE__) . 'css/mare-admin.css', array(), $this->version, 'all');
-	//}
+	public static function npcConfig($option)
+	{
+		$config = get_option("npc_refund_config", '没有拿到值npc_refund_config');
+		$value =  self::get_options($config, $option);
+		return $value;
+	}
 
 	/**
-	 * Register the JavaScript for the admin area.
+	 * 从对象中获取属性值
 	 *
-	 * @since    1.0.0
+	 * @param object $config 对象
+	 * @param string $property 从对象中获取的属性名
+	 * @param string $defaultValue 默认值（可选）
+	 * @return mixed 属性值或默认值
 	 */
-	//public function enqueue_scripts()
-	//{
-	//
-	//	/**
-	//	 * This function is provided for demonstration purposes only.
-	//	 *
-	//	 * An instance of this class should be passed to the run() function
-	//	 * defined in Mare_Loader as all of the hooks are defined
-	//	 * in that particular class.
-	//	 *
-	//	 * The Mare_Loader will then create the relationship
-	//	 * between the defined hooks and the functions defined in this
-	//	 * class.
-	//	 */
-	//
-	//	wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/mare-admin.js', array('jquery'), $this->version, false);
-	//}
+	public static function get_options($config, $property, $defaultValue = '')
+	{
+		if (is_object($config) && isset($config->$property)) {
+			return $config->$property;
+		} else {
+			return $defaultValue;
+		}
+	}
 }
