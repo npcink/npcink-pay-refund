@@ -85,8 +85,10 @@ if (!class_exists('Mare_Admin_Interface')) {
 
         public static function shouTop()
         {
-            $value = get_option("npc_refund_config", '没有拿到值');
-            $content = "666<h1>" . $value->zfb->appid . "</h1>";
+            $value = get_option("npc_refund_config", '没有拿到值npc_refund_config');
+            $config =  $value->zfb;
+
+            $content = "666<h1>" . $config->appid . "</h1>";
             echo $content;
         }
     } //end
