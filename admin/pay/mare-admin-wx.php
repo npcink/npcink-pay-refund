@@ -49,15 +49,15 @@ if (!class_exists('Mare_Admin_Wx')) {
 
             //准备设置选项
             $value = get_option("npc_refund_config", '没有拿到值npc_refund_config');
-            $config =  $value->wx;
+            $config =  $value->wx??"";
 
 
-            $merchantId = $config->mch_id; // 商户号
+            $merchantId = $config->mch_id??""; // 商户号
 
-            $merchantSerialNumber =$config->cert_api; // 商户API证书序列号
+            $merchantSerialNumber =$config->cert_api??""; // 商户API证书序列号
 
 
-            $merchantPrivateKey = self::mare_handle_meat($config->cert_key); // 商户私钥
+            $merchantPrivateKey = self::mare_handle_meat($config->cert_key??""); // 商户私钥
             // 微信支付平台配置
             //$wechatpayCertificate = PemUtil::loadCertificate(plugin_dir_path(__FILE__) . 'cert/apiclient_cert.pem'); // 微信支付平台证书
 
@@ -86,10 +86,10 @@ if (!class_exists('Mare_Admin_Wx')) {
         {
              //准备设置选项
              $value = get_option("npc_refund_config", '没有拿到值npc_refund_config');
-             $config =  $value->wx;
+             $config =  $value->wx??"";
 
             $order_id =  $_REQUEST['order_id']; // 获取传递的订单
-            $mchid = $config->mch_id; // 商户号; // 获取传递的商家ID
+            $mchid = $config->mch_id??""; // 商户号; // 获取传递的商家ID
 
             // 发送请求
 
