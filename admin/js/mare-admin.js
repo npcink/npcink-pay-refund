@@ -17,7 +17,7 @@ jQuery(document).ready(function ($) {
       action: "zfb_order_query",
       param: trimHyphen($("#my-plugin-input").val()),
     };
-   
+
     $.ajax({
       url: public.ajaxurl,
       type: "POST",
@@ -26,6 +26,7 @@ jQuery(document).ready(function ($) {
       success: function (data) {
         $("#my-plugin-data").html(data);
       },
+      //支付宝自带提示，就不用写了
     });
   });
 
@@ -72,6 +73,12 @@ jQuery(document).ready(function ($) {
       data: data,
       success: function (data) {
         $("#npcink-wx-data").html(data);
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        const errorContent =
+          "<h5 style='color: red';>错误：请检查微信鉴权信息是否正确填写，或联系管理员处理</h5>";
+        $("#npcink-wx-data").html(errorContent);
+        console.log(errorThrown);
       },
     });
   });
