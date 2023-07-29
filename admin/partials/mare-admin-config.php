@@ -89,9 +89,14 @@ if (!class_exists('Mare_Admin_Config')) {
                 return;
             }
 
-            wp_enqueue_style($name, plugin_dir_url(dirname(__DIR__)) . 'vite/dist/index.css', array(), $ver, false);
-            wp_enqueue_script($name, plugin_dir_url(dirname(__DIR__)) . 'vite/dist/index.js', array(), $ver, true);
-            wp_enqueue_script($name . '-download', plugin_dir_url(dirname(__DIR__)) . 'admin/js/mare-download.js', array(), $ver, true);
+            //准备地址
+            $index_css = plugin_dir_url(dirname(__DIR__)) . 'vite/dist/index.css';
+            $index_js = plugin_dir_url(dirname(__DIR__)) . 'vite/dist/index.js';
+            $download_js = plugin_dir_url(dirname(__DIR__)) . 'admin/js/mare-download.js';
+
+            wp_enqueue_style($name, $index_css, array(), $ver, false);
+            wp_enqueue_script($name, $index_js, array(), $ver, true);
+            wp_enqueue_script($name . '-download',  $download_js, array(), $ver, true);
 
 
             $pf_api_translation_array = array(
