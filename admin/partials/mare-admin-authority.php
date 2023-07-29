@@ -28,7 +28,7 @@ if (!class_exists('Mare_Admin_Authority')) {
             //当前登录信息
             $logUser = wp_get_current_user();
 
-          
+
 
             // 创建一个空数组用于存储结果
 
@@ -111,11 +111,17 @@ if (!class_exists('Mare_Admin_Authority')) {
          */
         public static function tips($site)
         {
-            // 跳转
             $message = '您暂无授权访问此页面，请联系管理员授权！<ul>';
 
             foreach ($site as $obj) {
-                $message .= '<li><a href="' . $obj->url . '">' . $obj->title . '</a></li>';
+
+                /**
+                 * 可能会填空值，这里处理下
+                 */
+                $url = Mare_Admin::get_options($obj, 'url', "#");
+                $title = Mare_Admin::get_options($obj, 'title', "此链接无法点击，请联系管理员处理");
+
+                $message .= '<li><a href="' . $url . '">' . $title . '</a></li>';
             }
 
             $message .= '</ul>';

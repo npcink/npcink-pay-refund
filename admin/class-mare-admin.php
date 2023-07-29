@@ -124,7 +124,12 @@ class Mare_Admin
 	 */
 	public static function get_options($config, $property, $defaultValue = '')
 	{
-		if (is_object($config) && isset($config->$property)) {
+		/**
+		 * 是否是对象
+		 * 对象中是否有此键名
+		 * 在对象中的此值是否为空
+		 */
+		if (is_object($config) && property_exists($config, $property) && !empty($config->$property)) {
 			return $config->$property;
 		} else {
 			return $defaultValue;
