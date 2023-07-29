@@ -85,8 +85,10 @@ const configDelt = (index: number) => {
                 size="default"
                 :icon="Delete"
                 @click="configDelt(index)"
-                circle
-              ></el-button>
+                round
+              >
+                {{ index + 1 }}</el-button
+              >
             </el-col>
             <el-col :span="21">
               <el-input
@@ -102,7 +104,21 @@ const configDelt = (index: number) => {
             </el-col>
           </el-row>
         </div>
-        <br />
+
+        <p>效果预览：</p>
+        <ul>
+          <li v-for="item in form.link">
+            <el-link
+              :underline="false"
+              :href="item.url || '#'"
+              :class="{ no_link: !item.url || !item.title }"
+              target="_blank"
+            >
+              {{ item.title || "没有填写名称" }}
+              {{ item.url ? "" : "没有填写链接" }}
+            </el-link>
+          </li>
+        </ul>
         <el-button type="primary" size="default" round @click="configFive()">
           添加
         </el-button>
@@ -128,5 +144,11 @@ const configDelt = (index: number) => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.no_link {
+  color: #f56c6c;
+}
+ul {
+  list-style: auto;
 }
 </style>
