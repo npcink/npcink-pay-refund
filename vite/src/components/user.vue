@@ -87,10 +87,10 @@ const configDelt = (index: number) => {
               ></el-button>
             </el-col>
             <el-col :span="21">
-              <el-input v-model="item.title" placeholder="请输入链接名">
+              <el-input v-model="item.title" placeholder="请输入链接名" clearable>
                 <template #prepend>名称</template>
               </el-input>
-              <el-input v-model="item.url" placeholder="请输入链接">
+              <el-input v-model="item.url" placeholder="请输入链接" clearable>
                 <template #prepend>链接</template>
               </el-input>
             </el-col>

@@ -18,7 +18,13 @@ const form = computed(() => store.configData.npc_refund_config.zfb);
     </el-form-item>
     <el-form-item label="应用私钥：">
       <el-col :xs="24" :span="12">
-        <el-input v-model="form.private_key" placeholder="应用私钥" clearable />
+        <el-input
+          v-model="form.private_key"
+          :rows="5"
+          type="textarea"
+          placeholder="应用私钥"
+         
+        />
         <el-text class="mx-1" type="info">
           本主题使用的是 RSA2 算法生成的私钥。请使用 RSA2 算法来生成。
         </el-text>
@@ -31,6 +37,7 @@ const form = computed(() => store.configData.npc_refund_config.zfb);
           :rows="5"
           type="textarea"
           placeholder="支付宝公钥"
+          
         />
         <el-text class="mx-1" type="info">
           请在账户中心->密钥管理->开放平台密钥，找到添加了支付功能的应用，根据你的加密类型，查看支付宝公钥。

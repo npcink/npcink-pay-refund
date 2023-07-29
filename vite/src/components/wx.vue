@@ -36,9 +36,10 @@ const form = computed(() => store.configData.npc_refund_config.wx);
       <el-col :xs="24" :span="12">
         <el-input
           v-model="form.cert_key"
-          :rows="2"
+          :rows="5"
           type="textarea"
           placeholder="商户私钥"
+          
         />
         <el-text class="mx-1" type="info"
           >请选择上面对应证书序列号文件的， apiclient_key.pem
