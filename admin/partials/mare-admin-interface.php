@@ -42,8 +42,6 @@ if (!class_exists('Mare_Admin_Interface')) {
 
                 // 如果当前元素非数组或数组为空，获取指定选项的值
                 $return[$option_name] = get_option($option_name, "");
-                //$return["data"] = $dataArray;
-                //echo $option_name;
             }
             return $return; // 返回所有选项的键值对
         }
@@ -58,24 +56,18 @@ if (!class_exists('Mare_Admin_Interface')) {
                 return new WP_Error('save_error', '保存失败！非管理员无法保存', array('status' => 500));
             }
 
+            //获取传来的值
             $dataArray = json_decode($data->get_body());
-            $result = new stdClass();
+
+            //准备数组，存储数据
+            $result = [];
 
             //循环保存选项
             foreach ($dataArray as $option_name => $value) {
-
-
                 update_option($option_name, $value);
-                //echo $option_name;
-                //
-                //echo $value;
-                //echo "666";
-
-
-                $result->$option_name = $value;
+                $result[$option_name] = $value;
             }
 
-            //返回成功信息
             //返回成功信息
             return new WP_REST_Response(array(
                 'success' => true,
