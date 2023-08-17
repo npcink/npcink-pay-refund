@@ -15,10 +15,12 @@
  * @wordpress-plugin
  * Plugin Name:       魔法退款 - 新架构
  * Plugin URI:        https://www.npc.ink/277376.html
- * Description:       支持支付宝官方和微信官方退款功能，使用官方提供的SDK，带权限控制，删除此插件会同时删除退款记录表，请谨慎。
+ * Description:       支持支付宝官方和微信官方退款功能，使用官方提供的SDK，带权限控制。
  * Version:           1.1.1
  * Author:            Muze
  * Author URI:        https://www.npc.ink
+ * Requires at least: 4.6
+ * Requires PHP:      7.0
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       mare
