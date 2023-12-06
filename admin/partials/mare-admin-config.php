@@ -16,8 +16,7 @@ if (!class_exists('Mare_Admin_Config')) {
             add_action('admin_menu', array(__CLASS__, 'config_menu'));
             //加载 CSS 和 JS 资源
             add_action('admin_enqueue_scripts', array(__CLASS__, 'load_admin_script'));
-            //对js文件进行module接入
-            add_filter('script_loader_tag', array(__CLASS__, 'refund_type_script'), 10, 2);
+
 
             //添加接口以供下载表单
             add_action('wp_ajax_download_data', array(__CLASS__, 'download_data'));
@@ -88,6 +87,9 @@ if (!class_exists('Mare_Admin_Config')) {
             if ('settings_page_refun_config' != $hook) {
                 return;
             }
+
+            //对js文件进行module接入
+            add_filter('script_loader_tag', array(__CLASS__, 'refund_type_script'), 10, 2);
 
             //准备地址
             $index_css = plugin_dir_url(dirname(__DIR__)) . 'vite/dist/index.css';
