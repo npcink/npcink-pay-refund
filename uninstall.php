@@ -22,7 +22,7 @@
  * @link       https://www.npc.ink
  * @since      1.0.0
  *
- * @package    Mare
+ * @package    Npcink_Pay_Refund
  */
 
 // If uninstall not called from WordPress, then exit.
@@ -32,10 +32,10 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 
 
 
-require plugin_dir_path(__FILE__) . 'admin/partials/class-mare-uninstall.php';
-function mare_run_uninstall()
+require plugin_dir_path(__FILE__) . 'admin/partials/class-npcink-pay-refund-uninstall.php';
+function npcink_pay_refund_run_uninstall()
 {
-	$plugin = new Mare_Admin_Uninstall();
+	$plugin = new Npcink_Pay_Refund_Admin_Uninstall();
 	$plugin->run();
 }
-mare_run_uninstall();
+npcink_pay_refund_run_uninstall();

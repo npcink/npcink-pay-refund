@@ -9,8 +9,8 @@
  * @link       https://www.npc.ink
  * @since      1.0.0
  *
- * @package    Mare
- * @subpackage Mare/includes
+ * @package    Npcink_Pay_Refund
+ * @subpackage Npcink_Pay_Refund/includes
  */
 
 /**
@@ -23,11 +23,11 @@
  * version of the plugin.
  *
  * @since      1.0.0
- * @package    Mare
- * @subpackage Mare/includes
+ * @package    Npcink_Pay_Refund
+ * @subpackage Npcink_Pay_Refund/includes
  * @author     Muze <1355471563@qq.com>
  */
-class Mare
+class Npcink_Pay_Refund
 {
 
 	/**
@@ -36,7 +36,7 @@ class Mare
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      Mare_Loader    $loader    Maintains and registers all hooks for the plugin.
+	 * @var      Npcink_Pay_Refund_Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
 	protected $loader;
 
@@ -69,8 +69,8 @@ class Mare
 	 */
 	public function __construct()
 	{
-		if (defined('MARE_VERSION')) {
-			$this->version = MARE_VERSION;
+		if (defined('NPCINK_PAY_REFUND_VERSION')) {
+			$this->version = NPCINK_PAY_REFUND_VERSION;
 		} else {
 			$this->version = '1.0.0';
 		}
@@ -88,10 +88,10 @@ class Mare
 	 *
 	 * Include the following files that make up the plugin:
 	 *
-	 * - Mare_Loader. Orchestrates the hooks of the plugin.
-	 * - Mare_i18n. Defines internationalization functionality.
-	 * - Mare_Admin. Defines all hooks for the admin area.
-	 * - Mare_Public. Defines all hooks for the public side of the site.
+	 * - Npcink_Pay_Refund_Loader. Orchestrates the hooks of the plugin.
+	 * - Npcink_Pay_Refund_I18n. Defines internationalization functionality.
+	 * - Npcink_Pay_Refund_Admin. Defines all hooks for the admin area.
+	 * - Public-facing hooks are intentionally omitted; this plugin only exposes admin workflows.
 	 *
 	 * Create an instance of the loader which will be used to register the hooks
 	 * with WordPress.
@@ -106,28 +106,28 @@ class Mare
 		 * The class responsible for orchestrating the actions and filters of the
 		 * core plugin.
 		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-mare-loader.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-npcink-pay-refund-loader.php';
 
 		/**
 		 * The class responsible for defining internationalization functionality
 		 * of the plugin.
 		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-mare-i18n.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-npcink-pay-refund-i18n.php';
 
 		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-mare-admin.php';
+		require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-npcink-pay-refund-admin.php';
 
 
 
-		$this->loader = new Mare_Loader();
+		$this->loader = new Npcink_Pay_Refund_Loader();
 	}
 
 	/**
 	 * Define the locale for this plugin for internationalization.
 	 *
-	 * Uses the Mare_i18n class in order to set the domain and to register the hook
+	 * Uses the Npcink_Pay_Refund_I18n class in order to set the domain and to register the hook
 	 * with WordPress.
 	 *
 	 * @since    1.0.0
@@ -136,7 +136,7 @@ class Mare
 	private function set_locale()
 	{
 
-		$plugin_i18n = new Mare_i18n();
+		$plugin_i18n = new Npcink_Pay_Refund_I18n();
 
 		$this->loader->add_action('plugins_loaded', $plugin_i18n, 'load_plugin_textdomain');
 	}
@@ -151,7 +151,7 @@ class Mare
 	private function define_admin_hooks()
 	{
 
-		$plugin_admin = new Mare_Admin($this->get_plugin_name(), $this->get_version());
+		$plugin_admin = new Npcink_Pay_Refund_Admin($this->get_plugin_name(), $this->get_version());
 
 		//$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
 		//$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');
@@ -185,7 +185,7 @@ class Mare
 	 * The reference to the class that orchestrates the hooks with the plugin.
 	 *
 	 * @since     1.0.0
-	 * @return    Mare_Loader    Orchestrates the hooks of the plugin.
+	 * @return    Npcink_Pay_Refund_Loader    Orchestrates the hooks of the plugin.
 	 */
 	public function get_loader()
 	{

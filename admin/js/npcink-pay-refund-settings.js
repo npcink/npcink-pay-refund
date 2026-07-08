@@ -1,16 +1,16 @@
 //下载数据库文件
 jQuery(document).ready(function ($) {
-  var refundSettings = window.mareRefundSettings || {};
-  var $downloadButton = $("#button_download");
+  var refundSettings = window.npcinkPayRefundSettings || {};
+  var $downloadButton = $("#npcink-pay-refund-download");
 
   // 使用 AJAX 请求获取数据库表数据
   //表格下载JSON数据
 
   function showSettingsNotice(message, type) {
     var noticeType = type || "error";
-    $(".mare-settings-notice").remove();
+    $(".npcink-pay-refund-settings-notice").remove();
     $("<div>", {
-      class: "notice notice-" + noticeType + " inline mare-settings-notice",
+      class: "notice notice-" + noticeType + " inline npcink-pay-refund-settings-notice",
     })
       .append($("<p>", { text: message }))
       .insertAfter($downloadButton.closest("p"));
@@ -21,7 +21,7 @@ jQuery(document).ready(function ($) {
       url: refundSettings.ajaxurl,
       type: "POST",
       data: {
-        action: "download_data", // 用于在 PHP 中识别请求类型的参数
+        action: "npcink_pay_refund_download_data", // 用于在 PHP 中识别请求类型的参数
         nonce: refundSettings.nonce,
       },
       success: function (response) {
@@ -71,24 +71,24 @@ jQuery(document).ready(function ($) {
     });
   });
 
-  var $refundUserSearch = $("#mare-refund-user-search");
+  var $refundUserSearch = $("#npcink-pay-refund-refund-user-search");
   if ($refundUserSearch.length) {
-    var $refundUserResults = $("#mare-refund-user-results");
-    var $refundUserSpinner = $("#mare-refund-user-spinner");
-    var $selectedRefundUsers = $("#mare-selected-refund-users");
+    var $refundUserResults = $("#npcink-pay-refund-refund-user-results");
+    var $refundUserSpinner = $("#npcink-pay-refund-refund-user-spinner");
+    var $selectedRefundUsers = $("#npcink-pay-refund-selected-refund-users");
     var refundUserSearchTimer = null;
     var refundUserSearchRequest = null;
 
     function getSelectedRefundUserIds() {
       var selected = {};
-      $selectedRefundUsers.find(".mare-selected-user").each(function () {
+      $selectedRefundUsers.find(".npcink-pay-refund-selected-user").each(function () {
         selected[String($(this).data("user-id"))] = true;
       });
       return selected;
     }
 
     function updateSelectedRefundUserEmptyState() {
-      var hasUsers = $selectedRefundUsers.find(".mare-selected-user").length > 0;
+      var hasUsers = $selectedRefundUsers.find(".npcink-pay-refund-selected-user").length > 0;
       $selectedRefundUsers.find("[data-empty-state='1']").remove();
       if (!hasUsers) {
         $("<tr>", {
@@ -97,7 +97,7 @@ jQuery(document).ready(function ($) {
           .append(
             $("<td>", { colspan: 4 }).append(
               $("<p>", {
-                class: "description mare-user-empty",
+                class: "description npcink-pay-refund-user-empty",
                 text:
                   refundSettings.strings && refundSettings.strings.emptySelected
                     ? refundSettings.strings.emptySelected
@@ -115,21 +115,21 @@ jQuery(document).ready(function ($) {
 
       if (!users.length) {
         $("<p>", {
-          class: "description mare-user-search-message",
+          class: "description npcink-pay-refund-user-search-message",
           text: refundSettings.strings && refundSettings.strings.noUsers ? refundSettings.strings.noUsers : "没有找到可添加用户。",
         }).appendTo($refundUserResults);
         return;
       }
 
       var $table = $("<table>", {
-        class: "widefat striped mare-user-table mare-user-result-table",
+        class: "widefat striped npcink-pay-refund-user-table npcink-pay-refund-user-result-table",
       });
       var $thead = $("<thead>").append(
         $("<tr>")
           .append($("<th>", { text: "姓名" }))
           .append($("<th>", { text: "账号" }))
           .append($("<th>", { text: "角色" }))
-          .append($("<th>", { class: "mare-user-action-column", text: "操作" }))
+          .append($("<th>", { class: "npcink-pay-refund-user-action-column", text: "操作" }))
       );
       var $tbody = $("<tbody>");
 
@@ -145,7 +145,7 @@ jQuery(document).ready(function ($) {
             $("<td>").append(
               $("<button>", {
                 type: "button",
-                class: "button mare-add-refund-user",
+                class: "button npcink-pay-refund-add-refund-user",
                 disabled: isSelected,
                 text:
                   isSelected && refundSettings.strings && refundSettings.strings.alreadySelected
@@ -162,14 +162,14 @@ jQuery(document).ready(function ($) {
 
     function renderSelectedRefundUser(user) {
       var $row = $("<tr>", {
-        class: "mare-selected-user",
+        class: "npcink-pay-refund-selected-user",
         "data-user-id": user.id,
       });
       $("<td>")
         .append(
           $("<input>", {
             type: "hidden",
-            name: "npc_refund_config[user][user][]",
+            name: "npcink_pay_refund_config[user][user][]",
             value: user.id,
           })
         )
@@ -181,7 +181,7 @@ jQuery(document).ready(function ($) {
         .append(
           $("<button>", {
             type: "button",
-            class: "button mare-remove-refund-user",
+            class: "button npcink-pay-refund-remove-refund-user",
             text: "移除",
           })
         )
@@ -192,7 +192,7 @@ jQuery(document).ready(function ($) {
 
     function getRenderedRefundUserResults() {
       return $refundUserResults
-        .find(".mare-add-refund-user")
+        .find(".npcink-pay-refund-add-refund-user")
         .map(function () {
           return $(this).data("user");
         })
@@ -207,7 +207,7 @@ jQuery(document).ready(function ($) {
       if (term.length < 1) {
         $refundUserResults.empty().append(
           $("<p>", {
-            class: "description mare-user-search-message",
+            class: "description npcink-pay-refund-user-search-message",
             text:
               refundSettings.strings && refundSettings.strings.typeToSearch
                 ? refundSettings.strings.typeToSearch
@@ -220,7 +220,7 @@ jQuery(document).ready(function ($) {
       $refundUserSpinner.addClass("is-active");
       $refundUserResults.empty().append(
         $("<p>", {
-          class: "description mare-user-search-message",
+          class: "description npcink-pay-refund-user-search-message",
           text: refundSettings.strings && refundSettings.strings.searching ? refundSettings.strings.searching : "正在搜索...",
         })
       );
@@ -229,7 +229,7 @@ jQuery(document).ready(function ($) {
         url: refundSettings.ajaxurl,
         type: "POST",
         data: {
-          action: "mare_search_refund_users",
+          action: "npcink_pay_refund_search_refund_users",
           nonce: refundSettings.nonce,
           term: term,
         },
@@ -244,7 +244,7 @@ jQuery(document).ready(function ($) {
           }
           $refundUserResults.empty().append(
             $("<p>", {
-              class: "description mare-user-search-message",
+              class: "description npcink-pay-refund-user-search-message",
               text:
                 refundSettings.strings && refundSettings.strings.searchFailed
                   ? refundSettings.strings.searchFailed
@@ -266,7 +266,7 @@ jQuery(document).ready(function ($) {
       }, 300);
     });
 
-    $refundUserResults.on("click", ".mare-add-refund-user", function () {
+    $refundUserResults.on("click", ".npcink-pay-refund-add-refund-user", function () {
       var user = $(this).data("user");
       if (!user || getSelectedRefundUserIds()[String(user.id)]) {
         return;
@@ -277,8 +277,8 @@ jQuery(document).ready(function ($) {
       renderRefundUserResults(getRenderedRefundUserResults());
     });
 
-    $selectedRefundUsers.on("click", ".mare-remove-refund-user", function () {
-      $(this).closest(".mare-selected-user").remove();
+    $selectedRefundUsers.on("click", ".npcink-pay-refund-remove-refund-user", function () {
+      $(this).closest(".npcink-pay-refund-selected-user").remove();
       updateSelectedRefundUserEmptyState();
       if ($refundUserSearch.val().length >= 1) {
         searchRefundUsers($.trim($refundUserSearch.val()));
@@ -288,10 +288,10 @@ jQuery(document).ready(function ($) {
     updateSelectedRefundUserEmptyState();
   }
 
-  $(".mare-check-payment-config").on("click", function () {
+  $(".npcink-pay-refund-check-payment-config").on("click", function () {
     var $button = $(this);
     var channel = $button.data("channel");
-    var $result = $("#mare-payment-check-" + channel);
+    var $result = $("#npcink-pay-refund-payment-check-" + channel);
     var originalText = $button.text();
 
     if (!channel || !$result.length) {
@@ -313,7 +313,7 @@ jQuery(document).ready(function ($) {
       type: "POST",
       dataType: "json",
       data: {
-        action: "mare_check_payment_config",
+        action: "npcink_pay_refund_check_payment_config",
         nonce: refundSettings.nonce,
         channel: channel,
       },
@@ -370,7 +370,7 @@ jQuery(document).ready(function ($) {
     );
 
     var $table = $("<table>", {
-      class: "widefat striped mare-check-table",
+      class: "widefat striped npcink-pay-refund-check-table",
     });
     var $tbody = $("<tbody>");
 
@@ -389,7 +389,7 @@ jQuery(document).ready(function ($) {
         .append(
           $("<td>").append(
             $("<span>", {
-              class: "mare-status-badge mare-status-" + status,
+              class: "npcink-pay-refund-status-badge npcink-pay-refund-status-" + status,
               text: status === "ok" ? "通过" : "阻塞",
             })
           )

@@ -10,13 +10,13 @@ function trimHyphen(input) {
 }
 
 jQuery(document).ready(function ($) {
-  var refundQuery = window.mareRefundQuery || {};
+  var refundQuery = window.npcinkPayRefundQuery || {};
 
   function showRefundNotice($container, message, type) {
     var noticeType = type || "error";
     $container.empty().append(
       $("<div>", {
-        class: "notice notice-" + noticeType + " inline mare-refund-notice",
+        class: "notice notice-" + noticeType + " inline npcink-pay-refund-refund-notice",
       }).append($("<p>", { text: message }))
     );
   }
@@ -48,11 +48,11 @@ jQuery(document).ready(function ($) {
 
   //支付宝查询
 
-  $("#my-plugin-button").click(function () {
+  $("#npcink-pay-refund-zfb-button").click(function () {
     var data = {
-      action: "zfb_order_query",
+      action: "npcink_pay_refund_zfb_order_query",
       nonce: refundQuery.nonce,
-      param: trimHyphen($("#my-plugin-input").val()),
+      param: trimHyphen($("#npcink-pay-refund-zfb-input").val()),
     };
 
     $.ajax({
@@ -62,11 +62,11 @@ jQuery(document).ready(function ($) {
       data: data,
 
       success: function (response) {
-        renderRefundResponse($("#my-plugin-data"), response, "支付宝订单查询失败，请稍后重试。");
+        renderRefundResponse($("#npcink-pay-refund-zfb-data"), response, "支付宝订单查询失败，请稍后重试。");
       },
       error: function (xhr) {
         showRefundNotice(
-          $("#my-plugin-data"),
+          $("#npcink-pay-refund-zfb-data"),
           getRefundErrorMessage(xhr, "支付宝订单查询失败，请稍后重试。")
         );
       },
@@ -77,17 +77,17 @@ jQuery(document).ready(function ($) {
   $(document).on("click", "#order-btn", function () {
     var $button = $(this);
     const data = {
-      action: "zfb_order_refund",
+      action: "npcink_pay_refund_zfb_order_refund",
       nonce: refundQuery.nonce,
       order_id: $button.data("order-id"), //订单号
       order_time: $button.data("order-time"), // 获取订单时间
       order_amount: $button.data("order-amount"), // 获取订单总金额
-      order_reason: $("#npcink-zfb-reason").val(), // 获取订单退款原因
+      order_reason: $("#npcink-pay-refund-zfb-reason").val(), // 获取订单退款原因
     };
 
     //退款原因为空则进行提示
-    if ($("#npcink-zfb-reason").val() === "") {
-      showRefundNotice($("#my-plugin-data"), "请输入退款原因。");
+    if ($("#npcink-pay-refund-zfb-reason").val() === "") {
+      showRefundNotice($("#npcink-pay-refund-zfb-data"), "请输入退款原因。");
       return false;
     }
 
@@ -98,11 +98,11 @@ jQuery(document).ready(function ($) {
       dataType: "json",
       data: data,
       success: function (response) {
-        renderRefundResponse($("#my-plugin-data"), response, "支付宝退款失败，请稍后重试。");
+        renderRefundResponse($("#npcink-pay-refund-zfb-data"), response, "支付宝退款失败，请稍后重试。");
       },
       error: function (xhr) {
         showRefundNotice(
-          $("#my-plugin-data"),
+          $("#npcink-pay-refund-zfb-data"),
           getRefundErrorMessage(xhr, "支付宝退款请求失败，请稍后重试或联系管理员检查配置。")
         );
       },
@@ -113,11 +113,11 @@ jQuery(document).ready(function ($) {
   });
 
   //微信支付查询
-  $("#npcink-wx-button").click(function () {
+  $("#npcink-pay-refund-wx-button").click(function () {
     var data = {
-      action: "wx_order_query",
+      action: "npcink_pay_refund_wx_order_query",
       nonce: refundQuery.nonce,
-      order_id: trimHyphen($("#npcink-wx-input").val()),
+      order_id: trimHyphen($("#npcink-pay-refund-wx-input").val()),
     };
 
     $.ajax({
@@ -126,11 +126,11 @@ jQuery(document).ready(function ($) {
       dataType: "json",
       data: data,
       success: function (response) {
-        renderRefundResponse($("#npcink-wx-data"), response, "微信订单查询失败，请稍后重试。");
+        renderRefundResponse($("#npcink-pay-refund-wx-data"), response, "微信订单查询失败，请稍后重试。");
       },
       error: function (xhr) {
         showRefundNotice(
-          $("#npcink-wx-data"),
+          $("#npcink-pay-refund-wx-data"),
           getRefundErrorMessage(xhr, "微信订单查询失败，请检查微信鉴权信息或稍后重试。")
         );
       },
@@ -142,16 +142,16 @@ jQuery(document).ready(function ($) {
     var $button = $(this);
 
     const data = {
-      action: "wx_order_refund",
+      action: "npcink_pay_refund_wx_order_refund",
       nonce: refundQuery.nonce,
       order_id: $button.data("order-id"), //订单号
       order_amount: $button.data("order-amount"), // 获取订单总金额
-      order_reason: $("#npcink-wx-reason").val(), //获取退款原因
+      order_reason: $("#npcink-pay-refund-wx-reason").val(), //获取退款原因
     };
 
     //退款原因为空则进行提示
-    if ($("#npcink-wx-reason").val() === "") {
-      showRefundNotice($("#npcink-wx-data"), "请输入退款原因。");
+    if ($("#npcink-pay-refund-wx-reason").val() === "") {
+      showRefundNotice($("#npcink-pay-refund-wx-data"), "请输入退款原因。");
       return false;
     }
 
@@ -162,11 +162,11 @@ jQuery(document).ready(function ($) {
       dataType: "json",
       data: data,
       success: function (response) {
-        renderRefundResponse($("#npcink-wx-data"), response, "微信退款失败，请稍后重试。");
+        renderRefundResponse($("#npcink-pay-refund-wx-data"), response, "微信退款失败，请稍后重试。");
       },
       error: function (xhr) {
         showRefundNotice(
-          $("#npcink-wx-data"),
+          $("#npcink-pay-refund-wx-data"),
           getRefundErrorMessage(xhr, "微信退款请求失败，请稍后重试或联系管理员检查配置。")
         );
       },
@@ -177,12 +177,12 @@ jQuery(document).ready(function ($) {
   });
 
   //数据展示
-  var $dataTableBody = $("#dataTable tbody");
-  var $recordKeyword = $("#mare-record-keyword");
-  var $recordType = $("#mare-record-type");
-  var $recordDateFrom = $("#mare-record-date-from");
-  var $recordDateTo = $("#mare-record-date-to");
-  var $recordSummary = $("#mare-record-summary");
+  var $refundRecordsBody = $("#npcink-pay-refund-records tbody");
+  var $recordKeyword = $("#npcink-pay-refund-record-keyword");
+  var $recordType = $("#npcink-pay-refund-record-type");
+  var $recordDateFrom = $("#npcink-pay-refund-record-date-from");
+  var $recordDateTo = $("#npcink-pay-refund-record-date-to");
+  var $recordSummary = $("#npcink-pay-refund-record-summary");
   var dataArray = parseRefundRecords(refundQuery.data || "[]");
 
   function parseRefundRecords(rawData) {
@@ -248,16 +248,16 @@ jQuery(document).ready(function ($) {
 
   function renderRecordType(type) {
     var value = normalizeRecordValue(type);
-    var className = value === "微信" ? "mare-status-wx" : value === "支付宝" ? "mare-status-zfb" : "mare-status-neutral";
+    var className = value === "微信" ? "npcink-pay-refund-status-wx" : value === "支付宝" ? "npcink-pay-refund-status-zfb" : "npcink-pay-refund-status-neutral";
     return $("<span>", {
-      class: "mare-status-badge " + className,
+      class: "npcink-pay-refund-status-badge " + className,
       text: value || "-",
     });
   }
 
   function renderRecords() {
     var records = getFilteredRecords();
-    $dataTableBody.empty();
+    $refundRecordsBody.empty();
 
     if (!records.length) {
       $("<tr>")
@@ -266,12 +266,12 @@ jQuery(document).ready(function ($) {
             colspan: 7,
           }).append(
             $("<p>", {
-              class: "description mare-record-empty",
+              class: "description npcink-pay-refund-record-empty",
               text: dataArray.length ? "没有符合筛选条件的退款记录。" : "暂无退款记录。",
             })
           )
         )
-        .appendTo($dataTableBody);
+        .appendTo($refundRecordsBody);
     } else {
       records.forEach(function (record) {
         $("<tr>")
@@ -282,7 +282,7 @@ jQuery(document).ready(function ($) {
           .append($("<td>", { text: normalizeRecordValue(record.user) }))
           .append($("<td>").append(renderRecordType(record.type)))
           .append($("<td>", { text: normalizeRecordValue(record.reason) }))
-          .appendTo($dataTableBody);
+          .appendTo($refundRecordsBody);
       });
     }
 
@@ -291,7 +291,7 @@ jQuery(document).ready(function ($) {
 
   $recordKeyword.on("input", renderRecords);
   $recordType.add($recordDateFrom).add($recordDateTo).on("change", renderRecords);
-  $("#mare-record-reset").on("click", function () {
+  $("#npcink-pay-refund-record-reset").on("click", function () {
     $recordKeyword.val("");
     $recordType.val("");
     $recordDateFrom.val("");

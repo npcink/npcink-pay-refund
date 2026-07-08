@@ -6,8 +6,8 @@
  * @link       https://www.npc.ink
  * @since      1.0.0
  *
- * @package    Mare
- * @subpackage Mare/admin
+ * @package    Npcink_Pay_Refund
+ * @subpackage Npcink_Pay_Refund/admin
  */
 
 /**
@@ -16,11 +16,11 @@
  * Defines the plugin name, version, and two examples hooks for how to
  * enqueue the admin-specific stylesheet and JavaScript.
  *
- * @package    Mare
- * @subpackage Mare/admin
+ * @package    Npcink_Pay_Refund
+ * @subpackage Npcink_Pay_Refund/admin
  * @author     Muze <1355471563@qq.com>
  */
-class Mare_Admin
+class Npcink_Pay_Refund_Admin
 {
 
 	/**
@@ -65,17 +65,17 @@ class Mare_Admin
 	public function load()
 	{
 		//查询菜单用文件
-		require_once plugin_dir_path(__FILE__) . 'partials/mare-admin-query.php';
+		require_once plugin_dir_path(__FILE__) . 'partials/npcink-pay-refund-admin-query.php';
 		//选项配置用文件
-		require_once plugin_dir_path(__FILE__) . 'partials/mare-admin-config.php';
+		require_once plugin_dir_path(__FILE__) . 'partials/npcink-pay-refund-admin-config.php';
 		//权限控制文件
-		require_once plugin_dir_path(__FILE__) . 'partials/mare-admin-authority.php';
+		require_once plugin_dir_path(__FILE__) . 'partials/npcink-pay-refund-admin-authority.php';
 		//微信支付文件
-		//require_once plugin_dir_path(__FILE__) . 'pay/mare-admin-wxs.php';
+		//require_once plugin_dir_path(__FILE__) . 'pay/npcink-pay-refund-admin-wxs.php';
 		//支付宝支付文件
-		require_once plugin_dir_path(__FILE__) . 'pay/mare-admin-zfb.php';
+		require_once plugin_dir_path(__FILE__) . 'pay/npcink-pay-refund-admin-zfb.php';
 		//公用函数文件
-		require_once plugin_dir_path(__FILE__) . 'pay/mare-admin-public.php';
+		require_once plugin_dir_path(__FILE__) . 'pay/npcink-pay-refund-admin-public.php';
 	}
 
 	/**
@@ -84,20 +84,20 @@ class Mare_Admin
 	public function run()
 	{
 		//查询菜单
-		Mare_Admin_Query::run($this->plugin_name, $this->version);
+		Npcink_Pay_Refund_Admin_Query::run($this->plugin_name, $this->version);
 		//配置菜单
-		Mare_Admin_Config::run($this->plugin_name, $this->version);
+		Npcink_Pay_Refund_Admin_Config::run($this->plugin_name, $this->version);
 		//权限控制
-		Mare_Admin_Authority::run();
+		Npcink_Pay_Refund_Admin_Authority::run();
 
 		//微信支付接口
-		//Mare_Admin_Wx::run();
+		//Npcink_Pay_Refund_Admin_Wx::run();
 
 		//支付宝支付接口
-		Mare_Admin_Zfb::run();
+		Npcink_Pay_Refund_Admin_Zfb::run();
 
 		//公用函数文件
-		Mare_Admin_Public::run();
+		Npcink_Pay_Refund_Admin_Public::run();
 	}
 
 	/**
@@ -105,8 +105,8 @@ class Mare_Admin
 	 */
 	public static function npcConfig($option)
 	{
-		$config = self::object_to_array(get_option('npc_refund_config', array()));
-		$secrets = self::object_to_array(get_option('npc_refund_secrets', array()));
+		$config = self::object_to_array(get_option('npcink_pay_refund_config', array()));
+		$secrets = self::object_to_array(get_option('npcink_pay_refund_secrets', array()));
 		$value = self::object_to_array(self::get_options($config, $option, array()));
 		$secret_value = self::object_to_array(self::get_options($secrets, $option, array()));
 

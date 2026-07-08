@@ -6,8 +6,8 @@ if (!defined('ABSPATH')) {
 
 //删除插件时执行
 //删除时执行的类
-if (!class_exists('Mare_Admin_Uninstall')) {
-    class Mare_Admin_Uninstall
+if (!class_exists('Npcink_Pay_Refund_Admin_Uninstall')) {
+    class Npcink_Pay_Refund_Admin_Uninstall
     {
         //执行
         public static function run()
@@ -15,18 +15,18 @@ if (!class_exists('Mare_Admin_Uninstall')) {
             /**
              * 引入核心类
              */
-            require_once plugin_dir_path(dirname(__DIR__)) . 'admin/class-mare-admin.php';
+            require_once plugin_dir_path(dirname(__DIR__)) . 'admin/class-npcink-pay-refund-admin.php';
             //获取选项值
             //选项值
-            $config = Mare_Admin::npcConfig('config');
+            $config = Npcink_Pay_Refund_Admin::npcConfig('config');
             //数据库状态
-            $mySql =  Mare_Admin::get_options($config, 'mysql');
+            $mySql =  Npcink_Pay_Refund_Admin::get_options($config, 'mysql');
             if ($mySql === 1) {
                 self::delete_sql();
             }
 
             //选项状态
-            $myConfig =  Mare_Admin::get_options($config, 'config');
+            $myConfig =  Npcink_Pay_Refund_Admin::get_options($config, 'config');
             if ($myConfig === 1) {
                 self::delete_option();
             }
@@ -43,7 +43,7 @@ if (!class_exists('Mare_Admin_Uninstall')) {
             global $wpdb;
 
             // 定义要删除的数据表名
-            $table_name = $wpdb->prefix . 'npc_refund_order';
+            $table_name = $wpdb->prefix . 'npcink_pay_refund_order';
 
             // 判断数据表是否存在
             // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Uninstall cleanup for this plugin's custom table.
@@ -64,9 +64,9 @@ if (!class_exists('Mare_Admin_Uninstall')) {
         public static function delete_option()
         {
             // 删除插件设置
-            delete_option('npc_refund_config');
-            delete_option('npc_refund_secrets');
-            delete_option('npc_refund_schema_version');
+            delete_option('npcink_pay_refund_config');
+            delete_option('npcink_pay_refund_secrets');
+            delete_option('npcink_pay_refund_schema_version');
         }
     }
 }

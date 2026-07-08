@@ -10,8 +10,8 @@ use WeChatPay\Builder;
 use WeChatPay\Crypto\Rsa;
 
 
-if (!class_exists('Mare_Admin_Wx')) {
-    class Mare_Admin_Wx
+if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
+    class Npcink_Pay_Refund_Admin_Wx
     {
 
         /**
@@ -28,13 +28,13 @@ if (!class_exists('Mare_Admin_Wx')) {
             /**
              * 引入公共方法
              */
-            require_once plugin_dir_path(__FILE__) . 'mare-admin-public.php';
+            require_once plugin_dir_path(__FILE__) . 'npcink-pay-refund-admin-public.php';
 
             //订单查询
-            add_action('wp_ajax_wx_order_query', array(__CLASS__, 'wx_order_query'));
+            add_action('wp_ajax_npcink_pay_refund_wx_order_query', array(__CLASS__, 'npcink_pay_refund_wx_order_query'));
 
             //订单退款
-            add_action('wp_ajax_wx_order_refund', array(__CLASS__, 'wx_order_refund'));
+            add_action('wp_ajax_npcink_pay_refund_wx_order_refund', array(__CLASS__, 'npcink_pay_refund_wx_order_refund'));
         }
 
 
@@ -45,22 +45,22 @@ if (!class_exists('Mare_Admin_Wx')) {
         public static function config()
         {
             //选项值
-            $config = Mare_Admin::npcConfig('wx');
+            $config = Npcink_Pay_Refund_Admin::npcConfig('wx');
             //私钥
-            $key = Mare_Admin::get_options($config, 'cert_key');
+            $key = Npcink_Pay_Refund_Admin::get_options($config, 'cert_key');
 
-            $merchantId = Mare_Admin::get_options($config, 'mch_id'); // 商户号
+            $merchantId = Npcink_Pay_Refund_Admin::get_options($config, 'mch_id'); // 商户号
 
-            $merchantSerialNumber =  Mare_Admin::get_options($config, 'cert_api'); // 商户API证书序列号
-            $platformKeyId = Mare_Admin::get_options($config, 'platform_key_id'); // 微信支付公钥ID或平台证书序列号
-            $platformPublicKey = Mare_Admin::get_options($config, 'platform_public_key'); // 微信支付公钥或平台证书
+            $merchantSerialNumber =  Npcink_Pay_Refund_Admin::get_options($config, 'cert_api'); // 商户API证书序列号
+            $platformKeyId = Npcink_Pay_Refund_Admin::get_options($config, 'platform_key_id'); // 微信支付公钥ID或平台证书序列号
+            $platformPublicKey = Npcink_Pay_Refund_Admin::get_options($config, 'platform_public_key'); // 微信支付公钥或平台证书
 
             if ('' === $merchantId || '' === $merchantSerialNumber || '' === $platformKeyId || '' === trim((string) $key) || '' === trim((string) $platformPublicKey)) {
                 throw new Exception('Missing or invalid WeChat Pay merchant configuration.');
             }
 
-            $merchantPrivateKey = Rsa::from(self::mare_handle_meat($key), Rsa::KEY_TYPE_PRIVATE);
-            $wechatpayPublicKey = Rsa::from(self::mare_handle_public_key($platformPublicKey), Rsa::KEY_TYPE_PUBLIC);
+            $merchantPrivateKey = Rsa::from(self::format_private_key($key), Rsa::KEY_TYPE_PRIVATE);
+            $wechatpayPublicKey = Rsa::from(self::format_public_key($platformPublicKey), Rsa::KEY_TYPE_PUBLIC);
 
             self::$merchant_config = array(
                 'mchid' => $merchantId,
@@ -81,7 +81,7 @@ if (!class_exists('Mare_Admin_Wx')) {
             ));
         }
 
-        public static function mare_handle_public_key($data)
+        public static function format_public_key($data)
         {
             $pem = trim((string) $data);
             if (false !== strpos($pem, '-----BEGIN ')) {
@@ -119,15 +119,15 @@ if (!class_exists('Mare_Admin_Wx')) {
                 return is_object($data) ? $data : null;
             } catch (RequestException $e) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
-                error_log('Mare WeChat API request failed: ' . $e->getMessage() . self::api_error_log_context($e->getResponse()));
+                error_log('Npcink_Pay_Refund WeChat API request failed: ' . $e->getMessage() . self::api_error_log_context($e->getResponse()));
                 return null;
             } catch (Exception $e) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
-                error_log('Mare WeChat API request failed: ' . $e->getMessage());
+                error_log('Npcink_Pay_Refund WeChat API request failed: ' . $e->getMessage());
                 return null;
             } catch (Throwable $e) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
-                error_log('Mare WeChat API request failed: ' . $e->getMessage());
+                error_log('Npcink_Pay_Refund WeChat API request failed: ' . $e->getMessage());
                 return null;
             }
         }
@@ -146,8 +146,8 @@ if (!class_exists('Mare_Admin_Wx')) {
 
         public static function get_transaction($order_id)
         {
-            $config = Mare_Admin::npcConfig('wx');
-            $mchid = Mare_Admin::get_options($config, 'mch_id');
+            $config = Npcink_Pay_Refund_Admin::npcConfig('wx');
+            $mchid = Npcink_Pay_Refund_Admin::get_options($config, 'mch_id');
 
             return self::api_call(function ($client) use ($order_id, $mchid) {
                 return $client->v3->pay->transactions->outTradeNo->_out_trade_no_->get(array(
@@ -163,16 +163,16 @@ if (!class_exists('Mare_Admin_Wx')) {
         /**
          * 订单查询
          */
-        public static function wx_order_query()
+        public static function npcink_pay_refund_wx_order_query()
         {
-            Mare_Admin_Authority::require_refund_ajax_permission();
+            Npcink_Pay_Refund_Admin_Authority::require_refund_ajax_permission();
 
             if (!self::ensure_client_ready()) {
                 wp_send_json_error(array('message' => self::api_error_message()), 400);
             }
 
             //选项值
-            $config = Mare_Admin::npcConfig('wx');
+            $config = Npcink_Pay_Refund_Admin::npcConfig('wx');
             
             // 获取传递的订单
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Verified by require_refund_ajax_permission().
@@ -225,13 +225,13 @@ if (!class_exists('Mare_Admin_Wx')) {
 
                     //正常成功状态且订单时间在7天内，则添加退款按钮
                     //if (true) {
-                    if ($data->trade_state === "SUCCESS" && Mare_Admin_Public::contrast_time($time)) {
+                    if ($data->trade_state === "SUCCESS" && Npcink_Pay_Refund_Admin_Public::contrast_time($time)) {
 
-                        $response_html .= '<p>退款原因：<input type="text" id="npcink-wx-reason" placeholder="请输入退款原因"></p>';
+                        $response_html .= '<p>退款原因：<input type="text" id="npcink-pay-refund-wx-reason" placeholder="请输入退款原因"></p>';
                         $response_html .= '<p>点击退款按钮后请稍等进行退款处理</p>';
                         $response_html .= "<button id='wx-order-btn' class='button button-primary refund ' data-order-id='" . esc_attr($order) . "' data-order-amount='" . esc_attr(isset($data->amount->payer_total) ? $data->amount->payer_total : 0) . "'>微信全额退款</button>";
                     } else {
-                        if ($data->trade_state === "SUCCESS" && !Mare_Admin_Public::contrast_time($time)) {
+                        if ($data->trade_state === "SUCCESS" && !Npcink_Pay_Refund_Admin_Public::contrast_time($time)) {
                             $response_html .= '<h3>订单时间超过7天，无法使用本功能退款，请联系管理员操作</h3>';
                         }
                     }
@@ -242,9 +242,9 @@ if (!class_exists('Mare_Admin_Wx')) {
          * 订单退款
          */
 
-        public static function wx_order_refund()
+        public static function npcink_pay_refund_wx_order_refund()
         {
-            Mare_Admin_Authority::require_refund_ajax_permission();
+            Npcink_Pay_Refund_Admin_Authority::require_refund_ajax_permission();
 
             if (!self::ensure_client_ready()) {
                 wp_send_json_error(array('message' => self::api_error_message()), 400);
@@ -253,8 +253,8 @@ if (!class_exists('Mare_Admin_Wx')) {
             // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by require_refund_ajax_permission().
             $order_id = isset($_POST['order_id']) ? sanitize_text_field(wp_unslash($_POST['order_id'])) : ''; //退款ID
 
-            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Verified by require_refund_ajax_permission(); sanitized by Mare_Admin::sanitize_textarea_value().
-            $reason = isset($_POST['order_reason']) ? Mare_Admin::sanitize_textarea_value(wp_unslash($_POST['order_reason'])) : ''; //退款原因
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Verified by require_refund_ajax_permission(); sanitized by Npcink_Pay_Refund_Admin::sanitize_textarea_value().
+            $reason = isset($_POST['order_reason']) ? Npcink_Pay_Refund_Admin::sanitize_textarea_value(wp_unslash($_POST['order_reason'])) : ''; //退款原因
             $api_reason = self::format_refund_reason($reason);
 
             if ('' === $order_id || '' === $api_reason) {
@@ -267,7 +267,7 @@ if (!class_exists('Mare_Admin_Wx')) {
             }
 
             $order_time = self::handle_time(isset($order_data->success_time) ? $order_data->success_time : '');
-            if ('SUCCESS' !== $order_data->trade_state || !Mare_Admin_Public::contrast_time($order_time)) {
+            if ('SUCCESS' !== $order_data->trade_state || !Npcink_Pay_Refund_Admin_Public::contrast_time($order_time)) {
                 wp_send_json_error(array('message' => __('该订单当前状态或时间窗口不可退款。', 'npcink-pay-refund')), 400);
             }
 
@@ -280,7 +280,7 @@ if (!class_exists('Mare_Admin_Wx')) {
 
             // 准备退款订单号
             $order_refund_id =  $order_id . "-refund";
-            if (!Mare_Admin_Public::claim_refund($order_id, '微信')) {
+            if (!Npcink_Pay_Refund_Admin_Public::claim_refund($order_id, '微信')) {
                 wp_send_json_error(array('message' => __('该订单已提交退款或正在处理中，请勿重复操作。', 'npcink-pay-refund')), 409);
             }
 
@@ -305,7 +305,7 @@ if (!class_exists('Mare_Admin_Wx')) {
             );
 
             if (!$data || empty($data->status)) {
-                Mare_Admin_Public::release_refund_claim($order_id, '微信');
+                Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '微信');
                 wp_send_json_error(array('message' => __('微信退款请求失败，请稍后重试。', 'npcink-pay-refund')), 400);
             }
 
@@ -325,26 +325,26 @@ if (!class_exists('Mare_Admin_Wx')) {
                 switch ($data->status) {
                     case "PROCESSING": // 退款处理中，进行退款查询
                         //添加数据进数据库文件
-                        Mare_Admin_Public::add_data($time_now, $user, $amount, $order, $reason, '微信');
+                        Npcink_Pay_Refund_Admin_Public::add_data($time_now, $user, $amount, $order, $reason, '微信');
                         //二次查询并记录
                         $response_html = self::query_refunds($order);
                         break;
                     case "SUCCESS": // 退款成功，进行退款查询
                         //添加数据进数据库文件
-                        Mare_Admin_Public::add_data($time, $user, $amount, $order, $reason, '微信');
+                        Npcink_Pay_Refund_Admin_Public::add_data($time, $user, $amount, $order, $reason, '微信');
                         $response_html = self::query_refunds($order);
 
                         break;
                     case "CLOSED": // 退款关闭
-                        Mare_Admin_Public::release_refund_claim($order_id, '微信');
+                        Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '微信');
                         wp_send_json_error(array('message' => __('退款关闭', 'npcink-pay-refund')), 400);
                         break;
                     case "ABNORMAL": // 退款异常
-                        Mare_Admin_Public::release_refund_claim($order_id, '微信');
+                        Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '微信');
                         wp_send_json_error(array('message' => __('退款异常，请联系管理员。', 'npcink-pay-refund')), 400);
                         break;
                     default:
-                        Mare_Admin_Public::release_refund_claim($order_id, '微信');
+                        Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '微信');
                         wp_send_json_error(array('message' => __('退款失败，请稍后重试。', 'npcink-pay-refund')), 400);
                 }
 
@@ -386,21 +386,21 @@ if (!class_exists('Mare_Admin_Wx')) {
                 self::$client = null;
                 if ('Missing or invalid WeChat Pay merchant configuration.' !== $e->getMessage()) {
                     // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep SDK diagnostics out of the AJAX response.
-                    error_log('Mare WeChat config init failed: ' . $e->getMessage());
+                    error_log('Npcink_Pay_Refund WeChat config init failed: ' . $e->getMessage());
                 }
                 return false;
             } catch (Throwable $e) {
                 self::$config_error = $e->getMessage();
                 self::$client = null;
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep SDK diagnostics out of the AJAX response.
-                error_log('Mare WeChat config init failed: ' . $e->getMessage());
+                error_log('Npcink_Pay_Refund WeChat config init failed: ' . $e->getMessage());
                 return false;
             }
         }
 
         public static function diagnose_config()
         {
-            $config = Mare_Admin::npcConfig('wx');
+            $config = Npcink_Pay_Refund_Admin::npcConfig('wx');
             $items = array();
             $ok = true;
 
@@ -420,7 +420,7 @@ if (!class_exists('Mare_Admin_Wx')) {
                 'platform_public_key' => __('微信支付公钥 / 平台证书', 'npcink-pay-refund'),
             );
             foreach ($fields as $field => $label) {
-                $value = trim((string) Mare_Admin::get_options($config, $field));
+                $value = trim((string) Npcink_Pay_Refund_Admin::get_options($config, $field));
                 $has_value = '' !== $value;
                 $items[] = array(
                     'status' => $has_value ? 'ok' : 'error',
@@ -504,7 +504,7 @@ if (!class_exists('Mare_Admin_Wx')) {
         /**
          * 处理拿到的私钥，转为正确的格式
          */
-        public static function mare_handle_meat($data)
+        public static function format_private_key($data)
         {
             $pem_data = $data;
             $pem = trim($pem_data);

@@ -5,8 +5,8 @@ if (!defined('ABSPATH')) {
 }
 
 //权限控制
-if (!class_exists('Mare_Admin_Authority')) {
-    class Mare_Admin_Authority
+if (!class_exists('Npcink_Pay_Refund_Admin_Authority')) {
+    class Npcink_Pay_Refund_Admin_Authority
     {
 
         public static function run()
@@ -22,13 +22,13 @@ if (!class_exists('Mare_Admin_Authority')) {
         public static function restrict_access()
         {
             //获取选项值
-            $config = Mare_Admin::npcConfig('user');
+            $config = Npcink_Pay_Refund_Admin::npcConfig('user');
 
             //获取用户ID数组
-            $users =  Mare_Admin::get_options($config, 'user');
+            $users =  Npcink_Pay_Refund_Admin::get_options($config, 'user');
 
             //获取链接数组
-            $site =  Mare_Admin::get_options($config, 'link');
+            $site =  Npcink_Pay_Refund_Admin::get_options($config, 'link');
             if (!is_array($site)) {
                 $site = array();
             }
@@ -53,7 +53,7 @@ if (!class_exists('Mare_Admin_Authority')) {
 
                 //将网址进行处理，并提取组成数组
                 foreach ($site as $obj) {
-                    $url = Mare_Admin::get_options($obj, 'url');
+                    $url = Npcink_Pay_Refund_Admin::get_options($obj, 'url');
                     $arr_url[] = self::get_url($url);
                 }
 
@@ -132,8 +132,8 @@ if (!class_exists('Mare_Admin_Authority')) {
                 /**
                  * 可能会填空值，这里处理下
                  */
-                $url = Mare_Admin::get_options($obj, 'url', "#");
-                $title = Mare_Admin::get_options($obj, 'title', "此链接无法点击，请联系管理员处理");
+                $url = Npcink_Pay_Refund_Admin::get_options($obj, 'url', "#");
+                $title = Npcink_Pay_Refund_Admin::get_options($obj, 'title', "此链接无法点击，请联系管理员处理");
 
                 $message .= '<li><a href="' . esc_url($url) . '">' . esc_html($title) . '</a></li>';
             }
@@ -156,8 +156,8 @@ if (!class_exists('Mare_Admin_Authority')) {
                 return true;
             }
 
-            $config = Mare_Admin::npcConfig('user');
-            $users = Mare_Admin::get_options($config, 'user', array());
+            $config = Npcink_Pay_Refund_Admin::npcConfig('user');
+            $users = Npcink_Pay_Refund_Admin::get_options($config, 'user', array());
             $allowed_ids = array_map('intval', self::handle_id($users));
             if (!in_array((int) $user->ID, $allowed_ids, true)) {
                 return false;
@@ -171,7 +171,7 @@ if (!class_exists('Mare_Admin_Authority')) {
          */
         public static function require_refund_ajax_permission()
         {
-            if (!check_ajax_referer('mare_refund_action', 'nonce', false)) {
+            if (!check_ajax_referer('npcink_pay_refund_action', 'nonce', false)) {
                 wp_send_json_error(array('message' => __('请求校验失败，请刷新页面后重试。', 'npcink-pay-refund')), 403);
             }
 

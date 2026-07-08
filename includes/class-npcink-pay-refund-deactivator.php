@@ -6,8 +6,8 @@
  * @link       https://www.npc.ink
  * @since      1.0.0
  *
- * @package    Mare
- * @subpackage Mare/includes
+ * @package    Npcink_Pay_Refund
+ * @subpackage Npcink_Pay_Refund/includes
  */
 
 /**
@@ -16,11 +16,11 @@
  * This class defines all code necessary to run during the plugin's deactivation.
  *
  * @since      1.0.0
- * @package    Mare
- * @subpackage Mare/includes
+ * @package    Npcink_Pay_Refund
+ * @subpackage Npcink_Pay_Refund/includes
  * @author     Muze <1355471563@qq.com>
  */
-class Mare_Deactivator {
+class Npcink_Pay_Refund_Deactivator {
 
 	/**
 	 * Short Description. (use period)

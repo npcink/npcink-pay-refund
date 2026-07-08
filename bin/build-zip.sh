@@ -6,11 +6,11 @@ PACKAGE_SLUG="${PACKAGE_SLUG:-npcink-pay-refund}"
 BUILD_DIR="$ROOT_DIR/build"
 STAGE_DIR="$BUILD_DIR/$PACKAGE_SLUG"
 VERSION="$(
-	php -r '$file=$argv[1]; $content=file_get_contents($file); if (preg_match("/Version:\s*([0-9A-Za-z.-]+)/", $content, $matches)) { echo $matches[1]; }' "$ROOT_DIR/mare.php"
+	php -r '$file=$argv[1]; $content=file_get_contents($file); if (preg_match("/Version:\s*([0-9A-Za-z.-]+)/", $content, $matches)) { echo $matches[1]; }' "$ROOT_DIR/npcink-pay-refund.php"
 )"
 
 if [ -z "$VERSION" ]; then
-	echo "Could not read plugin version from mare.php" >&2
+	echo "Could not read plugin version from npcink-pay-refund.php" >&2
 	exit 1
 fi
 

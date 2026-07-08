@@ -6,8 +6,8 @@
  * @link       https://www.npc.ink
  * @since      1.0.0
  *
- * @package    Mare
- * @subpackage Mare/includes
+ * @package    Npcink_Pay_Refund
+ * @subpackage Npcink_Pay_Refund/includes
  */
 
 /**
@@ -16,11 +16,11 @@
  * This class defines all code necessary to run during the plugin's activation.
  *
  * @since      1.0.0
- * @package    Mare
- * @subpackage Mare/includes
+ * @package    Npcink_Pay_Refund
+ * @subpackage Npcink_Pay_Refund/includes
  * @author     Muze <1355471563@qq.com>
  */
-class Mare_Activator
+class Npcink_Pay_Refund_Activator
 {
 
 	/**
@@ -42,7 +42,7 @@ class Mare_Activator
 	public static function create_refund_order()
 	{
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'npc_refund_order';
+		$table_name = $wpdb->prefix . 'npcink_pay_refund_order';
 
 		$charset_collate = $wpdb->get_charset_collate();
 

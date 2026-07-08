@@ -4,8 +4,9 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WP_PATH="${WP_PATH:-/Users/muze/Local Sites/test/app/public}"
 WP_URL="${WP_URL:-http://test.local}"
+WP_SKIP_PLUGINS="${WP_SKIP_PLUGINS:-magick-ai}"
 PACKAGE_SLUG="${PACKAGE_SLUG:-npcink-pay-refund}"
-PCP_TARGET="${PCP_TARGET:-$(basename "$ROOT_DIR")}"
+PCP_TARGET="${PCP_TARGET:-$PACKAGE_SLUG}"
 PCP_SLUG="${PCP_SLUG:-npcink-pay-refund}"
 
 cd "$ROOT_DIR"
@@ -33,14 +34,23 @@ if grep -E "^${PACKAGE_SLUG}/(vite/|bin/|build/|admin/sdk/)" <<< "$ZIP_LIST" >/d
 fi
 
 if command -v wp >/dev/null 2>&1 && [ -d "$WP_PATH" ]; then
+	WP_CLI_ARGS=(
+		--path="$WP_PATH"
+		--url="$WP_URL"
+		--allow-root
+	)
+	if [ -n "$WP_SKIP_PLUGINS" ]; then
+		WP_CLI_ARGS+=(--skip-plugins="$WP_SKIP_PLUGINS")
+	fi
+
+	wp plugin install "$ZIP_FILE" --force --activate "${WP_CLI_ARGS[@]}" >/tmp/npcink-pay-refund-install-verify.out
+
 	wp plugin check "$PCP_TARGET" \
 		--slug="$PCP_SLUG" \
-		--path="$WP_PATH" \
-		--url="$WP_URL" \
-		--allow-root \
 		--format=json \
 		--exclude-directories=build,bin \
-		--exclude-files=.gitignore,.distignore >/tmp/npcink-pay-refund-pcp-verify.out
+		--exclude-files=.gitignore,.distignore \
+		"${WP_CLI_ARGS[@]}" >/tmp/npcink-pay-refund-pcp-verify.out
 
 	php <<'PHP'
 <?php

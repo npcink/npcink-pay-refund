@@ -12,12 +12,12 @@ if (!defined('ABSPATH')) {
  * @link       https://www.npc.ink
  * @since      1.0.0
  *
- * @package    Mare
- * @subpackage Mare/admin/partials
+ * @package    Npcink_Pay_Refund
+ * @subpackage Npcink_Pay_Refund/admin/partials
  */
 
-if (!class_exists('Mare_Admin_Public')) {
-	class Mare_Admin_Public
+if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
+	class Npcink_Pay_Refund_Admin_Public
 	{
 		public static function run()
 		{
@@ -31,18 +31,18 @@ if (!class_exists('Mare_Admin_Public')) {
 
 		public static function maybe_upgrade_schema()
 		{
-			$schema_version = get_option('npc_refund_schema_version', '');
-			if ($schema_version === MARE_VERSION) {
+			$schema_version = get_option('npcink_pay_refund_schema_version', '');
+			if ($schema_version === NPCINK_PAY_REFUND_VERSION) {
 				return;
 			}
 
-			require_once plugin_dir_path(dirname(__DIR__)) . 'includes/class-mare-activator.php';
-			Mare_Activator::create_refund_order();
+			require_once plugin_dir_path(dirname(__DIR__)) . 'includes/class-npcink-pay-refund-activator.php';
+			Npcink_Pay_Refund_Activator::create_refund_order();
 
-			if (false === get_option('npc_refund_schema_version', false)) {
-				add_option('npc_refund_schema_version', MARE_VERSION, '', 'no');
+			if (false === get_option('npcink_pay_refund_schema_version', false)) {
+				add_option('npcink_pay_refund_schema_version', NPCINK_PAY_REFUND_VERSION, '', 'no');
 			} else {
-				update_option('npc_refund_schema_version', MARE_VERSION);
+				update_option('npcink_pay_refund_schema_version', NPCINK_PAY_REFUND_VERSION);
 			}
 		}
 
@@ -56,7 +56,7 @@ if (!class_exists('Mare_Admin_Public')) {
 		public static function add_data($time, $user, $amount, $order, $reason, $type)
 		{
 			global $wpdb;
-			$table_name = esc_sql($wpdb->prefix . 'npc_refund_order');
+			$table_name = esc_sql($wpdb->prefix . 'npcink_pay_refund_order');
 			$order = sanitize_text_field($order);
 			$type = sanitize_text_field($type);
 
@@ -80,7 +80,7 @@ if (!class_exists('Mare_Admin_Public')) {
 				'n_order' => $order,
 				'n_user' => sanitize_text_field($user),
 				'n_type' => $type,
-				'n_reason' => Mare_Admin::sanitize_textarea_value($reason)
+				'n_reason' => Npcink_Pay_Refund_Admin::sanitize_textarea_value($reason)
 			);
 
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom refund table insert.
@@ -92,7 +92,7 @@ if (!class_exists('Mare_Admin_Public')) {
 		public static function has_refund_record($order, $type)
 		{
 			global $wpdb;
-			$table_name = esc_sql($wpdb->prefix . 'npc_refund_order');
+			$table_name = esc_sql($wpdb->prefix . 'npcink_pay_refund_order');
 			$order = sanitize_text_field($order);
 			$type = sanitize_text_field($type);
 
@@ -137,7 +137,7 @@ if (!class_exists('Mare_Admin_Public')) {
 
 		public static function refund_lock_name($order, $type)
 		{
-			return 'mare_refund_lock_' . md5(sanitize_text_field($type) . '|' . sanitize_text_field($order));
+			return 'npcink_pay_refund_lock_' . md5(sanitize_text_field($type) . '|' . sanitize_text_field($order));
 		}
 
 

@@ -5,10 +5,10 @@ if (!defined('ABSPATH')) {
 }
 
 //查询菜单
-if (!class_exists('Mare_Admin_Query')) {
+if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
 
 
-    class Mare_Admin_Query
+    class Npcink_Pay_Refund_Admin_Query
     {
 
         public static $plugin_name;
@@ -30,7 +30,7 @@ if (!class_exists('Mare_Admin_Query')) {
         //创建菜单
         public static function query_menu()
         {
-            if (!Mare_Admin_Authority::current_user_can_refund()) {
+            if (!Npcink_Pay_Refund_Admin_Authority::current_user_can_refund()) {
                 return;
             }
 
@@ -40,7 +40,7 @@ if (!class_exists('Mare_Admin_Query')) {
                 '订单退款',
                 '订单退款',
                 'read',
-                'refund_querys',
+                'npcink_pay_refund_query',
                 array(__CLASS__, 'menu_displays'),
                 '200.1'
             );
@@ -53,7 +53,7 @@ if (!class_exists('Mare_Admin_Query')) {
          */
         public static function menu_displays()
         {
-            if (!Mare_Admin_Authority::current_user_can_refund()) {
+            if (!Npcink_Pay_Refund_Admin_Authority::current_user_can_refund()) {
                 wp_die(esc_html__('您没有退款操作权限。', 'npcink-pay-refund'));
             }
 
@@ -72,42 +72,42 @@ if (!class_exists('Mare_Admin_Query')) {
                 </ul>
 
                 <h2><?php echo self::svg_icon($wx_icon); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- self::svg_icon() returns wp_kses()-sanitized SVG. ?>微信订单查询</h2>
-                <input type="text" id="npcink-wx-input" placeholder="请输入微信订单号">
-                <button id="npcink-wx-button" class="button button-primary">查询</button>
+                <input type="text" id="npcink-pay-refund-wx-input" placeholder="请输入微信订单号">
+                <button id="npcink-pay-refund-wx-button" class="button button-primary">查询</button>
                 <div class="table_style">
-                    <div id="npcink-wx-data"></div>
+                    <div id="npcink-pay-refund-wx-data"></div>
                 </div>
 
                 <h2><?php echo self::svg_icon($zfb_icon); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- self::svg_icon() returns wp_kses()-sanitized SVG. ?>支付宝订单查询</h2>
-                <input type="text" id="my-plugin-input" placeholder="请输入支付宝订单号">
-                <button id="my-plugin-button" class="button button-primary">查询</button>
+                <input type="text" id="npcink-pay-refund-zfb-input" placeholder="请输入支付宝订单号">
+                <button id="npcink-pay-refund-zfb-button" class="button button-primary">查询</button>
                 <div class="table_style">
-                    <div id="my-plugin-data"></div>
+                    <div id="npcink-pay-refund-zfb-data"></div>
 
                 </div>
                 <!--展示数据-->
                 <h2>操作记录</h2>
-                <div class="mare-record-toolbar">
-                    <label for="mare-record-keyword" class="screen-reader-text"><?php echo esc_html__('搜索退款记录', 'npcink-pay-refund'); ?></label>
-                    <input type="search" id="mare-record-keyword" class="regular-text" placeholder="<?php echo esc_attr__('搜索订单号、操作员或原因', 'npcink-pay-refund'); ?>">
+                <div class="npcink-pay-refund-record-toolbar">
+                    <label for="npcink-pay-refund-record-keyword" class="screen-reader-text"><?php echo esc_html__('搜索退款记录', 'npcink-pay-refund'); ?></label>
+                    <input type="search" id="npcink-pay-refund-record-keyword" class="regular-text" placeholder="<?php echo esc_attr__('搜索订单号、操作员或原因', 'npcink-pay-refund'); ?>">
 
-                    <label for="mare-record-type" class="screen-reader-text"><?php echo esc_html__('支付类型', 'npcink-pay-refund'); ?></label>
-                    <select id="mare-record-type">
+                    <label for="npcink-pay-refund-record-type" class="screen-reader-text"><?php echo esc_html__('支付类型', 'npcink-pay-refund'); ?></label>
+                    <select id="npcink-pay-refund-record-type">
                         <option value=""><?php echo esc_html__('全部类型', 'npcink-pay-refund'); ?></option>
                         <option value="微信"><?php echo esc_html__('微信', 'npcink-pay-refund'); ?></option>
                         <option value="支付宝"><?php echo esc_html__('支付宝', 'npcink-pay-refund'); ?></option>
                     </select>
 
-                    <label for="mare-record-date-from"><?php echo esc_html__('起始日期', 'npcink-pay-refund'); ?></label>
-                    <input type="date" id="mare-record-date-from">
+                    <label for="npcink-pay-refund-record-date-from"><?php echo esc_html__('起始日期', 'npcink-pay-refund'); ?></label>
+                    <input type="date" id="npcink-pay-refund-record-date-from">
 
-                    <label for="mare-record-date-to"><?php echo esc_html__('结束日期', 'npcink-pay-refund'); ?></label>
-                    <input type="date" id="mare-record-date-to">
+                    <label for="npcink-pay-refund-record-date-to"><?php echo esc_html__('结束日期', 'npcink-pay-refund'); ?></label>
+                    <input type="date" id="npcink-pay-refund-record-date-to">
 
-                    <button type="button" class="button" id="mare-record-reset"><?php echo esc_html__('重置', 'npcink-pay-refund'); ?></button>
-                    <span class="description" id="mare-record-summary"></span>
+                    <button type="button" class="button" id="npcink-pay-refund-record-reset"><?php echo esc_html__('重置', 'npcink-pay-refund'); ?></button>
+                    <span class="description" id="npcink-pay-refund-record-summary"></span>
                 </div>
-                <table id="dataTable" class="wp-list-table widefat fixed striped">
+                <table id="npcink-pay-refund-records" class="wp-list-table widefat fixed striped">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -142,19 +142,19 @@ if (!class_exists('Mare_Admin_Query')) {
             $ver = self::$plugin_version;
             $name = self::$plugin_name;
             //是否是指定页面
-            if ('dashboard_page_refund_querys' != $hook) {
+            if ('dashboard_page_npcink_pay_refund_query' != $hook) {
                 return;
             }
 
-            if (!Mare_Admin_Authority::current_user_can_refund()) {
+            if (!Npcink_Pay_Refund_Admin_Authority::current_user_can_refund()) {
                 return;
             }
 
-            wp_enqueue_style($name, plugin_dir_url(dirname(__DIR__)) . 'admin/css/mare-admin.css', array(), $ver, false);
-            wp_enqueue_script($name, plugin_dir_url(dirname(__DIR__)) . 'admin/js/mare-admin.js', array('jquery'), $ver, true);
-            wp_localize_script($name, 'mareRefundQuery', array(
+            wp_enqueue_style($name, plugin_dir_url(dirname(__DIR__)) . 'admin/css/npcink-pay-refund-admin.css', array(), $ver, false);
+            wp_enqueue_script($name, plugin_dir_url(dirname(__DIR__)) . 'admin/js/npcink-pay-refund-admin.js', array('jquery'), $ver, true);
+            wp_localize_script($name, 'npcinkPayRefundQuery', array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('mare_refund_action'),
+                'nonce' => wp_create_nonce('npcink_pay_refund_action'),
                 //20条退款记录
                 'data' =>   self::get_data(),
             ));
@@ -188,7 +188,7 @@ if (!class_exists('Mare_Admin_Query')) {
         public static function get_data()
         {
             global $wpdb;
-            $table_name = esc_sql($wpdb->prefix . 'npc_refund_order');
+            $table_name = esc_sql($wpdb->prefix . 'npcink_pay_refund_order');
 
             // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom refund table dashboard query with a sanitized table name.
             $results = $wpdb->get_results(

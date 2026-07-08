@@ -6,8 +6,8 @@
  * @link       https://www.npc.ink
  * @since      1.0.0
  *
- * @package    Mare
- * @subpackage Mare/includes
+ * @package    Npcink_Pay_Refund
+ * @subpackage Npcink_Pay_Refund/includes
  */
 
 /**
@@ -17,11 +17,11 @@
  * the plugin, and register them with the WordPress API. Call the
  * run function to execute the list of actions and filters.
  *
- * @package    Mare
- * @subpackage Mare/includes
+ * @package    Npcink_Pay_Refund
+ * @subpackage Npcink_Pay_Refund/includes
  * @author     Muze <1355471563@qq.com>
  */
-class Mare_Loader {
+class Npcink_Pay_Refund_Loader {
 
 	/**
 	 * The array of actions registered with WordPress.

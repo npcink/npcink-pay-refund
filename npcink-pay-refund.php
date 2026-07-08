@@ -37,36 +37,36 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('MARE_VERSION', '1.3.0');
+define('NPCINK_PAY_REFUND_VERSION', '1.3.0');
 
 /**
  * The code that runs during plugin activation.
- * This action is documented in includes/class-mare-activator.php
+ * This action is documented in includes/class-npcink-pay-refund-activator.php
  */
-function mare_activate()
+function npcink_pay_refund_activate()
 {
-	require_once plugin_dir_path(__FILE__) . 'includes/class-mare-activator.php';
-	Mare_Activator::activate();
+	require_once plugin_dir_path(__FILE__) . 'includes/class-npcink-pay-refund-activator.php';
+	Npcink_Pay_Refund_Activator::activate();
 }
 
 /**
  * The code that runs during plugin deactivation.
- * This action is documented in includes/class-mare-deactivator.php
+ * This action is documented in includes/class-npcink-pay-refund-deactivator.php
  */
-function mare_deactivate()
+function npcink_pay_refund_deactivate()
 {
-	require_once plugin_dir_path(__FILE__) . 'includes/class-mare-deactivator.php';
-	Mare_Deactivator::deactivate();
+	require_once plugin_dir_path(__FILE__) . 'includes/class-npcink-pay-refund-deactivator.php';
+	Npcink_Pay_Refund_Deactivator::deactivate();
 }
 
-register_activation_hook(__FILE__, 'mare_activate');
-register_deactivation_hook(__FILE__, 'mare_deactivate');
+register_activation_hook(__FILE__, 'npcink_pay_refund_activate');
+register_deactivation_hook(__FILE__, 'npcink_pay_refund_deactivate');
 
 /**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require plugin_dir_path(__FILE__) . 'includes/class-mare.php';
+require plugin_dir_path(__FILE__) . 'includes/class-npcink-pay-refund.php';
 
 if (file_exists(plugin_dir_path(__FILE__) . 'vendor/autoload.php')) {
 	require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
@@ -82,14 +82,14 @@ if (file_exists(plugin_dir_path(__FILE__) . 'vendor/autoload.php')) {
  *
  * @since    1.0.0
  */
-function mare_run()
+function npcink_pay_refund_run()
 {
 
-	$plugin = new Mare();
+	$plugin = new Npcink_Pay_Refund();
 
 	$plugin->run();
 }
-mare_run();
+npcink_pay_refund_run();
 
 
 
@@ -101,17 +101,17 @@ require_once plugin_dir_path(__FILE__) . 'index.php';
 
 /**加载微信支付 */
 if (is_admin()) {
-	require_once plugin_dir_path(__FILE__) . 'admin/pay/mare-admin-wx.php';
-	function mare_run_wx()
+	require_once plugin_dir_path(__FILE__) . 'admin/pay/npcink-pay-refund-admin-wx.php';
+	function npcink_pay_refund_run_wx()
 	{
-		$plugin = new Mare_Admin_Wx();
+		$plugin = new Npcink_Pay_Refund_Admin_Wx();
 		$plugin->run();
 	}
-	mare_run_wx();
+	npcink_pay_refund_run_wx();
 }
 
 //设置按钮
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), function ($links) {
-	$links[] = '<a href="' . esc_url(get_admin_url(null, 'plugins.php?page=refun_config')) . '">' . esc_html__('设置', 'npcink-pay-refund') . '</a>';
+	$links[] = '<a href="' . esc_url(get_admin_url(null, 'plugins.php?page=npcink_pay_refund_config')) . '">' . esc_html__('设置', 'npcink-pay-refund') . '</a>';
 	return $links;
 });

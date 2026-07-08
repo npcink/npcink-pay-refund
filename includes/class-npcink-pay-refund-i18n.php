@@ -9,8 +9,8 @@
  * @link       https://www.npc.ink
  * @since      1.0.0
  *
- * @package    Mare
- * @subpackage Mare/includes
+ * @package    Npcink_Pay_Refund
+ * @subpackage Npcink_Pay_Refund/includes
  */
 
 /**
@@ -20,11 +20,11 @@
  * so that it is ready for translation.
  *
  * @since      1.0.0
- * @package    Mare
- * @subpackage Mare/includes
+ * @package    Npcink_Pay_Refund
+ * @subpackage Npcink_Pay_Refund/includes
  * @author     Muze <1355471563@qq.com>
  */
-class Mare_i18n {
+class Npcink_Pay_Refund_I18n {
 
 
 	/**
