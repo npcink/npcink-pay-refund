@@ -6,7 +6,7 @@ Use this checklist for the first real merchant run. Do not test refunds against 
 
 - Build package: `composer build:zip`
 - Verify package: `composer verify`
-- Install package from `build/magick-refund-1.3.0.zip`, not a raw source archive.
+- Install package from `build/npcink-pay-refund-1.3.0.zip`, not a raw source archive.
 - Confirm `vendor/autoload.php` exists in the installed plugin.
 
 ## Alipay

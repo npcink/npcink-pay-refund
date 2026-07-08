@@ -4,8 +4,9 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WP_PATH="${WP_PATH:-/Users/muze/Local Sites/test/app/public}"
 WP_URL="${WP_URL:-http://test.local}"
-PLUGIN_SLUG="${PLUGIN_SLUG:-magick-refund}"
-PCP_SLUG="${PCP_SLUG:-mare}"
+PACKAGE_SLUG="${PACKAGE_SLUG:-npcink-pay-refund}"
+PCP_TARGET="${PCP_TARGET:-$(basename "$ROOT_DIR")}"
+PCP_SLUG="${PCP_SLUG:-npcink-pay-refund}"
 
 cd "$ROOT_DIR"
 
@@ -22,28 +23,28 @@ ZIP_FILE="$(composer build:zip | tail -n 1)"
 
 ZIP_LIST="$(unzip -Z1 "$ZIP_FILE")"
 
-if ! grep -Fx "${PLUGIN_SLUG}/vendor/autoload.php" <<< "$ZIP_LIST" >/dev/null; then
+if ! grep -Fx "${PACKAGE_SLUG}/vendor/autoload.php" <<< "$ZIP_LIST" >/dev/null; then
 	echo "Release zip is missing vendor/autoload.php." >&2
 	exit 1
 fi
-if grep -E "^${PLUGIN_SLUG}/(vite/|bin/|build/|admin/sdk/guzz/|admin/sdk/zfb/)" <<< "$ZIP_LIST" >/dev/null; then
+if grep -E "^${PACKAGE_SLUG}/(vite/|bin/|build/|admin/sdk/)" <<< "$ZIP_LIST" >/dev/null; then
 	echo "Release zip contains excluded development or legacy SDK paths." >&2
 	exit 1
 fi
 
 if command -v wp >/dev/null 2>&1 && [ -d "$WP_PATH" ]; then
-	wp plugin check "$PLUGIN_SLUG" \
+	wp plugin check "$PCP_TARGET" \
 		--slug="$PCP_SLUG" \
 		--path="$WP_PATH" \
 		--url="$WP_URL" \
 		--allow-root \
 		--format=json \
 		--exclude-directories=build,bin \
-		--exclude-files=.gitignore,.distignore >/tmp/magick-refund-pcp-verify.out
+		--exclude-files=.gitignore,.distignore >/tmp/npcink-pay-refund-pcp-verify.out
 
 	php <<'PHP'
 <?php
-$lines = file('/tmp/magick-refund-pcp-verify.out', FILE_IGNORE_NEW_LINES);
+$lines = file('/tmp/npcink-pay-refund-pcp-verify.out', FILE_IGNORE_NEW_LINES);
 $rows = array();
 foreach ($lines as $line) {
 	$trim = trim($line);

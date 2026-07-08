@@ -74,7 +74,7 @@ class Mare
 		} else {
 			$this->version = '1.0.0';
 		}
-		$this->plugin_name = 'mare';
+		$this->plugin_name = 'npcink-pay-refund';
 
 		$this->load_dependencies();
 		$this->set_locale();

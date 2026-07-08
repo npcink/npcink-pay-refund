@@ -1,6 +1,6 @@
 {
-    "name": "muze/magick-refund",
-    "description": "WordPress refund management plugin for Alipay and WeChat Pay.",
+    "name": "npcink/pay-refund",
+    "description": "Npcink Pay Refund plugin for Alipay and WeChat Pay refunds in WordPress.",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
     "require": {

@@ -65,13 +65,13 @@ if (!class_exists('Mare_Admin_Zfb')) {
         {
             Mare_Admin_Authority::require_refund_ajax_permission();
             if (!self::ensure_sdk_ready()) {
-                wp_send_json_error(array('message' => __('支付宝配置不可用，请检查 APP ID、应用私钥和支付宝公钥。', 'mare')), 400);
+                wp_send_json_error(array('message' => __('支付宝配置不可用，请检查 APP ID、应用私钥和支付宝公钥。', 'npcink-pay-refund')), 400);
             }
 
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Verified by require_refund_ajax_permission().
             $param = isset($_REQUEST['param']) ? sanitize_text_field(wp_unslash($_REQUEST['param'])) : ''; // 获取传递的参数
             if ('' === $param) {
-                wp_send_json_error(array('message' => __('请输入支付宝订单号。', 'mare')), 400);
+                wp_send_json_error(array('message' => __('请输入支付宝订单号。', 'npcink-pay-refund')), 400);
             }
 
             try {
@@ -118,12 +118,12 @@ if (!class_exists('Mare_Admin_Zfb')) {
                     //$error_msg = "调用失败，原因：" . $result->msg . "，" . $result->subMsg . PHP_EOL;
                     // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
                     error_log('Mare Alipay query rejected: ' . wp_json_encode($result));
-                    wp_send_json_error(array('message' => __('支付宝订单查询失败，请检查订单号或稍后重试。', 'mare')), 400);
+                    wp_send_json_error(array('message' => __('支付宝订单查询失败，请检查订单号或稍后重试。', 'npcink-pay-refund')), 400);
                 }
             } catch (Exception $e) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
                 error_log('Mare Alipay query failed: ' . $e->getMessage());
-                wp_send_json_error(array('message' => __('调用失败，请检查支付宝配置或稍后重试。', 'mare')), 500);
+                wp_send_json_error(array('message' => __('调用失败，请检查支付宝配置或稍后重试。', 'npcink-pay-refund')), 500);
             }
         }
 
@@ -138,7 +138,7 @@ if (!class_exists('Mare_Admin_Zfb')) {
         {
             Mare_Admin_Authority::require_refund_ajax_permission();
             if (!self::ensure_sdk_ready()) {
-                wp_send_json_error(array('message' => __('支付宝配置不可用，请检查 APP ID、应用私钥和支付宝公钥。', 'mare')), 400);
+                wp_send_json_error(array('message' => __('支付宝配置不可用，请检查 APP ID、应用私钥和支付宝公钥。', 'npcink-pay-refund')), 400);
             }
 
             // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by require_refund_ajax_permission().
@@ -147,7 +147,7 @@ if (!class_exists('Mare_Admin_Zfb')) {
             $order_reason = isset($_POST['order_reason']) ? Mare_Admin::sanitize_textarea_value(wp_unslash($_POST['order_reason'])) : ''; // 获取传递的退款原因
 
             if ('' === $order_id || '' === $order_reason) {
-                wp_send_json_error(array('message' => __('订单号和退款原因不能为空。', 'mare')), 400);
+                wp_send_json_error(array('message' => __('订单号和退款原因不能为空。', 'npcink-pay-refund')), 400);
             }
 
             //获取登录用户名
@@ -159,21 +159,21 @@ if (!class_exists('Mare_Admin_Zfb')) {
                 $query_result = Factory::payment()->common()->query($order_id);
                 $responseChecker = new ResponseChecker();
                 if (!$responseChecker->success($query_result)) {
-                    wp_send_json_error(array('message' => __('订单查询失败，未执行退款。', 'mare')), 400);
+                    wp_send_json_error(array('message' => __('订单查询失败，未执行退款。', 'npcink-pay-refund')), 400);
                 }
 
                 if ('TRADE_SUCCESS' !== $query_result->tradeStatus) {
-                    wp_send_json_error(array('message' => __('该订单当前状态不可退款。', 'mare')), 400);
+                    wp_send_json_error(array('message' => __('该订单当前状态不可退款。', 'npcink-pay-refund')), 400);
                 }
 
                 if (!Mare_Admin_Public::contrast_time($query_result->sendPayDate)) {
-                    wp_send_json_error(array('message' => __('该订单时间超过 7 天，未执行退款。', 'mare')), 400);
+                    wp_send_json_error(array('message' => __('该订单时间超过 7 天，未执行退款。', 'npcink-pay-refund')), 400);
                 }
 
                 $order_amount = $query_result->totalAmount;
                 $order_time = $query_result->sendPayDate;
                 if (!Mare_Admin_Public::claim_refund($order_id, '支付宝')) {
-                    wp_send_json_error(array('message' => __('该订单已提交退款或正在处理中，请勿重复操作。', 'mare')), 409);
+                    wp_send_json_error(array('message' => __('该订单已提交退款或正在处理中，请勿重复操作。', 'npcink-pay-refund')), 409);
                 }
                 $refund_claimed = true;
 
@@ -200,7 +200,7 @@ if (!class_exists('Mare_Admin_Zfb')) {
                     }
                     // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
                     error_log('Mare Alipay refund rejected: ' . wp_json_encode($result));
-                    wp_send_json_error(array('message' => __('支付宝退款失败，请稍后重试或联系管理员检查日志。', 'mare')), 400);
+                    wp_send_json_error(array('message' => __('支付宝退款失败，请稍后重试或联系管理员检查日志。', 'npcink-pay-refund')), 400);
                 }
             } catch (Exception $e) {
                 if ($refund_claimed) {
@@ -208,7 +208,7 @@ if (!class_exists('Mare_Admin_Zfb')) {
                 }
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
                 error_log('Mare Alipay refund failed: ' . $e->getMessage());
-                wp_send_json_error(array('message' => __('退款失败，请检查支付宝配置或稍后重试。', 'mare')), 500);
+                wp_send_json_error(array('message' => __('退款失败，请检查支付宝配置或稍后重试。', 'npcink-pay-refund')), 500);
             }
         }
 
@@ -240,15 +240,15 @@ if (!class_exists('Mare_Admin_Zfb')) {
             $sdk_ready = class_exists(Factory::class) && class_exists(Config::class) && class_exists(ResponseChecker::class);
             $items[] = array(
                 'status' => $sdk_ready ? 'ok' : 'error',
-                'label' => __('支付宝 SDK', 'mare'),
-                'message' => $sdk_ready ? __('Composer 自动加载正常。', 'mare') : __('未找到支付宝 EasySDK，请重新生成发布包。', 'mare'),
+                'label' => __('支付宝 SDK', 'npcink-pay-refund'),
+                'message' => $sdk_ready ? __('Composer 自动加载正常。', 'npcink-pay-refund') : __('未找到支付宝 EasySDK，请重新生成发布包。', 'npcink-pay-refund'),
             );
             $ok = $ok && $sdk_ready;
 
             $fields = array(
-                'appid' => __('APP ID', 'mare'),
-                'private_key' => __('应用私钥', 'mare'),
-                'public_key' => __('支付宝公钥', 'mare'),
+                'appid' => __('APP ID', 'npcink-pay-refund'),
+                'private_key' => __('应用私钥', 'npcink-pay-refund'),
+                'public_key' => __('支付宝公钥', 'npcink-pay-refund'),
             );
             foreach ($fields as $field => $label) {
                 $value = trim((string) Mare_Admin::get_options($config, $field));
@@ -256,7 +256,7 @@ if (!class_exists('Mare_Admin_Zfb')) {
                 $items[] = array(
                     'status' => $has_value ? 'ok' : 'error',
                     'label' => $label,
-                    'message' => $has_value ? __('已配置。', 'mare') : __('未配置。', 'mare'),
+                    'message' => $has_value ? __('已配置。', 'npcink-pay-refund') : __('未配置。', 'npcink-pay-refund'),
                 );
                 $ok = $ok && $has_value;
             }
@@ -266,29 +266,29 @@ if (!class_exists('Mare_Admin_Zfb')) {
                     Factory::setOptions(self::getOptions());
                     $items[] = array(
                         'status' => 'ok',
-                        'label' => __('SDK 初始化', 'mare'),
-                        'message' => __('本地初始化通过；真实订单查询仍需商户配置有效。', 'mare'),
+                        'label' => __('SDK 初始化', 'npcink-pay-refund'),
+                        'message' => __('本地初始化通过；真实订单查询仍需商户配置有效。', 'npcink-pay-refund'),
                     );
                 } catch (Exception $e) {
                     $ok = false;
                     $items[] = array(
                         'status' => 'error',
-                        'label' => __('SDK 初始化', 'mare'),
-                        'message' => __('初始化失败，请检查密钥内容。', 'mare'),
+                        'label' => __('SDK 初始化', 'npcink-pay-refund'),
+                        'message' => __('初始化失败，请检查密钥内容。', 'npcink-pay-refund'),
                     );
                 } catch (Throwable $e) {
                     $ok = false;
                     $items[] = array(
                         'status' => 'error',
-                        'label' => __('SDK 初始化', 'mare'),
-                        'message' => __('初始化失败，请检查依赖和密钥内容。', 'mare'),
+                        'label' => __('SDK 初始化', 'npcink-pay-refund'),
+                        'message' => __('初始化失败，请检查依赖和密钥内容。', 'npcink-pay-refund'),
                     );
                 }
             }
 
             return array(
                 'status' => $ok ? 'ok' : 'error',
-                'message' => $ok ? __('支付宝配置本地检测通过。', 'mare') : __('支付宝配置仍有阻塞项。', 'mare'),
+                'message' => $ok ? __('支付宝配置本地检测通过。', 'npcink-pay-refund') : __('支付宝配置仍有阻塞项。', 'npcink-pay-refund'),
                 'items' => $items,
             );
         }

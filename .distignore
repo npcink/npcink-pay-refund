@@ -11,6 +11,7 @@ bin/
 build/
 node_modules/
 vite/
+admin/sdk/
 admin/sdk/guzz/
 *.log
 *.tmp

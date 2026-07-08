@@ -28,7 +28,7 @@
 
 - 按设置提示填写相关鉴权信息
 - 管理员可直接操作退款；也可以在设置中选择允许操作退款的员工账号。
-- 推荐使用 `composer build:zip` 生成的 `build/magick-refund-版本号.zip` 安装或发布；不要直接使用源码包安装，否则可能缺少微信支付 SDK 的 `vendor/` 依赖。
+- 推荐使用 `composer build:zip` 生成的 `build/npcink-pay-refund-版本号.zip` 安装或发布；不要直接使用源码包安装，否则可能缺少微信支付 SDK 的 `vendor/` 依赖。
 
 ## 更新记录
 

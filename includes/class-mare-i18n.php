@@ -36,7 +36,7 @@ class Mare_i18n {
 
 		// phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- Keep explicit loading for non-wp.org and local language files.
 		load_plugin_textdomain(
-			'mare',
+			'npcink-pay-refund',
 			false,
 			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages/'
 		);

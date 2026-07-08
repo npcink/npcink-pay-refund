@@ -54,7 +54,7 @@ if (!class_exists('Mare_Admin_Query')) {
         public static function menu_displays()
         {
             if (!Mare_Admin_Authority::current_user_can_refund()) {
-                wp_die(esc_html__('您没有退款操作权限。', 'mare'));
+                wp_die(esc_html__('您没有退款操作权限。', 'npcink-pay-refund'));
             }
 
             $zfb_icon = '<svg t="1686029655000" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3536" width="128" height="128"><path d="M1024.0512 701.0304V196.864A196.9664 196.9664 0 0 0 827.136 0H196.864A196.9664 196.9664 0 0 0 0 196.864v630.272A196.9152 196.9152 0 0 0 196.864 1024h630.272a197.12 197.12 0 0 0 193.8432-162.0992c-52.224-22.6304-278.528-120.32-396.4416-176.64-89.7024 108.6976-183.7056 173.9264-325.3248 173.9264s-236.1856-87.2448-224.8192-194.048c7.4752-70.0416 55.552-184.576 264.2944-164.9664 110.08 10.3424 160.4096 30.8736 250.1632 60.5184 23.1936-42.5984 42.496-89.4464 57.1392-139.264H248.064v-39.424h196.9152V311.1424H204.8V267.776h240.128V165.632s2.1504-15.9744 19.8144-15.9744h98.4576V267.776h256v43.4176h-256V381.952h208.8448a805.9904 805.9904 0 0 1-84.8384 212.6848c60.672 22.016 336.7936 106.3936 336.7936 106.3936zM283.5456 791.6032c-149.6576 0-173.312-94.464-165.376-133.9392 7.8336-39.3216 51.2-90.624 134.4-90.624 95.5904 0 181.248 24.4736 284.0576 74.5472-72.192 94.0032-160.9216 150.016-253.0816 150.016z" fill="#009FE8" p-id="3537"></path></svg>';
@@ -88,23 +88,23 @@ if (!class_exists('Mare_Admin_Query')) {
                 <!--展示数据-->
                 <h2>操作记录</h2>
                 <div class="mare-record-toolbar">
-                    <label for="mare-record-keyword" class="screen-reader-text"><?php echo esc_html__('搜索退款记录', 'mare'); ?></label>
-                    <input type="search" id="mare-record-keyword" class="regular-text" placeholder="<?php echo esc_attr__('搜索订单号、操作员或原因', 'mare'); ?>">
+                    <label for="mare-record-keyword" class="screen-reader-text"><?php echo esc_html__('搜索退款记录', 'npcink-pay-refund'); ?></label>
+                    <input type="search" id="mare-record-keyword" class="regular-text" placeholder="<?php echo esc_attr__('搜索订单号、操作员或原因', 'npcink-pay-refund'); ?>">
 
-                    <label for="mare-record-type" class="screen-reader-text"><?php echo esc_html__('支付类型', 'mare'); ?></label>
+                    <label for="mare-record-type" class="screen-reader-text"><?php echo esc_html__('支付类型', 'npcink-pay-refund'); ?></label>
                     <select id="mare-record-type">
-                        <option value=""><?php echo esc_html__('全部类型', 'mare'); ?></option>
-                        <option value="微信"><?php echo esc_html__('微信', 'mare'); ?></option>
-                        <option value="支付宝"><?php echo esc_html__('支付宝', 'mare'); ?></option>
+                        <option value=""><?php echo esc_html__('全部类型', 'npcink-pay-refund'); ?></option>
+                        <option value="微信"><?php echo esc_html__('微信', 'npcink-pay-refund'); ?></option>
+                        <option value="支付宝"><?php echo esc_html__('支付宝', 'npcink-pay-refund'); ?></option>
                     </select>
 
-                    <label for="mare-record-date-from"><?php echo esc_html__('起始日期', 'mare'); ?></label>
+                    <label for="mare-record-date-from"><?php echo esc_html__('起始日期', 'npcink-pay-refund'); ?></label>
                     <input type="date" id="mare-record-date-from">
 
-                    <label for="mare-record-date-to"><?php echo esc_html__('结束日期', 'mare'); ?></label>
+                    <label for="mare-record-date-to"><?php echo esc_html__('结束日期', 'npcink-pay-refund'); ?></label>
                     <input type="date" id="mare-record-date-to">
 
-                    <button type="button" class="button" id="mare-record-reset"><?php echo esc_html__('重置', 'mare'); ?></button>
+                    <button type="button" class="button" id="mare-record-reset"><?php echo esc_html__('重置', 'npcink-pay-refund'); ?></button>
                     <span class="description" id="mare-record-summary"></span>
                 </div>
                 <table id="dataTable" class="wp-list-table widefat fixed striped">

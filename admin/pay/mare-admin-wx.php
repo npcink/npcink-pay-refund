@@ -95,7 +95,7 @@ if (!class_exists('Mare_Admin_Wx')) {
 
         public static function api_error_message()
         {
-            return __('微信支付配置不可用，请检查商户号、商户 API 证书序列号、商户私钥、微信支付公钥 ID / 平台证书序列号，以及微信支付公钥 / 平台证书。', 'mare');
+            return __('微信支付配置不可用，请检查商户号、商户 API 证书序列号、商户私钥、微信支付公钥 ID / 平台证书序列号，以及微信支付公钥 / 平台证书。', 'npcink-pay-refund');
         }
 
         public static function api_error_log_context($response)
@@ -178,7 +178,7 @@ if (!class_exists('Mare_Admin_Wx')) {
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Verified by require_refund_ajax_permission().
             $order_id = isset($_REQUEST['order_id']) ? sanitize_text_field(wp_unslash($_REQUEST['order_id'])) : '';
             if ('' === $order_id) {
-                wp_send_json_error(array('message' => __('请输入微信订单号。', 'mare')), 400);
+                wp_send_json_error(array('message' => __('请输入微信订单号。', 'npcink-pay-refund')), 400);
             }
 
             // 发送请求
@@ -186,7 +186,7 @@ if (!class_exists('Mare_Admin_Wx')) {
             $data = self::get_transaction($order_id);
 
             if (!$data || empty($data->trade_state)) {
-                wp_send_json_error(array('message' => __('微信订单查询失败，请检查订单号和鉴权配置。', 'mare')), 400);
+                wp_send_json_error(array('message' => __('微信订单查询失败，请检查订单号和鉴权配置。', 'npcink-pay-refund')), 400);
             }
 
                     $time = self::handle_time(isset($data->success_time) ? $data->success_time : '');
@@ -213,13 +213,13 @@ if (!class_exists('Mare_Admin_Wx')) {
                             $response_html = self::query_refunds($order);
                             break;
                         case "NOTPAY":
-                            $response_html = esc_html__('未支付', 'mare');
+                            $response_html = esc_html__('未支付', 'npcink-pay-refund');
                             break;
                         case "CLOSED":
-                            $response_html = esc_html__('已关闭', 'mare');
+                            $response_html = esc_html__('已关闭', 'npcink-pay-refund');
                             break;
                         default:
-                            $response_html = esc_html__('若您输入的是微信订单号，且重复看到这句话，请联系管理员', 'mare');
+                            $response_html = esc_html__('若您输入的是微信订单号，且重复看到这句话，请联系管理员', 'npcink-pay-refund');
                     }
 
 
@@ -258,22 +258,22 @@ if (!class_exists('Mare_Admin_Wx')) {
             $api_reason = self::format_refund_reason($reason);
 
             if ('' === $order_id || '' === $api_reason) {
-                wp_send_json_error(array('message' => __('订单号和退款原因不能为空。', 'mare')), 400);
+                wp_send_json_error(array('message' => __('订单号和退款原因不能为空。', 'npcink-pay-refund')), 400);
             }
 
             $order_data = self::get_transaction($order_id);
             if (!$order_data || empty($order_data->trade_state)) {
-                wp_send_json_error(array('message' => __('订单查询失败，未执行退款。', 'mare')), 400);
+                wp_send_json_error(array('message' => __('订单查询失败，未执行退款。', 'npcink-pay-refund')), 400);
             }
 
             $order_time = self::handle_time(isset($order_data->success_time) ? $order_data->success_time : '');
             if ('SUCCESS' !== $order_data->trade_state || !Mare_Admin_Public::contrast_time($order_time)) {
-                wp_send_json_error(array('message' => __('该订单当前状态或时间窗口不可退款。', 'mare')), 400);
+                wp_send_json_error(array('message' => __('该订单当前状态或时间窗口不可退款。', 'npcink-pay-refund')), 400);
             }
 
             $order_amount = isset($order_data->amount->payer_total) ? (int) $order_data->amount->payer_total : 0;
             if ($order_amount <= 0) {
-                wp_send_json_error(array('message' => __('订单金额无效，未执行退款。', 'mare')), 400);
+                wp_send_json_error(array('message' => __('订单金额无效，未执行退款。', 'npcink-pay-refund')), 400);
             }
 
 
@@ -281,7 +281,7 @@ if (!class_exists('Mare_Admin_Wx')) {
             // 准备退款订单号
             $order_refund_id =  $order_id . "-refund";
             if (!Mare_Admin_Public::claim_refund($order_id, '微信')) {
-                wp_send_json_error(array('message' => __('该订单已提交退款或正在处理中，请勿重复操作。', 'mare')), 409);
+                wp_send_json_error(array('message' => __('该订单已提交退款或正在处理中，请勿重复操作。', 'npcink-pay-refund')), 409);
             }
 
             // 发送请求
@@ -306,7 +306,7 @@ if (!class_exists('Mare_Admin_Wx')) {
 
             if (!$data || empty($data->status)) {
                 Mare_Admin_Public::release_refund_claim($order_id, '微信');
-                wp_send_json_error(array('message' => __('微信退款请求失败，请稍后重试。', 'mare')), 400);
+                wp_send_json_error(array('message' => __('微信退款请求失败，请稍后重试。', 'npcink-pay-refund')), 400);
             }
 
                 //当前时间
@@ -337,15 +337,15 @@ if (!class_exists('Mare_Admin_Wx')) {
                         break;
                     case "CLOSED": // 退款关闭
                         Mare_Admin_Public::release_refund_claim($order_id, '微信');
-                        wp_send_json_error(array('message' => __('退款关闭', 'mare')), 400);
+                        wp_send_json_error(array('message' => __('退款关闭', 'npcink-pay-refund')), 400);
                         break;
                     case "ABNORMAL": // 退款异常
                         Mare_Admin_Public::release_refund_claim($order_id, '微信');
-                        wp_send_json_error(array('message' => __('退款异常，请联系管理员。', 'mare')), 400);
+                        wp_send_json_error(array('message' => __('退款异常，请联系管理员。', 'npcink-pay-refund')), 400);
                         break;
                     default:
                         Mare_Admin_Public::release_refund_claim($order_id, '微信');
-                        wp_send_json_error(array('message' => __('退款失败，请稍后重试。', 'mare')), 400);
+                        wp_send_json_error(array('message' => __('退款失败，请稍后重试。', 'npcink-pay-refund')), 400);
                 }
 
             wp_send_json_success(array('html' => $response_html));
@@ -407,17 +407,17 @@ if (!class_exists('Mare_Admin_Wx')) {
             $sdk_ready = class_exists(Builder::class) && class_exists(Rsa::class);
             $items[] = array(
                 'status' => $sdk_ready ? 'ok' : 'error',
-                'label' => __('微信支付 SDK', 'mare'),
-                'message' => $sdk_ready ? __('Composer 自动加载正常。', 'mare') : __('未找到微信支付 SDK，请重新生成发布包。', 'mare'),
+                'label' => __('微信支付 SDK', 'npcink-pay-refund'),
+                'message' => $sdk_ready ? __('Composer 自动加载正常。', 'npcink-pay-refund') : __('未找到微信支付 SDK，请重新生成发布包。', 'npcink-pay-refund'),
             );
             $ok = $ok && $sdk_ready;
 
             $fields = array(
-                'mch_id' => __('商户号', 'mare'),
-                'cert_api' => __('商户 API 证书序列号', 'mare'),
-                'platform_key_id' => __('微信支付公钥 ID / 平台证书序列号', 'mare'),
-                'cert_key' => __('商户私钥', 'mare'),
-                'platform_public_key' => __('微信支付公钥 / 平台证书', 'mare'),
+                'mch_id' => __('商户号', 'npcink-pay-refund'),
+                'cert_api' => __('商户 API 证书序列号', 'npcink-pay-refund'),
+                'platform_key_id' => __('微信支付公钥 ID / 平台证书序列号', 'npcink-pay-refund'),
+                'cert_key' => __('商户私钥', 'npcink-pay-refund'),
+                'platform_public_key' => __('微信支付公钥 / 平台证书', 'npcink-pay-refund'),
             );
             foreach ($fields as $field => $label) {
                 $value = trim((string) Mare_Admin::get_options($config, $field));
@@ -425,7 +425,7 @@ if (!class_exists('Mare_Admin_Wx')) {
                 $items[] = array(
                     'status' => $has_value ? 'ok' : 'error',
                     'label' => $label,
-                    'message' => $has_value ? __('已配置。', 'mare') : __('未配置。', 'mare'),
+                    'message' => $has_value ? __('已配置。', 'npcink-pay-refund') : __('未配置。', 'npcink-pay-refund'),
                 );
                 $ok = $ok && $has_value;
             }
@@ -438,30 +438,30 @@ if (!class_exists('Mare_Admin_Wx')) {
                     $client_ready = self::client_is_ready();
                     $items[] = array(
                         'status' => $client_ready ? 'ok' : 'error',
-                        'label' => __('密钥解析', 'mare'),
-                        'message' => $client_ready ? __('商户私钥和微信支付公钥可解析。', 'mare') : __('客户端未完成初始化。', 'mare'),
+                        'label' => __('密钥解析', 'npcink-pay-refund'),
+                        'message' => $client_ready ? __('商户私钥和微信支付公钥可解析。', 'npcink-pay-refund') : __('客户端未完成初始化。', 'npcink-pay-refund'),
                     );
                     $ok = $ok && $client_ready;
                 } catch (Exception $e) {
                     $ok = false;
                     $items[] = array(
                         'status' => 'error',
-                        'label' => __('密钥解析', 'mare'),
-                        'message' => __('解析失败，请检查 PEM 内容和序列号。', 'mare'),
+                        'label' => __('密钥解析', 'npcink-pay-refund'),
+                        'message' => __('解析失败，请检查 PEM 内容和序列号。', 'npcink-pay-refund'),
                     );
                 } catch (Throwable $e) {
                     $ok = false;
                     $items[] = array(
                         'status' => 'error',
-                        'label' => __('密钥解析', 'mare'),
-                        'message' => __('解析失败，请检查依赖和 PEM 内容。', 'mare'),
+                        'label' => __('密钥解析', 'npcink-pay-refund'),
+                        'message' => __('解析失败，请检查依赖和 PEM 内容。', 'npcink-pay-refund'),
                     );
                 }
             }
 
             return array(
                 'status' => $ok ? 'ok' : 'error',
-                'message' => $ok ? __('微信配置本地检测通过。', 'mare') : __('微信配置仍有阻塞项。', 'mare'),
+                'message' => $ok ? __('微信配置本地检测通过。', 'npcink-pay-refund') : __('微信配置仍有阻塞项。', 'npcink-pay-refund'),
                 'items' => $items,
             );
         }
@@ -485,7 +485,7 @@ if (!class_exists('Mare_Admin_Wx')) {
             });
 
             if (!$data) {
-                return esc_html__('退款查询失败，请稍后重试。', 'mare');
+                return esc_html__('退款查询失败，请稍后重试。', 'npcink-pay-refund');
             }
 
             $refund_time = isset($data->success_time) ? self::handle_time($data->success_time) : '';
@@ -496,7 +496,7 @@ if (!class_exists('Mare_Admin_Wx')) {
             $table_html .= "<tr><td>订单号-退款查询：</td><td>" . esc_html(isset($data->out_trade_no) ? $data->out_trade_no : '') . "</td></tr>";
             $table_html .= "<tr><td>退款时间：</td><td>" . esc_html($refund_time) . "</td></tr>";
             $table_html .= "<tr><td>退款金额：</td><td>" . esc_html($refund_amount) . "元</td></tr>";
-            $table_html .= "<tr><td>退款状态：</td><td>" . ('SUCCESS' === $status ? "<span class='green'>退款成功</span>" : esc_html__('请重试', 'mare')) . "</td></tr>";
+            $table_html .= "<tr><td>退款状态：</td><td>" . ('SUCCESS' === $status ? "<span class='green'>退款成功</span>" : esc_html__('请重试', 'npcink-pay-refund')) . "</td></tr>";
             $table_html .= "</table>";
             return $table_html;
         }

@@ -10,10 +10,10 @@
  *
  * @link              https://www.npc.ink
  * @since             1.0.0
- * @package           Mare
+ * @package           Npcink_Pay_Refund
  *
  * @wordpress-plugin
- * Plugin Name:       Magick Refund
+ * Plugin Name:       Npcink Pay Refund
  * Plugin URI:        https://www.npc.ink/277376.html
  * Description:       支持支付宝官方和微信官方退款功能，使用官方提供的SDK，带权限控制。
  * Version:           1.3.0
@@ -23,7 +23,7 @@
  * Requires PHP:      7.4
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       mare
+ * Text Domain:       npcink-pay-refund
  * Domain Path:       /languages
  */
 
@@ -112,6 +112,6 @@ if (is_admin()) {
 
 //设置按钮
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), function ($links) {
-	$links[] = '<a href="' . esc_url(get_admin_url(null, 'plugins.php?page=refun_config')) . '">' . esc_html__('设置', 'mare') . '</a>';
+	$links[] = '<a href="' . esc_url(get_admin_url(null, 'plugins.php?page=refun_config')) . '">' . esc_html__('设置', 'npcink-pay-refund') . '</a>';
 	return $links;
 });

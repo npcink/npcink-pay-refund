@@ -1,4 +1,4 @@
-=== Magick Refund ===
+=== Npcink Pay Refund ===
 Contributors: muze
 Requires at least: 6.0
 Tested up to: 7.0
@@ -11,7 +11,7 @@ Refund management for Alipay and WeChat Pay with WordPress admin settings, opera
 
 == Description ==
 
-Magick Refund provides an admin-side refund workflow for Alipay and WeChat Pay. It stores refund records in a custom database table, supports operator permission controls, and keeps payment secrets in a separate non-autoloaded option.
+Npcink Pay Refund provides an admin-side refund workflow for Alipay and WeChat Pay. It stores refund records in a custom database table, supports operator permission controls, and keeps payment secrets in a separate non-autoloaded option.
 
 The release package must be generated with `composer build:zip` so the required Composer dependencies are included.
 

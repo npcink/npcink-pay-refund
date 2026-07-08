@@ -172,11 +172,11 @@ if (!class_exists('Mare_Admin_Authority')) {
         public static function require_refund_ajax_permission()
         {
             if (!check_ajax_referer('mare_refund_action', 'nonce', false)) {
-                wp_send_json_error(array('message' => __('请求校验失败，请刷新页面后重试。', 'mare')), 403);
+                wp_send_json_error(array('message' => __('请求校验失败，请刷新页面后重试。', 'npcink-pay-refund')), 403);
             }
 
             if (!self::current_user_can_refund()) {
-                wp_send_json_error(array('message' => __('您没有退款操作权限。', 'mare')), 403);
+                wp_send_json_error(array('message' => __('您没有退款操作权限。', 'npcink-pay-refund')), 403);
             }
         }
     } //end
