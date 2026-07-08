@@ -8,6 +8,7 @@
 ## 维护文档
 
 - [项目改造历史与当前状态](PROJECT-HISTORY.zh-CN.md)
+- [1.3.1 开发复盘与维护思路](DEVELOPMENT-SUMMARY-1.3.1.zh-CN.md)
 - [WordPress.org 上架准备记录](WPORG-LISTING-PREP.zh-CN.md)
 - [首次真实商户联调清单](REFUND-INTEGRATION-CHECKLIST.md)
 
@@ -41,6 +42,17 @@
 ### 2026
 
 #### 0707
+
+> 1.3.1
+
+- 增加退款时间窗口设置，替代固定 7 天限制
+- 微信退款 `PROCESSING` 状态改为 pending + 10 秒自动轮询，不再把受理中误判为失败
+- 微信退款成功落库需要 pending 或明确上下文，避免空操作人和空原因记录
+- 微信重复退款保护增加 pending 状态检查，锁过期后也不会直接重复提交
+- 微信和支付宝错误日志改为摘要记录，避免完整支付网关响应体进入日志
+- 卸载时清理微信 pending 和退款锁 option
+- 退款查询结果升级为状态卡片
+- 后台 CSS/JS 资源版本改为插件版本加文件修改时间，解决真实站点旧资源缓存问题
 
 > 1.3.0
 

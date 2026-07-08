@@ -67,7 +67,12 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                 <h2><?php echo esc_html(get_admin_page_title()); ?></h2>
                 <ul class="ul_meat">
                     <li>每天早上8点账户清零，可尝试下午或有用户支付后，再进行退款操作</li>
-                    <li>支付时间超过7天的订单无法使用本功能进行退款</li>
+                    <li>
+                        <?php
+                        /* translators: %d: configured refund window in days. */
+                        echo esc_html(sprintf(__('支付时间超过 %d 天的订单无法使用本功能进行退款', 'npcink-pay-refund'), Npcink_Pay_Refund_Admin_Public::refund_window_days()));
+                        ?>
+                    </li>
                     <li>若发生异常请联系管理员</li>
                 </ul>
 
@@ -139,8 +144,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
         {
 
 
-            $ver = self::$plugin_version;
             $name = self::$plugin_name;
+            $style_path = 'admin/css/npcink-pay-refund-admin.css';
+            $script_path = 'admin/js/npcink-pay-refund-admin.js';
             //是否是指定页面
             if ('dashboard_page_npcink_pay_refund_query' != $hook) {
                 return;
@@ -150,8 +156,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                 return;
             }
 
-            wp_enqueue_style($name, plugin_dir_url(dirname(__DIR__)) . 'admin/css/npcink-pay-refund-admin.css', array(), $ver, false);
-            wp_enqueue_script($name, plugin_dir_url(dirname(__DIR__)) . 'admin/js/npcink-pay-refund-admin.js', array('jquery'), $ver, true);
+            wp_enqueue_style($name, plugin_dir_url(dirname(__DIR__)) . $style_path, array(), Npcink_Pay_Refund_Admin::asset_version($style_path, self::$plugin_version), false);
+            wp_enqueue_script($name, plugin_dir_url(dirname(__DIR__)) . $script_path, array('jquery'), Npcink_Pay_Refund_Admin::asset_version($script_path, self::$plugin_version), true);
             wp_localize_script($name, 'npcinkPayRefundQuery', array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('npcink_pay_refund_action'),

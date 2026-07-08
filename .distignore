@@ -17,6 +17,7 @@ vite/
 admin/sdk/
 admin/sdk/guzz/
 docs/PROJECT-HISTORY.zh-CN.md
+docs/WPORG-LISTING-PREP.zh-CN.md
 vendor/alipaysdk/easysdk/csharp/
 vendor/alipaysdk/easysdk/java/
 vendor/alipaysdk/easysdk/kernel/csharp/

@@ -141,6 +141,16 @@ class Npcink_Pay_Refund_Admin
 		}
 	}
 
+	public static function asset_version($relative_path, $fallback_version)
+	{
+		$file = plugin_dir_path(dirname(__FILE__)) . ltrim($relative_path, '/');
+		if (file_exists($file)) {
+			return $fallback_version . '-' . filemtime($file);
+		}
+
+		return $fallback_version;
+	}
+
 	public static function sanitize_textarea_value($value)
 	{
 		if (function_exists('sanitize_textarea_field')) {

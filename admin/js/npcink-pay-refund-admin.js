@@ -11,6 +11,7 @@ function trimHyphen(input) {
 
 jQuery(document).ready(function ($) {
   var refundQuery = window.npcinkPayRefundQuery || {};
+  var wxRefundPollTimer = null;
 
   function showRefundNotice($container, message, type) {
     var noticeType = type || "error";
@@ -44,6 +45,69 @@ jQuery(document).ready(function ($) {
       $container,
       response && response.data && response.data.message ? response.data.message : fallback
     );
+  }
+
+  function stopWxRefundPolling() {
+    if (wxRefundPollTimer) {
+      clearTimeout(wxRefundPollTimer);
+      wxRefundPollTimer = null;
+    }
+  }
+
+  function appendWxPollingNotice($container, message, type) {
+    $container.find(".npcink-pay-refund-wx-polling-notice").remove();
+    $("<p>", {
+      class: "description npcink-pay-refund-wx-polling-notice npcink-pay-refund-wx-polling-" + (type || "info"),
+      text: message,
+    }).appendTo($container);
+  }
+
+  function pollWxRefundStatus(orderId, attempt) {
+    var maxAttempts = 10;
+    var nextAttempt = attempt || 1;
+    var $container = $("#npcink-pay-refund-wx-data");
+
+    if (!orderId) {
+      return;
+    }
+
+    appendWxPollingNotice($container, "正在同步微信退款状态（" + nextAttempt + "/" + maxAttempts + "）...");
+    wxRefundPollTimer = setTimeout(function () {
+      $.ajax({
+        url: refundQuery.ajaxurl,
+        type: "POST",
+        dataType: "json",
+        data: {
+          action: "npcink_pay_refund_wx_refund_status",
+          nonce: refundQuery.nonce,
+          order_id: orderId,
+        },
+        success: function (response) {
+          renderRefundResponse($container, response, "微信退款状态查询失败，请稍后手动查询。");
+
+          if (!response || !response.success || !response.data) {
+            return;
+          }
+
+          if (response.data.refund_status === "SUCCESS") {
+            stopWxRefundPolling();
+            return;
+          }
+
+          if (response.data.poll && nextAttempt < maxAttempts) {
+            pollWxRefundStatus(orderId, nextAttempt + 1);
+            return;
+          }
+
+          if (response.data.poll) {
+            appendWxPollingNotice($container, "微信仍在处理退款，请稍后再次点击查询刷新结果。", "pending");
+          }
+        },
+        error: function () {
+          appendWxPollingNotice($container, "微信退款状态暂时无法同步，请稍后手动查询。", "error");
+        },
+      });
+    }, 1000);
   }
 
   //支付宝查询
@@ -114,6 +178,8 @@ jQuery(document).ready(function ($) {
 
   //微信支付查询
   $("#npcink-pay-refund-wx-button").click(function () {
+    stopWxRefundPolling();
+
     var data = {
       action: "npcink_pay_refund_wx_order_query",
       nonce: refundQuery.nonce,
@@ -163,6 +229,10 @@ jQuery(document).ready(function ($) {
       data: data,
       success: function (response) {
         renderRefundResponse($("#npcink-pay-refund-wx-data"), response, "微信退款失败，请稍后重试。");
+        stopWxRefundPolling();
+        if (response && response.success && response.data && response.data.poll) {
+          pollWxRefundStatus(response.data.order_id || data.order_id, 1);
+        }
       },
       error: function (xhr) {
         showRefundNotice(

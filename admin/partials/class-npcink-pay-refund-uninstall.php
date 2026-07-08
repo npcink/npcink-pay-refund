@@ -67,6 +67,24 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Uninstall')) {
             delete_option('npcink_pay_refund_config');
             delete_option('npcink_pay_refund_secrets');
             delete_option('npcink_pay_refund_schema_version');
+            self::delete_options_by_prefix('npcink_pay_refund_pending_wx_');
+            self::delete_options_by_prefix('npcink_pay_refund_lock_');
+        }
+
+        public static function delete_options_by_prefix($prefix)
+        {
+            global $wpdb;
+
+            $options_table = esc_sql($wpdb->options);
+            $like = $wpdb->esc_like($prefix) . '%';
+            // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Uninstall cleanup for this plugin's generated options using the known options table.
+            $wpdb->query(
+                $wpdb->prepare(
+                    "DELETE FROM {$options_table} WHERE option_name LIKE %s",
+                    $like
+                )
+            );
+            // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         }
     }
 }

@@ -27,6 +27,18 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
             add_action('wp_ajax_npcink_pay_refund_zfb_order_refund', array(__CLASS__, 'npcink_pay_refund_zfb_order_refund'));
         }
 
+        public static function gateway_result_log_context($result)
+        {
+            $context = array();
+            foreach (array('code', 'msg', 'subCode', 'subMsg') as $field) {
+                if (isset($result->{$field}) && is_scalar($result->{$field})) {
+                    $context[$field] = sanitize_text_field((string) $result->{$field});
+                }
+            }
+
+            return wp_json_encode($context);
+        }
+
         /**
          * 准备认证信息
          */
@@ -110,14 +122,15 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                     } else {
 
                         if ($data->tradeStatus == "TRADE_SUCCESS" && !Npcink_Pay_Refund_Admin_Public::contrast_time($data->sendPayDate)) {
-                            $table_html .= '<h3>该订单时间超过7天，无法使用本功能退款，请联系管理员操作</h3>';
+                            /* translators: %d: configured refund window in days. */
+                            $table_html .= '<h3>' . esc_html(sprintf(__('该订单时间超过 %d 天，无法使用本功能退款，请联系管理员操作', 'npcink-pay-refund'), Npcink_Pay_Refund_Admin_Public::refund_window_days())) . '</h3>';
                         }
                     }
                     wp_send_json_success(array('html' => $table_html));
                 } else {
                     //$error_msg = "调用失败，原因：" . $result->msg . "，" . $result->subMsg . PHP_EOL;
                     // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
-                    error_log('Npcink_Pay_Refund Alipay query rejected: ' . wp_json_encode($result));
+                    error_log('Npcink_Pay_Refund Alipay query rejected: ' . self::gateway_result_log_context($result));
                     wp_send_json_error(array('message' => __('支付宝订单查询失败，请检查订单号或稍后重试。', 'npcink-pay-refund')), 400);
                 }
             } catch (Exception $e) {
@@ -167,7 +180,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                 }
 
                 if (!Npcink_Pay_Refund_Admin_Public::contrast_time($query_result->sendPayDate)) {
-                    wp_send_json_error(array('message' => __('该订单时间超过 7 天，未执行退款。', 'npcink-pay-refund')), 400);
+                    /* translators: %d: configured refund window in days. */
+                    wp_send_json_error(array('message' => sprintf(__('该订单时间超过 %d 天，未执行退款。', 'npcink-pay-refund'), Npcink_Pay_Refund_Admin_Public::refund_window_days())), 400);
                 }
 
                 $order_amount = $query_result->totalAmount;
@@ -199,7 +213,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                         Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '支付宝');
                     }
                     // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
-                    error_log('Npcink_Pay_Refund Alipay refund rejected: ' . wp_json_encode($result));
+                    error_log('Npcink_Pay_Refund Alipay refund rejected: ' . self::gateway_result_log_context($result));
                     wp_send_json_error(array('message' => __('支付宝退款失败，请稍后重试或联系管理员检查日志。', 'npcink-pay-refund')), 400);
                 }
             } catch (Exception $e) {

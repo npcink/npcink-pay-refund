@@ -9,12 +9,12 @@
 - 主文件：`npcink-pay-refund.php`
 - Text Domain：`npcink-pay-refund`
 - Composer 包名：`npcink/pay-refund`
-- 当前版本：`1.3.0`
+- 当前版本：`1.3.1`
 - GitHub 仓库：`https://github.com/muze-page/npcink-pay-refund`
 - GitHub Release：`https://github.com/muze-page/npcink-pay-refund/releases/tag/v1.3.0`
-- 发布包：`build/npcink-pay-refund-1.3.0.zip`
+- 本地待发布包：`build/npcink-pay-refund-1.3.1.zip`
 
-当前本地仓库目录仍是 `/Users/muze/gitee/magick-refund`。这是本机路径遗留，不影响插件源码、GitHub remote、发布包或 WordPress 安装目录。若要继续降噪，可把本地目录移动到 `/Users/muze/github/npcink-pay-refund`。
+当前本地仓库目录是 `/Users/muze/gitee/npcink-pay-refund`。这是本机路径，不影响插件源码、GitHub remote、发布包或 WordPress 安装目录。若要继续降噪，可把本地目录移动到 `/Users/muze/github/npcink-pay-refund`。
 
 ## 命名改造
 
@@ -89,6 +89,23 @@
 - 退款记录表增加唯一键和时间索引
 - 设置和密钥 option 设置为非 autoload，减少前台自动加载压力
 - 卸载时按配置删除退款记录表和插件设置
+
+## 1.3.1 正式使用前补强
+
+1.3.1 主要面向正式使用前的可靠性、可解释性和真实站点缓存问题：
+
+- 配置页补充支付宝、微信字段来源说明
+- 微信证书序列号和商户私钥相邻展示，降低配置误填概率
+- 增加退款时间窗口设置，默认 7 天，可配置 1 到 365 天
+- 微信退款 `PROCESSING` 状态改为 pending 记录加 10 秒轮询查询
+- 微信成功落库必须有 pending 或明确 fallback 上下文，避免空记录
+- 再次发起微信退款前先检查 pending 状态，避免锁过期后重复提交
+- 微信和支付宝错误日志改为摘要记录，不写完整支付网关响应体
+- 卸载时清理微信 pending 和退款锁 option
+- 退款记录导出按钮去掉“全部”字样，并说明最多导出最新 5000 条
+- 后台 CSS/JS 资源版本改为 `插件版本 + 文件修改时间`，避免真实站点继续加载旧资源
+
+详细开发复盘见 `docs/DEVELOPMENT-SUMMARY-1.3.1.zh-CN.md`。
 
 ## 发布与验证
 

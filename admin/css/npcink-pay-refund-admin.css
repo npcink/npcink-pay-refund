@@ -8,6 +8,9 @@
 .npc_style pre {
   display: inline-block;
 }
+.npc_style .orange {
+  color: #996800;
+}
 .npc_style .ul_meat {
   list-style-type: auto;
   padding: 0 1em;
@@ -130,6 +133,93 @@
 .npc_style .npcink-pay-refund-record-empty {
   margin: 6px 0;
 }
+.npc_style .npcink-pay-refund-result-card {
+  background: #fff;
+  border: 1px solid #dcdcde;
+  border-left-width: 4px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+  margin: 20px 0;
+  max-width: 900px;
+  padding: 18px 20px;
+}
+.npc_style .npcink-pay-refund-result-header {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.npc_style .npcink-pay-refund-result-header h3 {
+  font-size: 20px;
+  line-height: 1.3;
+  margin: 8px 0 4px;
+}
+.npc_style .npcink-pay-refund-result-header p {
+  color: #646970;
+  font-size: 14px;
+  margin: 0;
+  max-width: 720px;
+}
+.npc_style .npcink-pay-refund-result-badge {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.8;
+  padding: 0 10px;
+}
+.npc_style .npcink-pay-refund-result-details {
+  display: grid;
+  gap: 12px 24px;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  margin: 18px 0 0;
+}
+.npc_style .npcink-pay-refund-result-detail dt {
+  color: #646970;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+.npc_style .npcink-pay-refund-result-detail dd {
+  color: #1d2327;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.npc_style .npcink-pay-refund-result-success {
+  border-left-color: #00a32a;
+}
+.npc_style .npcink-pay-refund-result-success .npcink-pay-refund-result-badge {
+  background: #edfaef;
+  border-color: #68de7c;
+  color: #0a6b1f;
+}
+.npc_style .npcink-pay-refund-result-processing {
+  border-left-color: #dba617;
+}
+.npc_style .npcink-pay-refund-result-processing .npcink-pay-refund-result-badge {
+  background: #fcf9e8;
+  border-color: #dba617;
+  color: #7a5600;
+}
+.npc_style .npcink-pay-refund-result-error {
+  border-left-color: #d63638;
+}
+.npc_style .npcink-pay-refund-result-error .npcink-pay-refund-result-badge {
+  background: #fcf0f1;
+  border-color: #ffabaf;
+  color: #8a2424;
+}
+.npc_style .npcink-pay-refund-result-closed,
+.npc_style .npcink-pay-refund-result-neutral {
+  border-left-color: #8c8f94;
+}
+.npc_style .npcink-pay-refund-result-closed .npcink-pay-refund-result-badge,
+.npc_style .npcink-pay-refund-result-neutral .npcink-pay-refund-result-badge {
+  background: #f6f7f7;
+  border-color: #c3c4c7;
+  color: #50575e;
+}
 .npc_style .npcink-pay-refund-status-badge {
   border: 1px solid #c3c4c7;
   border-radius: 999px;
@@ -167,6 +257,9 @@
   color: #50575e;
 }
 @media (max-width: 782px) {
+  .npc_style .npcink-pay-refund-result-details {
+    grid-template-columns: 1fr;
+  }
   .npc_style .npcink-pay-refund-record-toolbar {
     align-items: stretch;
     flex-direction: column;

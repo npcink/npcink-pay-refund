@@ -142,7 +142,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 
 
 		//时间对比
-		//若输入的时间与当前时间对比超过7天，则输出false
+		//若输入的时间与当前时间对比超过配置的退款时间窗口，则输出false
 		public static function contrast_time($time)
 		{
 			// 将 $time 转换为 DateTime 对象
@@ -154,15 +154,22 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 			// 计算时间差
 			$interval = $timeObj->diff(new DateTime());
 
-			// 判断时间差是否超过 7 天
-			if ($interval->days > 7) {
-				// 超过 7 天，返回 false
+			// 判断时间差是否超过配置的退款时间窗口
+			if ($interval->days > self::refund_window_days()) {
+				// 超过配置天数，返回 false
 				$result = false;
 			} else {
-				// 没有超过 7 天，返回 true
+				// 没有超过配置天数，返回 true
 				$result = true;
 			}
 			return $result;
+		}
+
+		public static function refund_window_days()
+		{
+			$config = Npcink_Pay_Refund_Admin::npcConfig('refund');
+			$days = (int) Npcink_Pay_Refund_Admin::get_options($config, 'window_days', 7);
+			return min(365, max(1, $days));
 		}
 
 
