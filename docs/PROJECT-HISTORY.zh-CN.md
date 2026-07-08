@@ -116,6 +116,8 @@
 - 保留左侧状态色条和简洁状态 badge
 - “通道状态”不再展示 `SUCCESS`、`PROCESSING` 等英文 API 状态码，改为中文状态文案
 
+详细开发复盘见 `docs/DEVELOPMENT-SUMMARY-1.3.2.zh-CN.md`。
+
 ## 发布与验证
 
 发布包必须通过 Composer 构建：

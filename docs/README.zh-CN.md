@@ -9,6 +9,7 @@
 
 - [项目改造历史与当前状态](PROJECT-HISTORY.zh-CN.md)
 - [1.3.1 开发复盘与维护思路](DEVELOPMENT-SUMMARY-1.3.1.zh-CN.md)
+- [1.3.2 界面压缩与中文状态复盘](DEVELOPMENT-SUMMARY-1.3.2.zh-CN.md)
 - [WordPress.org 上架准备记录](WPORG-LISTING-PREP.zh-CN.md)
 - [首次真实商户联调清单](REFUND-INTEGRATION-CHECKLIST.md)
 
