@@ -8,6 +8,7 @@
 .distignore
 .vscode/
 assets/
+source-assets/
 sj/
 bin/
 build/

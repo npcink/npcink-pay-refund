@@ -68,7 +68,14 @@
 
 ### 图标和横幅
 
-用户提供的原始图片位于本地素材目录 `sj/`。该目录只作为本地素材来源，不进入安装包，也不提交到 Git。
+用户提供的原始图片已整理到 `source-assets/`。该目录用于保存可追溯的上架源素材，可提交到 Git，但不进入插件安装包。
+
+当前源素材：
+
+- `source-assets/icon-source.png`
+- `source-assets/banner-source.png`
+
+`sj/` 仅作为本地临时素材目录，不进入安装包，也不提交到 Git。
 
 已从原始素材生成 WordPress.org 规范资产：
 
@@ -81,11 +88,12 @@
 
 ## 打包策略
 
-`assets/` 是 WordPress.org SVN 顶层资产目录使用的材料，不应放进插件安装包。`sj/` 是本地原始素材目录，也不应进入安装包。
+`assets/` 是 WordPress.org SVN 顶层资产目录使用的成品材料，不应放进插件安装包。`source-assets/` 是可提交的上架源素材目录，也不应进入安装包。`sj/` 是本地临时素材目录，同样不应进入安装包。
 
 已在 `.distignore` 排除：
 
 - `assets/`
+- `source-assets/`
 - `sj/`
 - `bin/`
 - `build/`
@@ -133,7 +141,7 @@ composer verify
 - JavaScript `node --check` 通过。
 - 发布包构建通过。
 - ZIP 包包含 `vendor/autoload.php`。
-- ZIP 包不包含 `assets/`、`sj/`、`bin/`、`build/` 等发布资产或开发目录。
+- ZIP 包不包含 `assets/`、`source-assets/`、`sj/`、`bin/`、`build/` 等发布资产、源素材或开发目录。
 - 本地 WordPress 安装激活 smoke test 通过。
 - Plugin Check clean。
 
@@ -155,10 +163,12 @@ composer verify
 - `assets/screenshot-2.png`
 - `assets/screenshot-3.png`
 - `assets/screenshot-4.png`
+- `source-assets/icon-source.png`
+- `source-assets/banner-source.png`
 
 不提交：
 
-- `sj/` 原始素材目录。
+- `sj/` 本地临时素材目录。
 - `build/` 构建产物。
 - `vendor/` 本地依赖目录。
 
