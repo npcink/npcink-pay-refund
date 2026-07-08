@@ -95,7 +95,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 
         public static function api_error_message()
         {
-            return __('微信支付配置不可用，请检查商户号、商户 API 证书序列号、商户私钥、微信支付公钥 ID / 平台证书序列号，以及微信支付公钥 / 平台证书。', 'npcink-pay-refund');
+            return __('微信支付配置不可用，请检查商户号、商户 API 证书序列号、商户私钥，以及用于验签的微信支付公钥 ID / 平台证书序列号和微信支付公钥 / 平台证书。', 'npcink-pay-refund');
         }
 
         public static function api_error_log_context($response)
@@ -415,9 +415,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
             $fields = array(
                 'mch_id' => __('商户号', 'npcink-pay-refund'),
                 'cert_api' => __('商户 API 证书序列号', 'npcink-pay-refund'),
-                'platform_key_id' => __('微信支付公钥 ID / 平台证书序列号', 'npcink-pay-refund'),
                 'cert_key' => __('商户私钥', 'npcink-pay-refund'),
-                'platform_public_key' => __('微信支付公钥 / 平台证书', 'npcink-pay-refund'),
             );
             foreach ($fields as $field => $label) {
                 $value = trim((string) Npcink_Pay_Refund_Admin::get_options($config, $field));
@@ -426,6 +424,21 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
                     'status' => $has_value ? 'ok' : 'error',
                     'label' => $label,
                     'message' => $has_value ? __('已配置。', 'npcink-pay-refund') : __('未配置。', 'npcink-pay-refund'),
+                );
+                $ok = $ok && $has_value;
+            }
+
+            $verification_fields = array(
+                'platform_key_id' => __('微信支付公钥 ID / 平台证书序列号', 'npcink-pay-refund'),
+                'platform_public_key' => __('微信支付公钥 / 平台证书', 'npcink-pay-refund'),
+            );
+            foreach ($verification_fields as $field => $label) {
+                $value = trim((string) Npcink_Pay_Refund_Admin::get_options($config, $field));
+                $has_value = '' !== $value;
+                $items[] = array(
+                    'status' => $has_value ? 'ok' : 'error',
+                    'label' => $label,
+                    'message' => $has_value ? __('已配置。', 'npcink-pay-refund') : __('保存时允许留空；执行微信查询或退款前必须配置。', 'npcink-pay-refund'),
                 );
                 $ok = $ok && $has_value;
             }

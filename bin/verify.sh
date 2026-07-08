@@ -20,6 +20,12 @@ find . \
 	-path './.git' -prune -o \
 	-name '*.php' -print0 | xargs -0 -n1 php -l
 
+if command -v node >/dev/null 2>&1; then
+	find admin/js -name '*.js' -print0 | xargs -0 -n1 node --check
+else
+	echo "Skipping JavaScript syntax checks: node command is unavailable." >&2
+fi
+
 ZIP_FILE="$(composer build:zip | tail -n 1)"
 
 ZIP_LIST="$(unzip -Z1 "$ZIP_FILE")"
@@ -44,6 +50,7 @@ if command -v wp >/dev/null 2>&1 && [ -d "$WP_PATH" ]; then
 	fi
 
 	wp plugin install "$ZIP_FILE" --force --activate "${WP_CLI_ARGS[@]}" >/tmp/npcink-pay-refund-install-verify.out
+	wp eval-file "$ROOT_DIR/bin/smoke-admin.php" "${WP_CLI_ARGS[@]}"
 
 	wp plugin check "$PCP_TARGET" \
 		--slug="$PCP_SLUG" \

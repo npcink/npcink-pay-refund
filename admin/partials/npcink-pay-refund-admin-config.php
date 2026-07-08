@@ -124,7 +124,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                                 <th scope="row"><label for="npcink-pay-refund-wx-platform-key-id"><?php echo esc_html__('微信支付公钥 ID / 平台证书序列号', 'npcink-pay-refund'); ?></label></th>
                                 <td>
                                     <input class="regular-text" id="npcink-pay-refund-wx-platform-key-id" name="npcink_pay_refund_config[wx][platform_key_id]" type="text" value="<?php echo esc_attr(self::value($config, array('wx', 'platform_key_id'))); ?>">
-                                    <p class="description"><?php echo esc_html__('用于校验微信支付 API v3 应答签名；填写微信支付公钥 ID，或填写平台证书序列号。退款功能必须配置。', 'npcink-pay-refund'); ?></p>
+                                    <p class="description"><?php echo esc_html__('保存时不强制填写；如需执行微信查询或退款，SDK 仍需要可用于验签的微信支付公钥 ID 或平台证书序列号。', 'npcink-pay-refund'); ?></p>
                                 </td>
                             </tr>
                             <tr>
@@ -138,7 +138,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                                 <th scope="row"><label for="npcink-pay-refund-wx-platform-public-key"><?php echo esc_html__('微信支付公钥 / 平台证书', 'npcink-pay-refund'); ?></label></th>
                                 <td>
                                     <textarea class="large-text code" id="npcink-pay-refund-wx-platform-public-key" name="npcink_pay_refund_config[wx][platform_public_key]" rows="7" placeholder="<?php echo esc_attr(self::secret_placeholder($secrets, array('wx', 'platform_public_key'))); ?>"></textarea>
-                                    <p class="description"><?php echo esc_html__('用于校验微信支付 API v3 应答签名；填写微信支付公钥，或填写平台证书 PEM。留空表示保留现有值。', 'npcink-pay-refund'); ?></p>
+                                    <p class="description"><?php echo esc_html__('保存时不强制填写；如需执行微信查询或退款，SDK 仍需要可用于验签的微信支付公钥或平台证书 PEM。留空表示保留现有值。', 'npcink-pay-refund'); ?></p>
                                 </td>
                             </tr>
                         </table>

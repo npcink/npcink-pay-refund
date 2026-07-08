@@ -218,6 +218,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                 if (!class_exists(Factory::class) || !class_exists(Config::class)) {
                     return false;
                 }
+                if (!self::config_has_required_fields()) {
+                    return false;
+                }
                 Factory::setOptions(self::getOptions());
                 return true;
             } catch (Exception $e) {
@@ -229,6 +232,18 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                 error_log('Npcink_Pay_Refund Alipay SDK init failed: ' . $e->getMessage());
                 return false;
             }
+        }
+
+        public static function config_has_required_fields()
+        {
+            $config = Npcink_Pay_Refund_Admin::npcConfig('zfb');
+            foreach (array('appid', 'private_key', 'public_key') as $field) {
+                if ('' === trim((string) Npcink_Pay_Refund_Admin::get_options($config, $field))) {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public static function diagnose_config()

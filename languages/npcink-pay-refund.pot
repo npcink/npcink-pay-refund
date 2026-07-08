@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-08T02:01:27+00:00\n"
+"POT-Creation-Date: 2026-07-08T02:29:52+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: npcink-pay-refund\n"
@@ -83,12 +83,12 @@ msgid "数据与卸载"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:84
-#: admin/pay/npcink-pay-refund-admin-zfb.php:249
+#: admin/pay/npcink-pay-refund-admin-zfb.php:264
 msgid "APP ID"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:90
-#: admin/pay/npcink-pay-refund-admin-zfb.php:250
+#: admin/pay/npcink-pay-refund-admin-zfb.php:265
 msgid "应用私钥"
 msgstr ""
 
@@ -97,7 +97,7 @@ msgid "留空表示保留现有应用私钥。"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:97
-#: admin/pay/npcink-pay-refund-admin-zfb.php:251
+#: admin/pay/npcink-pay-refund-admin-zfb.php:266
 msgid "支付宝公钥"
 msgstr ""
 
@@ -119,16 +119,16 @@ msgid "商户 API 证书序列号，用于生成微信支付请求签名。"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:124
-#: admin/pay/npcink-pay-refund-admin-wx.php:418
+#: admin/pay/npcink-pay-refund-admin-wx.php:432
 msgid "微信支付公钥 ID / 平台证书序列号"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:127
-msgid "用于校验微信支付 API v3 应答签名；填写微信支付公钥 ID，或填写平台证书序列号。退款功能必须配置。"
+msgid "保存时不强制填写；如需执行微信查询或退款，SDK 仍需要可用于验签的微信支付公钥 ID 或平台证书序列号。"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:131
-#: admin/pay/npcink-pay-refund-admin-wx.php:419
+#: admin/pay/npcink-pay-refund-admin-wx.php:418
 msgid "商户私钥"
 msgstr ""
 
@@ -137,12 +137,12 @@ msgid "留空表示保留现有商户私钥。"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:138
-#: admin/pay/npcink-pay-refund-admin-wx.php:420
+#: admin/pay/npcink-pay-refund-admin-wx.php:433
 msgid "微信支付公钥 / 平台证书"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:141
-msgid "用于校验微信支付 API v3 应答签名；填写微信支付公钥，或填写平台证书 PEM。留空表示保留现有值。"
+msgid "保存时不强制填写；如需执行微信查询或退款，SDK 仍需要可用于验签的微信支付公钥或平台证书 PEM。留空表示保留现有值。"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:152
@@ -385,7 +385,7 @@ msgid "重置"
 msgstr ""
 
 #: admin/pay/npcink-pay-refund-admin-wx.php:98
-msgid "微信支付配置不可用，请检查商户号、商户 API 证书序列号、商户私钥、微信支付公钥 ID / 平台证书序列号，以及微信支付公钥 / 平台证书。"
+msgid "微信支付配置不可用，请检查商户号、商户 API 证书序列号、商户私钥，以及用于验签的微信支付公钥 ID / 平台证书序列号和微信支付公钥 / 平台证书。"
 msgstr ""
 
 #: admin/pay/npcink-pay-refund-admin-wx.php:181
@@ -452,7 +452,7 @@ msgid "微信支付 SDK"
 msgstr ""
 
 #: admin/pay/npcink-pay-refund-admin-wx.php:411
-#: admin/pay/npcink-pay-refund-admin-zfb.php:244
+#: admin/pay/npcink-pay-refund-admin-zfb.php:259
 msgid "Composer 自动加载正常。"
 msgstr ""
 
@@ -464,51 +464,56 @@ msgstr ""
 msgid "商户 API 证书序列号"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:428
-#: admin/pay/npcink-pay-refund-admin-zfb.php:259
+#: admin/pay/npcink-pay-refund-admin-wx.php:426
+#: admin/pay/npcink-pay-refund-admin-wx.php:441
+#: admin/pay/npcink-pay-refund-admin-zfb.php:274
 msgid "已配置。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:428
-#: admin/pay/npcink-pay-refund-admin-zfb.php:259
+#: admin/pay/npcink-pay-refund-admin-wx.php:426
+#: admin/pay/npcink-pay-refund-admin-zfb.php:274
 msgid "未配置。"
 msgstr ""
 
 #: admin/pay/npcink-pay-refund-admin-wx.php:441
-#: admin/pay/npcink-pay-refund-admin-wx.php:449
-#: admin/pay/npcink-pay-refund-admin-wx.php:456
+msgid "保存时允许留空；执行微信查询或退款前必须配置。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:454
+#: admin/pay/npcink-pay-refund-admin-wx.php:462
+#: admin/pay/npcink-pay-refund-admin-wx.php:469
 msgid "密钥解析"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:442
+#: admin/pay/npcink-pay-refund-admin-wx.php:455
 msgid "商户私钥和微信支付公钥可解析。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:442
+#: admin/pay/npcink-pay-refund-admin-wx.php:455
 msgid "客户端未完成初始化。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:450
+#: admin/pay/npcink-pay-refund-admin-wx.php:463
 msgid "解析失败，请检查 PEM 内容和序列号。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:457
+#: admin/pay/npcink-pay-refund-admin-wx.php:470
 msgid "解析失败，请检查依赖和 PEM 内容。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:464
+#: admin/pay/npcink-pay-refund-admin-wx.php:477
 msgid "微信配置本地检测通过。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:464
+#: admin/pay/npcink-pay-refund-admin-wx.php:477
 msgid "微信配置仍有阻塞项。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:488
+#: admin/pay/npcink-pay-refund-admin-wx.php:501
 msgid "退款查询失败，请稍后重试。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:499
+#: admin/pay/npcink-pay-refund-admin-wx.php:512
 msgid "请重试"
 msgstr ""
 
@@ -545,37 +550,37 @@ msgstr ""
 msgid "退款失败，请检查支付宝配置或稍后重试。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:243
+#: admin/pay/npcink-pay-refund-admin-zfb.php:258
 msgid "支付宝 SDK"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:244
+#: admin/pay/npcink-pay-refund-admin-zfb.php:259
 msgid "未找到支付宝 EasySDK，请重新生成发布包。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:269
-#: admin/pay/npcink-pay-refund-admin-zfb.php:276
-#: admin/pay/npcink-pay-refund-admin-zfb.php:283
+#: admin/pay/npcink-pay-refund-admin-zfb.php:284
+#: admin/pay/npcink-pay-refund-admin-zfb.php:291
+#: admin/pay/npcink-pay-refund-admin-zfb.php:298
 msgid "SDK 初始化"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:270
+#: admin/pay/npcink-pay-refund-admin-zfb.php:285
 msgid "本地初始化通过；真实订单查询仍需商户配置有效。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:277
+#: admin/pay/npcink-pay-refund-admin-zfb.php:292
 msgid "初始化失败，请检查密钥内容。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:284
+#: admin/pay/npcink-pay-refund-admin-zfb.php:299
 msgid "初始化失败，请检查依赖和密钥内容。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:291
+#: admin/pay/npcink-pay-refund-admin-zfb.php:306
 msgid "支付宝配置本地检测通过。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:291
+#: admin/pay/npcink-pay-refund-admin-zfb.php:306
 msgid "支付宝配置仍有阻塞项。"
 msgstr ""
 
