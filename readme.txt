@@ -4,7 +4,7 @@ Tags: alipay, wechat pay, refund, payment, admin tools
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -90,6 +90,11 @@ Payment secrets are stored in a separate non-autoloaded WordPress option named `
 4. Refund record search and filtering.
 
 == Changelog ==
+
+= 1.3.2 =
+
+* Made the WeChat refund result card more compact for WordPress admin use.
+* Displayed WeChat refund channel status in Chinese instead of raw API status codes.
 
 = 1.3.1 =
 

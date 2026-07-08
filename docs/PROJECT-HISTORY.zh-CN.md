@@ -9,10 +9,10 @@
 - 主文件：`npcink-pay-refund.php`
 - Text Domain：`npcink-pay-refund`
 - Composer 包名：`npcink/pay-refund`
-- 当前版本：`1.3.1`
+- 当前版本：`1.3.2`
 - GitHub 仓库：`https://github.com/muze-page/npcink-pay-refund`
 - GitHub Release：`https://github.com/muze-page/npcink-pay-refund/releases/tag/v1.3.0`
-- 本地待发布包：`build/npcink-pay-refund-1.3.1.zip`
+- 本地待发布包：`build/npcink-pay-refund-1.3.2.zip`
 
 当前本地仓库目录是 `/Users/muze/gitee/npcink-pay-refund`。这是本机路径，不影响插件源码、GitHub remote、发布包或 WordPress 安装目录。若要继续降噪，可把本地目录移动到 `/Users/muze/github/npcink-pay-refund`。
 
@@ -106,6 +106,15 @@
 - 后台 CSS/JS 资源版本改为 `插件版本 + 文件修改时间`，避免真实站点继续加载旧资源
 
 详细开发复盘见 `docs/DEVELOPMENT-SUMMARY-1.3.1.zh-CN.md`。
+
+## 1.3.2 退款结果卡片压缩
+
+1.3.2 主要调整微信退款结果展示：
+
+- 结果卡片最大宽度从 900px 缩到 720px
+- 内边距、标题、说明和字段值字号下调，更接近 WordPress 后台工具界面
+- 保留左侧状态色条和简洁状态 badge
+- “通道状态”不再展示 `SUCCESS`、`PROCESSING` 等英文 API 状态码，改为中文状态文案
 
 ## 发布与验证
 

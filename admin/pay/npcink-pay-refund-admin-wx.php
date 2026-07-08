@@ -643,7 +643,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
             $html .= self::render_refund_detail(__('商户退款单号', 'npcink-pay-refund'), $refund_id);
             $html .= self::render_refund_detail(__('退款金额', 'npcink-pay-refund'), '' !== (string) $refund_amount ? $refund_amount . __('元', 'npcink-pay-refund') : '');
             $html .= self::render_refund_detail(__('退款时间', 'npcink-pay-refund'), $refund_time);
-            $html .= self::render_refund_detail(__('通道状态', 'npcink-pay-refund'), $status);
+            $html .= self::render_refund_detail(__('通道状态', 'npcink-pay-refund'), $status_view['title']);
             $html .= '</dl>';
             $html .= '</div>';
 
