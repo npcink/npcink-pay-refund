@@ -1,0 +1,584 @@
+# Copyright (C) 2026 Muze
+# This file is distributed under the GPL-2.0+.
+msgid ""
+msgstr ""
+"Project-Id-Version: Magick Refund 1.3.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/mare\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-07-08T01:29:13+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: mare\n"
+
+#. Plugin Name of the plugin
+#: mare.php
+msgid "Magick Refund"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: mare.php
+msgid "https://www.npc.ink/277376.html"
+msgstr ""
+
+#. Description of the plugin
+#: mare.php
+msgid "支持支付宝官方和微信官方退款功能，使用官方提供的SDK，带权限控制。"
+msgstr ""
+
+#. Author of the plugin
+#: mare.php
+msgid "Muze"
+msgstr ""
+
+#. Author URI of the plugin
+#: mare.php
+msgid "https://www.npc.ink"
+msgstr ""
+
+#: admin/partials/mare-admin-authority.php:175
+msgid "请求校验失败，请刷新页面后重试。"
+msgstr ""
+
+#: admin/partials/mare-admin-authority.php:179
+#: admin/partials/mare-admin-query.php:57
+msgid "您没有退款操作权限。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:54
+msgid "您没有权限访问此页面。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:68
+msgid "完成支付配置和退款权限配置后，才可使用对应退款功能。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:73
+msgid "退款配置分组"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:74
+#: admin/partials/mare-admin-config.php:81
+#: admin/partials/mare-admin-query.php:98
+msgid "支付宝"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:75
+#: admin/partials/mare-admin-config.php:108
+#: admin/partials/mare-admin-query.php:97
+msgid "微信"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:76
+#: admin/partials/mare-admin-config.php:149
+msgid "退款权限"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:77
+#: admin/partials/mare-admin-config.php:187
+msgid "数据与卸载"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:84
+#: admin/pay/mare-admin-zfb.php:249
+msgid "APP ID"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:90
+#: admin/pay/mare-admin-zfb.php:250
+msgid "应用私钥"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:93
+msgid "留空表示保留现有应用私钥。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:97
+#: admin/pay/mare-admin-zfb.php:251
+msgid "支付宝公钥"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:100
+msgid "留空表示保留现有支付宝公钥。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:111
+#: admin/pay/mare-admin-wx.php:416
+msgid "商户号"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:117
+msgid "证书序列号"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:120
+msgid "商户 API 证书序列号，用于生成微信支付请求签名。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:124
+#: admin/pay/mare-admin-wx.php:418
+msgid "微信支付公钥 ID / 平台证书序列号"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:127
+msgid "用于校验微信支付 API v3 应答签名；填写微信支付公钥 ID，或填写平台证书序列号。退款功能必须配置。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:131
+#: admin/pay/mare-admin-wx.php:419
+msgid "商户私钥"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:134
+msgid "留空表示保留现有商户私钥。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:138
+#: admin/pay/mare-admin-wx.php:420
+msgid "微信支付公钥 / 平台证书"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:141
+msgid "用于校验微信支付 API v3 应答签名；填写微信支付公钥，或填写平台证书 PEM。留空表示保留现有值。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:152
+msgid "退款专员"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:153
+msgid "管理员默认拥有退款权限，无需添加；只有作者及以上权限的非管理员用户可以被添加为退款专员。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:161
+msgid "可访问页面"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:162
+msgid "退款专员登录后台后，仅放行这里配置的管理页面。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:164
+msgid "添加页面"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:169
+msgid "名称"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:170
+msgid "链接"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:171
+#: admin/partials/mare-admin-config.php:288
+msgid "操作"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:190
+msgid "运行说明"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:195
+msgid "退款记录"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:196
+msgid "统计数据保存在数据库表 npc_refund_order 中。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:199
+msgid "退款原因"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:200
+msgid "退款原因仅自己可见。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:203
+msgid "操作入口"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:204
+msgid "退款操作界面在“仪表盘” -> “订单退款”中。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:207
+msgid "支付密钥"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:208
+msgid "支付密钥已单独保存；留空密钥字段会保留现有值。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:216
+msgid "数据导出"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:220
+msgid "下载全部退款记录表格"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:227
+msgid "删除数据库表"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:231
+msgid "卸载插件时删除退款记录表。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:236
+msgid "清空设置选项"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:240
+msgid "卸载插件时删除退款配置和密钥配置。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:260
+msgid "例如：订单退款"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:263
+msgid "例如：https://example.com/wp-admin/admin.php?page=refund"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:266
+#: admin/partials/mare-admin-config.php:345
+msgid "移除"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:277
+msgid "搜索退款专员"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:278
+msgid "搜索用户名、昵称或邮箱"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:285
+msgid "姓名"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:286
+msgid "账号"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:287
+msgid "角色"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:295
+#: admin/partials/mare-admin-config.php:367
+msgid "尚未添加退款专员。请搜索作者及以上权限的非管理员用户后添加。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:310
+msgid "检测微信配置"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:310
+msgid "检测支付宝配置"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:315
+msgid "配置检测"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:316
+msgid "保存配置后检测 SDK、必填字段和密钥格式；不会发起真实退款。"
+msgstr ""
+
+#. translators: 1: user login, 2: user ID.
+#: admin/partials/mare-admin-config.php:340
+#, php-format
+msgid "账号：%1$s · ID：%2$d"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:362
+msgid "正在搜索..."
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:363
+msgid "请输入用户名、昵称或邮箱关键字搜索退款专员。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:364
+msgid "没有找到可添加的作者及以上非管理员用户。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:365
+msgid "搜索失败，请稍后重试。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:366
+msgid "已添加"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:368
+msgid "正在检测配置..."
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:369
+msgid "配置检测失败，请稍后重试。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:414
+#: admin/partials/mare-admin-config.php:449
+#: admin/partials/mare-admin-config.php:482
+msgid "请求校验失败。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:418
+msgid "您没有权限下载退款记录。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:453
+msgid "您没有权限搜索退款专员。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:486
+msgid "您没有权限检测支付配置。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:491
+msgid "未知支付渠道。"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:657
+msgid "已配置，留空则不修改"
+msgstr ""
+
+#: admin/partials/mare-admin-config.php:657
+msgid "未配置"
+msgstr ""
+
+#: admin/partials/mare-admin-query.php:91
+msgid "搜索退款记录"
+msgstr ""
+
+#: admin/partials/mare-admin-query.php:92
+msgid "搜索订单号、操作员或原因"
+msgstr ""
+
+#: admin/partials/mare-admin-query.php:94
+msgid "支付类型"
+msgstr ""
+
+#: admin/partials/mare-admin-query.php:96
+msgid "全部类型"
+msgstr ""
+
+#: admin/partials/mare-admin-query.php:101
+msgid "起始日期"
+msgstr ""
+
+#: admin/partials/mare-admin-query.php:104
+msgid "结束日期"
+msgstr ""
+
+#: admin/partials/mare-admin-query.php:107
+msgid "重置"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:98
+msgid "微信支付配置不可用，请检查商户号、商户 API 证书序列号、商户私钥、微信支付公钥 ID / 平台证书序列号，以及微信支付公钥 / 平台证书。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:181
+msgid "请输入微信订单号。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:189
+msgid "微信订单查询失败，请检查订单号和鉴权配置。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:216
+msgid "未支付"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:219
+msgid "已关闭"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:222
+msgid "若您输入的是微信订单号，且重复看到这句话，请联系管理员"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:261
+#: admin/pay/mare-admin-zfb.php:150
+msgid "订单号和退款原因不能为空。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:266
+#: admin/pay/mare-admin-zfb.php:162
+msgid "订单查询失败，未执行退款。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:271
+msgid "该订单当前状态或时间窗口不可退款。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:276
+msgid "订单金额无效，未执行退款。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:284
+#: admin/pay/mare-admin-zfb.php:176
+msgid "该订单已提交退款或正在处理中，请勿重复操作。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:309
+msgid "微信退款请求失败，请稍后重试。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:340
+msgid "退款关闭"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:344
+msgid "退款异常，请联系管理员。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:348
+msgid "退款失败，请稍后重试。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:410
+msgid "微信支付 SDK"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:411
+#: admin/pay/mare-admin-zfb.php:244
+msgid "Composer 自动加载正常。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:411
+msgid "未找到微信支付 SDK，请重新生成发布包。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:417
+msgid "商户 API 证书序列号"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:428
+#: admin/pay/mare-admin-zfb.php:259
+msgid "已配置。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:428
+#: admin/pay/mare-admin-zfb.php:259
+msgid "未配置。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:441
+#: admin/pay/mare-admin-wx.php:449
+#: admin/pay/mare-admin-wx.php:456
+msgid "密钥解析"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:442
+msgid "商户私钥和微信支付公钥可解析。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:442
+msgid "客户端未完成初始化。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:450
+msgid "解析失败，请检查 PEM 内容和序列号。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:457
+msgid "解析失败，请检查依赖和 PEM 内容。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:464
+msgid "微信配置本地检测通过。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:464
+msgid "微信配置仍有阻塞项。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:488
+msgid "退款查询失败，请稍后重试。"
+msgstr ""
+
+#: admin/pay/mare-admin-wx.php:499
+msgid "请重试"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:68
+#: admin/pay/mare-admin-zfb.php:141
+msgid "支付宝配置不可用，请检查 APP ID、应用私钥和支付宝公钥。"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:74
+msgid "请输入支付宝订单号。"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:121
+msgid "支付宝订单查询失败，请检查订单号或稍后重试。"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:126
+msgid "调用失败，请检查支付宝配置或稍后重试。"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:166
+msgid "该订单当前状态不可退款。"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:170
+msgid "该订单时间超过 7 天，未执行退款。"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:203
+msgid "支付宝退款失败，请稍后重试或联系管理员检查日志。"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:211
+msgid "退款失败，请检查支付宝配置或稍后重试。"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:243
+msgid "支付宝 SDK"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:244
+msgid "未找到支付宝 EasySDK，请重新生成发布包。"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:269
+#: admin/pay/mare-admin-zfb.php:276
+#: admin/pay/mare-admin-zfb.php:283
+msgid "SDK 初始化"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:270
+msgid "本地初始化通过；真实订单查询仍需商户配置有效。"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:277
+msgid "初始化失败，请检查密钥内容。"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:284
+msgid "初始化失败，请检查依赖和密钥内容。"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:291
+msgid "支付宝配置本地检测通过。"
+msgstr ""
+
+#: admin/pay/mare-admin-zfb.php:291
+msgid "支付宝配置仍有阻塞项。"
+msgstr ""
+
+#: mare.php:115
+msgid "设置"
+msgstr ""

@@ -13,14 +13,14 @@
  * @package           Mare
  *
  * @wordpress-plugin
- * Plugin Name:       魔法退款 - 新架构
+ * Plugin Name:       Magick Refund
  * Plugin URI:        https://www.npc.ink/277376.html
  * Description:       支持支付宝官方和微信官方退款功能，使用官方提供的SDK，带权限控制。
- * Version:           1.1.2
+ * Version:           1.3.0
  * Author:            Muze
  * Author URI:        https://www.npc.ink
- * Requires at least: 4.6
- * Requires PHP:      7.0
+ * Requires at least: 6.0
+ * Requires PHP:      7.4
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       mare
@@ -37,13 +37,13 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('MARE_VERSION', '1.1.2');
+define('MARE_VERSION', '1.3.0');
 
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-mare-activator.php
  */
-function activate_mare()
+function mare_activate()
 {
 	require_once plugin_dir_path(__FILE__) . 'includes/class-mare-activator.php';
 	Mare_Activator::activate();
@@ -53,20 +53,24 @@ function activate_mare()
  * The code that runs during plugin deactivation.
  * This action is documented in includes/class-mare-deactivator.php
  */
-function deactivate_mare()
+function mare_deactivate()
 {
 	require_once plugin_dir_path(__FILE__) . 'includes/class-mare-deactivator.php';
 	Mare_Deactivator::deactivate();
 }
 
-register_activation_hook(__FILE__, 'activate_mare');
-register_deactivation_hook(__FILE__, 'deactivate_mare');
+register_activation_hook(__FILE__, 'mare_activate');
+register_deactivation_hook(__FILE__, 'mare_deactivate');
 
 /**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
 require plugin_dir_path(__FILE__) . 'includes/class-mare.php';
+
+if (file_exists(plugin_dir_path(__FILE__) . 'vendor/autoload.php')) {
+	require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
+}
 
 
 /**
@@ -78,14 +82,14 @@ require plugin_dir_path(__FILE__) . 'includes/class-mare.php';
  *
  * @since    1.0.0
  */
-function run_mare()
+function mare_run()
 {
 
 	$plugin = new Mare();
 
 	$plugin->run();
 }
-run_mare();
+mare_run();
 
 
 
@@ -96,17 +100,18 @@ require_once plugin_dir_path(__FILE__) . 'index.php';
 
 
 /**加载微信支付 */
-require_once plugin_dir_path(__FILE__) . 'admin/pay/mare-admin-wx.php';
-function npcink_run_wx()
-{
-
-	$plugin = new Mare_Admin_Wx();
-	$plugin->run();
+if (is_admin()) {
+	require_once plugin_dir_path(__FILE__) . 'admin/pay/mare-admin-wx.php';
+	function mare_run_wx()
+	{
+		$plugin = new Mare_Admin_Wx();
+		$plugin->run();
+	}
+	mare_run_wx();
 }
-npcink_run_wx();
 
 //设置按钮
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), function ($links) {
-	$links[] = '<a href="' . get_admin_url(null, 'options-general.php?page=refun_config') . '">' . __('设置', 'n') . '</a>';
+	$links[] = '<a href="' . esc_url(get_admin_url(null, 'plugins.php?page=refun_config')) . '">' . esc_html__('设置', 'mare') . '</a>';
 	return $links;
 });

@@ -24,3 +24,157 @@
 .npc_style #dataTable {
   max-width: 1200px;
 }
+.npc_style .mare-settings-tabs {
+  margin-top: 18px;
+}
+.npc_style .mare-tab-panel {
+  display: none;
+  max-width: 1160px;
+}
+.npc_style .mare-tab-panel.is-active {
+  display: block;
+}
+.npc_style .mare-settings-section {
+  margin-top: 24px;
+  max-width: 1100px;
+}
+.npc_style .mare-settings-section-header {
+  margin-bottom: 12px;
+}
+.npc_style .mare-settings-section-header h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+}
+.npc_style .mare-settings-section-header p {
+  margin: 0;
+  color: #646970;
+}
+.npc_style .mare-settings-section-header-inline {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+.npc_style .mare-user-picker {
+  max-width: 1100px;
+}
+.npc_style .mare-user-search {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.npc_style .mare-user-search input[type="search"] {
+  max-width: 520px;
+  width: 100%;
+}
+.npc_style .mare-user-search-results {
+  margin-bottom: 14px;
+}
+.npc_style .mare-user-search-message {
+  margin: 8px 0;
+}
+.npc_style .mare-user-empty {
+  margin: 0;
+}
+.npc_style .mare-user-table,
+.npc_style .mare-link-table,
+.npc_style .mare-info-table {
+  max-width: 1100px;
+}
+.npc_style .mare-user-table td,
+.npc_style .mare-link-table td,
+.npc_style .mare-info-table td,
+.npc_style .mare-info-table th {
+  vertical-align: middle;
+}
+.npc_style .mare-info-table th {
+  width: 160px;
+}
+.npc_style .mare-user-action-column,
+.npc_style .mare-link-action-column {
+  width: 96px;
+}
+.npc_style .mare-link-table input[type="text"],
+.npc_style .mare-link-table input[type="url"] {
+  width: 100%;
+}
+.npc_style .mare-payment-check-result {
+  max-width: 1100px;
+}
+.npc_style .mare-payment-check-result .notice {
+  margin: 8px 0 10px;
+}
+.npc_style .mare-check-table {
+  margin-top: 8px;
+  max-width: 1100px;
+}
+.npc_style .mare-check-table th:first-child,
+.npc_style .mare-check-table td:first-child {
+  width: 82px;
+}
+.npc_style .mare-record-toolbar {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 10px 0 12px;
+  max-width: 1200px;
+}
+.npc_style .mare-record-toolbar input[type="search"] {
+  min-width: 280px;
+}
+.npc_style .mare-record-toolbar input[type="date"] {
+  min-height: 30px;
+}
+.npc_style .mare-record-empty {
+  margin: 6px 0;
+}
+.npc_style .mare-status-badge {
+  border: 1px solid #c3c4c7;
+  border-radius: 999px;
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.8;
+  min-width: 44px;
+  padding: 0 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+.npc_style .mare-status-ok {
+  background: #edfaef;
+  border-color: #68de7c;
+  color: #0a6b1f;
+}
+.npc_style .mare-status-error {
+  background: #fcf0f1;
+  border-color: #ffabaf;
+  color: #8a2424;
+}
+.npc_style .mare-status-wx {
+  background: #edfaef;
+  border-color: #68de7c;
+  color: #0a6b1f;
+}
+.npc_style .mare-status-zfb {
+  background: #eef6ff;
+  border-color: #72aee6;
+  color: #0a4b78;
+}
+.npc_style .mare-status-neutral {
+  background: #f6f7f7;
+  color: #50575e;
+}
+@media (max-width: 782px) {
+  .npc_style .mare-record-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .npc_style .mare-record-toolbar input[type="search"],
+  .npc_style .mare-record-toolbar select,
+  .npc_style .mare-record-toolbar input[type="date"],
+  .npc_style .mare-record-toolbar .button {
+    width: 100%;
+  }
+}

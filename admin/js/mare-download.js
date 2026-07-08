@@ -1,21 +1,42 @@
 //下载数据库文件
 jQuery(document).ready(function ($) {
+  var refundSettings = window.mareRefundSettings || {};
+  var $downloadButton = $("#button_download");
+
   // 使用 AJAX 请求获取数据库表数据
   //表格下载JSON数据
 
-  $("#button_download").click(function () {
+  function showSettingsNotice(message, type) {
+    var noticeType = type || "error";
+    $(".mare-settings-notice").remove();
+    $("<div>", {
+      class: "notice notice-" + noticeType + " inline mare-settings-notice",
+    })
+      .append($("<p>", { text: message }))
+      .insertAfter($downloadButton.closest("p"));
+  }
+
+  $downloadButton.click(function () {
     $.ajax({
-      url: api.ajaxurl,
+      url: refundSettings.ajaxurl,
       type: "POST",
       data: {
         action: "download_data", // 用于在 PHP 中识别请求类型的参数
+        nonce: refundSettings.nonce,
       },
       success: function (response) {
         // 处理从 PHP 返回的数据
-        const data = response;
+        const data = Array.isArray(response)
+          ? response
+          : response && response.success && response.data
+          ? response.data.rows
+          : [];
         if (data.length === 0) {
-          alert("暂无数据可供下载");
+          showSettingsNotice("暂无数据可供下载。");
           return;
+        }
+        if (response && response.success && response.data && response.data.truncated) {
+          showSettingsNotice("退款记录较多，本次仅导出最新 " + response.data.limit + " 条。", "warning");
         }
         
 
@@ -34,15 +55,356 @@ jQuery(document).ready(function ($) {
         const csvData = convertToCSV(data, columnMapping);
         const csvFileName = "退款订单记录表.csv";
 
-        // 使用 FileSaver.js 下载 CSV 文件
         const blob = new Blob([csvData], { type: "text/csv;charset=utf-8" });
-        saveAs(blob, csvFileName);
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = csvFileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
       },
-      error: function (xhr, ajaxOptions, thrownError) {
-        console.log(thrownError);
+      error: function () {
+        showSettingsNotice("退款记录下载失败，请稍后重试。");
       },
     });
   });
+
+  var $refundUserSearch = $("#mare-refund-user-search");
+  if ($refundUserSearch.length) {
+    var $refundUserResults = $("#mare-refund-user-results");
+    var $refundUserSpinner = $("#mare-refund-user-spinner");
+    var $selectedRefundUsers = $("#mare-selected-refund-users");
+    var refundUserSearchTimer = null;
+    var refundUserSearchRequest = null;
+
+    function getSelectedRefundUserIds() {
+      var selected = {};
+      $selectedRefundUsers.find(".mare-selected-user").each(function () {
+        selected[String($(this).data("user-id"))] = true;
+      });
+      return selected;
+    }
+
+    function updateSelectedRefundUserEmptyState() {
+      var hasUsers = $selectedRefundUsers.find(".mare-selected-user").length > 0;
+      $selectedRefundUsers.find("[data-empty-state='1']").remove();
+      if (!hasUsers) {
+        $("<tr>", {
+          "data-empty-state": "1",
+        })
+          .append(
+            $("<td>", { colspan: 4 }).append(
+              $("<p>", {
+                class: "description mare-user-empty",
+                text:
+                  refundSettings.strings && refundSettings.strings.emptySelected
+                    ? refundSettings.strings.emptySelected
+                    : "尚未添加退款专员。",
+              })
+            )
+          )
+          .appendTo($selectedRefundUsers);
+      }
+    }
+
+    function renderRefundUserResults(users) {
+      var selected = getSelectedRefundUserIds();
+      $refundUserResults.empty();
+
+      if (!users.length) {
+        $("<p>", {
+          class: "description mare-user-search-message",
+          text: refundSettings.strings && refundSettings.strings.noUsers ? refundSettings.strings.noUsers : "没有找到可添加用户。",
+        }).appendTo($refundUserResults);
+        return;
+      }
+
+      var $table = $("<table>", {
+        class: "widefat striped mare-user-table mare-user-result-table",
+      });
+      var $thead = $("<thead>").append(
+        $("<tr>")
+          .append($("<th>", { text: "姓名" }))
+          .append($("<th>", { text: "账号" }))
+          .append($("<th>", { text: "角色" }))
+          .append($("<th>", { class: "mare-user-action-column", text: "操作" }))
+      );
+      var $tbody = $("<tbody>");
+
+      users.forEach(function (user) {
+        var userId = String(user.id);
+        var isSelected = !!selected[userId];
+
+        $("<tr>")
+          .append($("<td>").append($("<strong>", { text: user.name })))
+          .append($("<td>", { text: "账号：" + user.login + " · ID：" + user.id }))
+          .append($("<td>", { text: (user.roles || []).join("、") }))
+          .append(
+            $("<td>").append(
+              $("<button>", {
+                type: "button",
+                class: "button mare-add-refund-user",
+                disabled: isSelected,
+                text:
+                  isSelected && refundSettings.strings && refundSettings.strings.alreadySelected
+                    ? refundSettings.strings.alreadySelected
+                    : "添加",
+              }).data("user", user)
+            )
+          )
+          .appendTo($tbody);
+      });
+
+      $table.append($thead, $tbody).appendTo($refundUserResults);
+    }
+
+    function renderSelectedRefundUser(user) {
+      var $row = $("<tr>", {
+        class: "mare-selected-user",
+        "data-user-id": user.id,
+      });
+      $("<td>")
+        .append(
+          $("<input>", {
+            type: "hidden",
+            name: "npc_refund_config[user][user][]",
+            value: user.id,
+          })
+        )
+        .append($("<strong>", { text: user.name }))
+        .appendTo($row);
+      $("<td>", { text: "账号：" + user.login + " · ID：" + user.id }).appendTo($row);
+      $("<td>", { text: (user.roles || []).join("、") }).appendTo($row);
+      $("<td>")
+        .append(
+          $("<button>", {
+            type: "button",
+            class: "button mare-remove-refund-user",
+            text: "移除",
+          })
+        )
+        .appendTo($row);
+
+      return $row;
+    }
+
+    function getRenderedRefundUserResults() {
+      return $refundUserResults
+        .find(".mare-add-refund-user")
+        .map(function () {
+          return $(this).data("user");
+        })
+        .get();
+    }
+
+    function searchRefundUsers(term) {
+      if (refundUserSearchRequest) {
+        refundUserSearchRequest.abort();
+      }
+
+      if (term.length < 1) {
+        $refundUserResults.empty().append(
+          $("<p>", {
+            class: "description mare-user-search-message",
+            text:
+              refundSettings.strings && refundSettings.strings.typeToSearch
+                ? refundSettings.strings.typeToSearch
+                : "请输入关键字搜索。",
+          })
+        );
+        return;
+      }
+
+      $refundUserSpinner.addClass("is-active");
+      $refundUserResults.empty().append(
+        $("<p>", {
+          class: "description mare-user-search-message",
+          text: refundSettings.strings && refundSettings.strings.searching ? refundSettings.strings.searching : "正在搜索...",
+        })
+      );
+
+      refundUserSearchRequest = $.ajax({
+        url: refundSettings.ajaxurl,
+        type: "POST",
+        data: {
+          action: "mare_search_refund_users",
+          nonce: refundSettings.nonce,
+          term: term,
+        },
+      })
+        .done(function (response) {
+          var users = response && response.success && response.data ? response.data.users : [];
+          renderRefundUserResults(users || []);
+        })
+        .fail(function (xhr, status) {
+          if (status === "abort") {
+            return;
+          }
+          $refundUserResults.empty().append(
+            $("<p>", {
+              class: "description mare-user-search-message",
+              text:
+                refundSettings.strings && refundSettings.strings.searchFailed
+                  ? refundSettings.strings.searchFailed
+                  : "搜索失败，请稍后重试。",
+            })
+          );
+        })
+        .always(function () {
+          $refundUserSpinner.removeClass("is-active");
+          refundUserSearchRequest = null;
+        });
+    }
+
+    $refundUserSearch.on("input", function () {
+      var term = $.trim($(this).val());
+      clearTimeout(refundUserSearchTimer);
+      refundUserSearchTimer = setTimeout(function () {
+        searchRefundUsers(term);
+      }, 300);
+    });
+
+    $refundUserResults.on("click", ".mare-add-refund-user", function () {
+      var user = $(this).data("user");
+      if (!user || getSelectedRefundUserIds()[String(user.id)]) {
+        return;
+      }
+
+      $selectedRefundUsers.find("[data-empty-state='1']").remove();
+      renderSelectedRefundUser(user).appendTo($selectedRefundUsers);
+      renderRefundUserResults(getRenderedRefundUserResults());
+    });
+
+    $selectedRefundUsers.on("click", ".mare-remove-refund-user", function () {
+      $(this).closest(".mare-selected-user").remove();
+      updateSelectedRefundUserEmptyState();
+      if ($refundUserSearch.val().length >= 1) {
+        searchRefundUsers($.trim($refundUserSearch.val()));
+      }
+    });
+
+    updateSelectedRefundUserEmptyState();
+  }
+
+  $(".mare-check-payment-config").on("click", function () {
+    var $button = $(this);
+    var channel = $button.data("channel");
+    var $result = $("#mare-payment-check-" + channel);
+    var originalText = $button.text();
+
+    if (!channel || !$result.length) {
+      return;
+    }
+
+    $button
+      .prop("disabled", true)
+      .text(getSettingsString("checkingConfig", "正在检测配置..."));
+    $result.empty().append(
+      $("<p>", {
+        class: "description",
+        text: getSettingsString("checkingConfig", "正在检测配置..."),
+      })
+    );
+
+    $.ajax({
+      url: refundSettings.ajaxurl,
+      type: "POST",
+      dataType: "json",
+      data: {
+        action: "mare_check_payment_config",
+        nonce: refundSettings.nonce,
+        channel: channel,
+      },
+    })
+      .done(function (response) {
+        if (response && response.success && response.data) {
+          renderPaymentCheckResult($result, response.data);
+          return;
+        }
+
+        renderPaymentCheckError(
+          $result,
+          response && response.data && response.data.message
+            ? response.data.message
+            : getSettingsString("checkConfigFailed", "配置检测失败，请稍后重试。")
+        );
+      })
+      .fail(function (xhr) {
+        var message =
+          xhr &&
+          xhr.responseJSON &&
+          xhr.responseJSON.data &&
+          xhr.responseJSON.data.message
+            ? xhr.responseJSON.data.message
+            : getSettingsString("checkConfigFailed", "配置检测失败，请稍后重试。");
+        renderPaymentCheckError($result, message);
+      })
+      .always(function () {
+        $button.prop("disabled", false).text(originalText);
+      });
+  });
+
+  function getSettingsString(key, fallback) {
+    return refundSettings.strings && refundSettings.strings[key]
+      ? refundSettings.strings[key]
+      : fallback;
+  }
+
+  function renderPaymentCheckError($container, message) {
+    $container.empty().append(
+      $("<div>", {
+        class: "notice notice-error inline",
+      }).append($("<p>", { text: message }))
+    );
+  }
+
+  function renderPaymentCheckResult($container, data) {
+    var items = Array.isArray(data.items) ? data.items : [];
+    var isOk = data.status === "ok";
+    var $notice = $("<div>", {
+      class: "notice " + (isOk ? "notice-success" : "notice-error") + " inline",
+    }).append(
+      $("<p>").append($("<strong>", { text: data.message || (isOk ? "检测通过。" : "检测未通过。") }))
+    );
+
+    var $table = $("<table>", {
+      class: "widefat striped mare-check-table",
+    });
+    var $tbody = $("<tbody>");
+
+    $("<thead>")
+      .append(
+        $("<tr>")
+          .append($("<th>", { text: "状态" }))
+          .append($("<th>", { text: "项目" }))
+          .append($("<th>", { text: "说明" }))
+      )
+      .appendTo($table);
+
+    items.forEach(function (item) {
+      var status = item.status === "ok" ? "ok" : "error";
+      $("<tr>")
+        .append(
+          $("<td>").append(
+            $("<span>", {
+              class: "mare-status-badge mare-status-" + status,
+              text: status === "ok" ? "通过" : "阻塞",
+            })
+          )
+        )
+        .append($("<td>", { text: item.label || "" }))
+        .append($("<td>", { text: item.message || "" }))
+        .appendTo($tbody);
+    });
+
+    $table.append($tbody);
+    $container.empty().append($notice);
+    if (items.length) {
+      $container.append($table);
+    }
+  }
 
   // 将数据转换为 CSV 格式
   // 将数据转换为 CSV 格式，并应用自定义列名
@@ -59,10 +421,18 @@ jQuery(document).ready(function ($) {
 
     // 添加数据行
     for (var i = 0; i < data.length; i++) {
-      var row = Object.values(data[i]);
-      csv += row.join(",") + "\n";
+        var row = Object.values(data[i]).map(escapeCsvValue);
+        csv += row.join(",") + "\n";
     }
 
     return csv;
+  }
+
+  function escapeCsvValue(value) {
+    var text = value === null || value === undefined ? "" : String(value);
+    if (/^[=+\-@]/.test(text)) {
+      text = "'" + text;
+    }
+    return '"' + text.replace(/"/g, '""') + '"';
   }
 });

@@ -1,4 +1,9 @@
 <?php
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 //删除插件时执行
 //删除时执行的类
 if (!class_exists('Mare_Admin_Uninstall')) {
@@ -41,12 +46,14 @@ if (!class_exists('Mare_Admin_Uninstall')) {
             $table_name = $wpdb->prefix . 'npc_refund_order';
 
             // 判断数据表是否存在
-            if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+            // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Uninstall cleanup for this plugin's custom table.
+            if ($wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table_name)) != $table_name) {
                 //数据表不存在！
                 return "";
             } else {
                 // 执行删除数据表操作
-                $wpdb->query("DROP TABLE IF EXISTS $table_name");
+                $wpdb->query("DROP TABLE IF EXISTS " . esc_sql($table_name));
+                // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange
 
                 //return "数据表删除成功！";
             }
@@ -58,6 +65,8 @@ if (!class_exists('Mare_Admin_Uninstall')) {
         {
             // 删除插件设置
             delete_option('npc_refund_config');
+            delete_option('npc_refund_secrets');
+            delete_option('npc_refund_schema_version');
         }
     }
 }

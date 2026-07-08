@@ -33,9 +33,9 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 
 
 require plugin_dir_path(__FILE__) . 'admin/partials/class-mare-uninstall.php';
-function run_mare_uninstall()
+function mare_run_uninstall()
 {
 	$plugin = new Mare_Admin_Uninstall();
 	$plugin->run();
 }
-run_mare_uninstall();
+mare_run_uninstall();

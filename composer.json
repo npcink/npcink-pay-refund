@@ -1,0 +1,14 @@
+{
+    "name": "muze/magick-refund",
+    "description": "WordPress refund management plugin for Alipay and WeChat Pay.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "wechatpay/wechatpay": "^1.4",
+        "alipaysdk/easysdk": "^2.2.3"
+    },
+    "scripts": {
+        "build:zip": "bash bin/build-zip.sh",
+        "verify": "bash bin/verify.sh"
+    }
+}

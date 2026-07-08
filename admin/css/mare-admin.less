@@ -27,4 +27,160 @@
   #dataTable {
     max-width: 1200px;
   }
+  .mare-settings-tabs {
+    margin-top: 18px;
+  }
+  .mare-tab-panel {
+    display: none;
+    max-width: 1160px;
+    &.is-active {
+      display: block;
+    }
+  }
+  .mare-settings-section {
+    margin-top: 24px;
+    max-width: 1100px;
+  }
+  .mare-settings-section-header {
+    margin-bottom: 12px;
+    h3 {
+      margin: 0 0 6px;
+      font-size: 16px;
+    }
+    p {
+      margin: 0;
+      color: #646970;
+    }
+  }
+  .mare-settings-section-header-inline {
+    align-items: center;
+    display: flex;
+    gap: 16px;
+    justify-content: space-between;
+  }
+  .mare-user-picker {
+    max-width: 1100px;
+  }
+  .mare-user-search {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    input[type="search"] {
+      max-width: 520px;
+      width: 100%;
+    }
+  }
+  .mare-user-search-results {
+    margin-bottom: 14px;
+  }
+  .mare-user-search-message {
+    margin: 8px 0;
+  }
+  .mare-user-empty {
+    margin: 0;
+  }
+  .mare-user-table,
+  .mare-link-table,
+  .mare-info-table {
+    max-width: 1100px;
+  }
+  .mare-user-table td,
+  .mare-link-table td,
+  .mare-info-table td,
+  .mare-info-table th {
+    vertical-align: middle;
+  }
+  .mare-info-table th {
+    width: 160px;
+  }
+  .mare-user-action-column,
+  .mare-link-action-column {
+    width: 96px;
+  }
+  .mare-link-table {
+    input[type="text"],
+    input[type="url"] {
+      width: 100%;
+    }
+  }
+  .mare-payment-check-result {
+    max-width: 1100px;
+    .notice {
+      margin: 8px 0 10px;
+    }
+  }
+  .mare-check-table {
+    margin-top: 8px;
+    max-width: 1100px;
+    th:first-child,
+    td:first-child {
+      width: 82px;
+    }
+  }
+  .mare-record-toolbar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin: 10px 0 12px;
+    max-width: 1200px;
+    input[type="search"] {
+      min-width: 280px;
+    }
+    input[type="date"] {
+      min-height: 30px;
+    }
+  }
+  .mare-record-empty {
+    margin: 6px 0;
+  }
+  .mare-status-badge {
+    border: 1px solid #c3c4c7;
+    border-radius: 999px;
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.8;
+    min-width: 44px;
+    padding: 0 8px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .mare-status-ok {
+    background: #edfaef;
+    border-color: #68de7c;
+    color: #0a6b1f;
+  }
+  .mare-status-error {
+    background: #fcf0f1;
+    border-color: #ffabaf;
+    color: #8a2424;
+  }
+  .mare-status-wx {
+    background: #edfaef;
+    border-color: #68de7c;
+    color: #0a6b1f;
+  }
+  .mare-status-zfb {
+    background: #eef6ff;
+    border-color: #72aee6;
+    color: #0a4b78;
+  }
+  .mare-status-neutral {
+    background: #f6f7f7;
+    color: #50575e;
+  }
+  @media (max-width: 782px) {
+    .mare-record-toolbar {
+      align-items: stretch;
+      flex-direction: column;
+      input[type="search"],
+      select,
+      input[type="date"],
+      .button {
+        width: 100%;
+      }
+    }
+  }
 }

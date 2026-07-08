@@ -44,11 +44,6 @@ class Mare_Activator
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'npc_refund_order';
 
-		// 如果表已经存在，则退出
-		if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") == $table_name) {
-			return;
-		}
-
 		$charset_collate = $wpdb->get_charset_collate();
 
 		$sql = "CREATE TABLE $table_name (
@@ -59,7 +54,9 @@ class Mare_Activator
 			n_user varchar(255) NOT NULL,
 			n_type varchar(255) NOT NULL,
 			n_reason text NOT NULL,
-			PRIMARY KEY (id)
+			PRIMARY KEY (id),
+			UNIQUE KEY n_order_type (n_order(191), n_type(32)),
+			KEY n_time (n_time)
 		) $charset_collate;";
 
 		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');

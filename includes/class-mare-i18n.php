@@ -34,6 +34,7 @@ class Mare_i18n {
 	 */
 	public function load_plugin_textdomain() {
 
+		// phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- Keep explicit loading for non-wp.org and local language files.
 		load_plugin_textdomain(
 			'mare',
 			false,

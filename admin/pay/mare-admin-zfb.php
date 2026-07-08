@@ -1,4 +1,9 @@
 <?php
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
 //支付宝支付相关
 use Alipay\EasySDK\Kernel\Factory;
 use Alipay\EasySDK\Kernel\Util\ResponseChecker;
@@ -10,16 +15,10 @@ if (!class_exists('Mare_Admin_Zfb')) {
     {
         public static function run()
         {
-            //载入SDK
-            require_once plugin_dir_path(__DIR__) . '/sdk/zfb/autoload.php';
-
             /**
              * 引入公共方法
              */
             require_once plugin_dir_path(__FILE__) . 'mare-admin-public.php';
-
-            //1. 设置参数（全局只需设置一次）
-            Factory::setOptions(self::getOptions());
 
             //处理查询请求
             add_action('wp_ajax_zfb_order_query', array(__CLASS__, 'zfb_order_query'));
@@ -64,7 +63,17 @@ if (!class_exists('Mare_Admin_Zfb')) {
          */
         static public function zfb_order_query()
         {
-            $param = $_REQUEST['param']; // 获取传递的参数
+            Mare_Admin_Authority::require_refund_ajax_permission();
+            if (!self::ensure_sdk_ready()) {
+                wp_send_json_error(array('message' => __('支付宝配置不可用，请检查 APP ID、应用私钥和支付宝公钥。', 'mare')), 400);
+            }
+
+            // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Verified by require_refund_ajax_permission().
+            $param = isset($_REQUEST['param']) ? sanitize_text_field(wp_unslash($_REQUEST['param'])) : ''; // 获取传递的参数
+            if ('' === $param) {
+                wp_send_json_error(array('message' => __('请输入支付宝订单号。', 'mare')), 400);
+            }
+
             try {
                 // 2. 发起API调用（以支付能力下的统一收单交易创建接口为例）
                 $result = Factory::payment()->common()->query($param);
@@ -73,9 +82,9 @@ if (!class_exists('Mare_Admin_Zfb')) {
                 if ($responseChecker->success($result)) {
                     $data = $result;
                     $table_html = "<table>";
-                    $table_html .= "<tr><td>订单号：</td><td>" . $data->outTradeNo . "</td></tr>";
-                    $table_html .= "<tr><td>时间：</td><td>" . $data->sendPayDate . "</td></tr>";
-                    $table_html .= "<tr><td>金额：</td><td>" . $data->totalAmount . "</td></tr>";
+                    $table_html .= "<tr><td>订单号：</td><td>" . esc_html($data->outTradeNo) . "</td></tr>";
+                    $table_html .= "<tr><td>时间：</td><td>" . esc_html($data->sendPayDate) . "</td></tr>";
+                    $table_html .= "<tr><td>金额：</td><td>" . esc_html($data->totalAmount) . "</td></tr>";
                     $table_html .= "<tr><td>状态：</td><td>";
                     switch ($data->tradeStatus) {
                         case "WAIT_BUYER_PAY":
@@ -94,31 +103,28 @@ if (!class_exists('Mare_Admin_Zfb')) {
                     }
                     $table_html .= "</td></tr>";
                     $table_html .= "</table>";
-                    echo $table_html;
                     //订单支付成功
                     if ($data->tradeStatus == "TRADE_SUCCESS" && Mare_Admin_Public::contrast_time($data->sendPayDate)) {
-?>
-                        <p>退款原因：<input type="text" id="npcink-zfb-reason" placeholder="请输入退款原因"></p>
-                        <?php
-                        echo " <button id='order-btn' class='button button-primary refund' data-order-id='" . $data->outTradeNo . "' data-order-amount='" . $data->totalAmount . "'data-order-time='" . $data->sendPayDate . "'>支付宝全额退款</button>";
+                        $table_html .= '<p>退款原因：<input type="text" id="npcink-zfb-reason" placeholder="请输入退款原因"></p>';
+                        $table_html .= " <button id='order-btn' class='button button-primary refund' data-order-id='" . esc_attr($data->outTradeNo) . "' data-order-amount='" . esc_attr($data->totalAmount) . "' data-order-time='" . esc_attr($data->sendPayDate) . "'>支付宝全额退款</button>";
                     } else {
 
                         if ($data->tradeStatus == "TRADE_SUCCESS" && !Mare_Admin_Public::contrast_time($data->sendPayDate)) {
-                        ?>
-                            <h3>该订单时间超过7天，无法使用本功能退款，请联系管理员操作</h3>
-<?php
+                            $table_html .= '<h3>该订单时间超过7天，无法使用本功能退款，请联系管理员操作</h3>';
                         }
                     }
+                    wp_send_json_success(array('html' => $table_html));
                 } else {
                     //$error_msg = "调用失败，原因：" . $result->msg . "，" . $result->subMsg . PHP_EOL;
-                    $error_msg = "操作失败，原因如下：<br>" . $result->subMsg . PHP_EOL;
-                    echo $error_msg;
+                    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
+                    error_log('Mare Alipay query rejected: ' . wp_json_encode($result));
+                    wp_send_json_error(array('message' => __('支付宝订单查询失败，请检查订单号或稍后重试。', 'mare')), 400);
                 }
             } catch (Exception $e) {
-                $error_msg = "调用失败，" . $e->getMessage() . PHP_EOL;;
-                echo $error_msg;
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
+                error_log('Mare Alipay query failed: ' . $e->getMessage());
+                wp_send_json_error(array('message' => __('调用失败，请检查支付宝配置或稍后重试。', 'mare')), 500);
             }
-            wp_die();
         }
 
 
@@ -130,41 +136,161 @@ if (!class_exists('Mare_Admin_Zfb')) {
          */
         public static function zfb_order_refund()
         {
-            $order_id = $_POST['order_id']; // 获取传递的订单号
-            $order_time = $_POST['order_time']; // 获取传递的订单时间
-            $order_amount = $_POST['order_amount']; // 获取传递的总金额
-            $order_reason = $_POST['order_reason']; // 获取传递的退款原因
+            Mare_Admin_Authority::require_refund_ajax_permission();
+            if (!self::ensure_sdk_ready()) {
+                wp_send_json_error(array('message' => __('支付宝配置不可用，请检查 APP ID、应用私钥和支付宝公钥。', 'mare')), 400);
+            }
+
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by require_refund_ajax_permission().
+            $order_id = isset($_POST['order_id']) ? sanitize_text_field(wp_unslash($_POST['order_id'])) : ''; // 获取传递的订单号
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Verified by require_refund_ajax_permission(); sanitized by Mare_Admin::sanitize_textarea_value().
+            $order_reason = isset($_POST['order_reason']) ? Mare_Admin::sanitize_textarea_value(wp_unslash($_POST['order_reason'])) : ''; // 获取传递的退款原因
+
+            if ('' === $order_id || '' === $order_reason) {
+                wp_send_json_error(array('message' => __('订单号和退款原因不能为空。', 'mare')), 400);
+            }
 
             //获取登录用户名
             $current_user = wp_get_current_user();
             $user = $current_user->display_name;
+            $refund_claimed = false;
 
             try {
+                $query_result = Factory::payment()->common()->query($order_id);
+                $responseChecker = new ResponseChecker();
+                if (!$responseChecker->success($query_result)) {
+                    wp_send_json_error(array('message' => __('订单查询失败，未执行退款。', 'mare')), 400);
+                }
+
+                if ('TRADE_SUCCESS' !== $query_result->tradeStatus) {
+                    wp_send_json_error(array('message' => __('该订单当前状态不可退款。', 'mare')), 400);
+                }
+
+                if (!Mare_Admin_Public::contrast_time($query_result->sendPayDate)) {
+                    wp_send_json_error(array('message' => __('该订单时间超过 7 天，未执行退款。', 'mare')), 400);
+                }
+
+                $order_amount = $query_result->totalAmount;
+                $order_time = $query_result->sendPayDate;
+                if (!Mare_Admin_Public::claim_refund($order_id, '支付宝')) {
+                    wp_send_json_error(array('message' => __('该订单已提交退款或正在处理中，请勿重复操作。', 'mare')), 409);
+                }
+                $refund_claimed = true;
+
                 //2. 发起API调用（以支付能力下的统一收单交易创建接口为例）
                 $result = Factory::payment()->common()->refund($order_id, $order_amount);
-                $responseChecker = new ResponseChecker();
                 //3. 处理响应或异常
                 if ($responseChecker->success($result)) {
                     $table_html = "<table>";
-                    $table_html .= "<tr><td>订单号：</td><td>" . $order_id . "</td></tr>";
-                    $table_html .= "<tr><td>时间：</td><td>" . $order_time . "</td></tr>";
-                    $table_html .= "<tr><td>金额：</td><td>" . $order_amount . "</td></tr>";
+                    $table_html .= "<tr><td>订单号：</td><td>" . esc_html($order_id) . "</td></tr>";
+                    $table_html .= "<tr><td>时间：</td><td>" . esc_html($order_time) . "</td></tr>";
+                    $table_html .= "<tr><td>金额：</td><td>" . esc_html($order_amount) . "</td></tr>";
                     $table_html .= "<tr><td>状态：</td><td><b class='green'>已退款</b></td></tr>";
                     $table_html .= "</td></tr>";
                     $table_html .= "</table>";
 
                     //添加数据进JSON文件
                     Mare_Admin_Public::add_data($order_time, $user, $order_amount, $order_id, $order_reason, '支付宝');
+                    $refund_claimed = false;
 
-                    echo  $table_html;
+                    wp_send_json_success(array('html' => $table_html));
                 } else {
-                    $error_msg = "退款失败，原因：" . $result->msg . "，" . $result->subMsg . PHP_EOL;
-                    echo $error_msg;
+                    if ($refund_claimed) {
+                        Mare_Admin_Public::release_refund_claim($order_id, '支付宝');
+                    }
+                    // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
+                    error_log('Mare Alipay refund rejected: ' . wp_json_encode($result));
+                    wp_send_json_error(array('message' => __('支付宝退款失败，请稍后重试或联系管理员检查日志。', 'mare')), 400);
                 }
             } catch (Exception $e) {
-                echo "退款失败，" . $e->getMessage() . PHP_EOL;;
+                if ($refund_claimed) {
+                    Mare_Admin_Public::release_refund_claim($order_id, '支付宝');
+                }
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
+                error_log('Mare Alipay refund failed: ' . $e->getMessage());
+                wp_send_json_error(array('message' => __('退款失败，请检查支付宝配置或稍后重试。', 'mare')), 500);
             }
-            wp_die();
+        }
+
+        public static function ensure_sdk_ready()
+        {
+            try {
+                if (!class_exists(Factory::class) || !class_exists(Config::class)) {
+                    return false;
+                }
+                Factory::setOptions(self::getOptions());
+                return true;
+            } catch (Exception $e) {
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep SDK diagnostics out of the AJAX response.
+                error_log('Mare Alipay SDK init failed: ' . $e->getMessage());
+                return false;
+            } catch (Throwable $e) {
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep SDK diagnostics out of the AJAX response.
+                error_log('Mare Alipay SDK init failed: ' . $e->getMessage());
+                return false;
+            }
+        }
+
+        public static function diagnose_config()
+        {
+            $config = Mare_Admin::npcConfig('zfb');
+            $items = array();
+            $ok = true;
+
+            $sdk_ready = class_exists(Factory::class) && class_exists(Config::class) && class_exists(ResponseChecker::class);
+            $items[] = array(
+                'status' => $sdk_ready ? 'ok' : 'error',
+                'label' => __('支付宝 SDK', 'mare'),
+                'message' => $sdk_ready ? __('Composer 自动加载正常。', 'mare') : __('未找到支付宝 EasySDK，请重新生成发布包。', 'mare'),
+            );
+            $ok = $ok && $sdk_ready;
+
+            $fields = array(
+                'appid' => __('APP ID', 'mare'),
+                'private_key' => __('应用私钥', 'mare'),
+                'public_key' => __('支付宝公钥', 'mare'),
+            );
+            foreach ($fields as $field => $label) {
+                $value = trim((string) Mare_Admin::get_options($config, $field));
+                $has_value = '' !== $value;
+                $items[] = array(
+                    'status' => $has_value ? 'ok' : 'error',
+                    'label' => $label,
+                    'message' => $has_value ? __('已配置。', 'mare') : __('未配置。', 'mare'),
+                );
+                $ok = $ok && $has_value;
+            }
+
+            if ($ok) {
+                try {
+                    Factory::setOptions(self::getOptions());
+                    $items[] = array(
+                        'status' => 'ok',
+                        'label' => __('SDK 初始化', 'mare'),
+                        'message' => __('本地初始化通过；真实订单查询仍需商户配置有效。', 'mare'),
+                    );
+                } catch (Exception $e) {
+                    $ok = false;
+                    $items[] = array(
+                        'status' => 'error',
+                        'label' => __('SDK 初始化', 'mare'),
+                        'message' => __('初始化失败，请检查密钥内容。', 'mare'),
+                    );
+                } catch (Throwable $e) {
+                    $ok = false;
+                    $items[] = array(
+                        'status' => 'error',
+                        'label' => __('SDK 初始化', 'mare'),
+                        'message' => __('初始化失败，请检查依赖和密钥内容。', 'mare'),
+                    );
+                }
+            }
+
+            return array(
+                'status' => $ok ? 'ok' : 'error',
+                'message' => $ok ? __('支付宝配置本地检测通过。', 'mare') : __('支付宝配置仍有阻塞项。', 'mare'),
+                'items' => $items,
+            );
         }
     }
 }

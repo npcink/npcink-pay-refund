@@ -1,0 +1,16 @@
+.DS_Store
+**/.DS_Store
+.git/
+.gitignore
+**/.gitignore
+**/.gitattributes
+**/.php_cs.dist
+.distignore
+.vscode/
+bin/
+build/
+node_modules/
+vite/
+admin/sdk/guzz/
+*.log
+*.tmp

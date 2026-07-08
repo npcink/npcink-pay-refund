@@ -68,8 +68,6 @@ class Mare_Admin
 		require_once plugin_dir_path(__FILE__) . 'partials/mare-admin-query.php';
 		//选项配置用文件
 		require_once plugin_dir_path(__FILE__) . 'partials/mare-admin-config.php';
-		//接口文件
-		require_once plugin_dir_path(__FILE__) . 'partials/mare-admin-interface.php';
 		//权限控制文件
 		require_once plugin_dir_path(__FILE__) . 'partials/mare-admin-authority.php';
 		//微信支付文件
@@ -89,8 +87,6 @@ class Mare_Admin
 		Mare_Admin_Query::run($this->plugin_name, $this->version);
 		//配置菜单
 		Mare_Admin_Config::run($this->plugin_name, $this->version);
-		//接口
-		Mare_Admin_Interface::run();
 		//权限控制
 		Mare_Admin_Authority::run();
 
@@ -109,8 +105,15 @@ class Mare_Admin
 	 */
 	public static function npcConfig($option)
 	{
-		$config = get_option("npc_refund_config", '没有拿到值npc_refund_config');
-		$value =  self::get_options($config, $option);
+		$config = self::object_to_array(get_option('npc_refund_config', array()));
+		$secrets = self::object_to_array(get_option('npc_refund_secrets', array()));
+		$value = self::object_to_array(self::get_options($config, $option, array()));
+		$secret_value = self::object_to_array(self::get_options($secrets, $option, array()));
+
+		if (is_array($value) && is_array($secret_value)) {
+			return array_merge($value, $secret_value);
+		}
+
 		return $value;
 	}
 
@@ -131,8 +134,38 @@ class Mare_Admin
 		 */
 		if (is_object($config) && property_exists($config, $property) && !empty($config->$property)) {
 			return $config->$property;
+		} elseif (is_array($config) && isset($config[$property]) && !empty($config[$property])) {
+			return $config[$property];
 		} else {
 			return $defaultValue;
 		}
+	}
+
+	public static function sanitize_textarea_value($value)
+	{
+		if (function_exists('sanitize_textarea_field')) {
+			return sanitize_textarea_field($value);
+		}
+
+		$value = wp_check_invalid_utf8((string) $value);
+		$value = wp_strip_all_tags($value, false);
+		$value = str_replace(array("\r\n", "\r"), "\n", $value);
+		$value = preg_replace('/[ \t]+/', ' ', $value);
+		return trim($value);
+	}
+
+	public static function object_to_array($value)
+	{
+		if (is_object($value)) {
+			$value = get_object_vars($value);
+		}
+
+		if (is_array($value)) {
+			foreach ($value as $key => $item) {
+				$value[$key] = self::object_to_array($item);
+			}
+		}
+
+		return $value;
 	}
 }
