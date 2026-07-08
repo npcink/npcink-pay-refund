@@ -7,13 +7,27 @@ Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Refund management for Alipay and WeChat Pay with WordPress admin settings, operator permissions, refund logs, and release packaging.
+Admin refund workflow for Alipay and WeChat Pay orders with WordPress settings, operator permissions, refund logs, and release packaging.
 
 == Description ==
 
-Npcink Pay Refund provides an admin-side refund workflow for Alipay and WeChat Pay. It stores refund records in a custom database table, supports operator permission controls, and keeps payment secrets in a separate non-autoloaded option.
+Npcink Pay Refund provides an admin-side refund workflow for Alipay and WeChat Pay. It is not a checkout gateway and does not create payments. It stores refund records in a custom database table, supports operator permission controls, and keeps payment secrets in a separate non-autoloaded option.
 
 The release package must be generated with `composer build:zip` so the required Composer dependencies are included.
+
+== Third-party services ==
+
+This plugin connects to external payment APIs only after an administrator configures merchant credentials and an authorized WordPress user performs a query, refund, or configuration check.
+
+* Alipay Open Platform / Alipay EasySDK (`openapi.alipay.com`): order queries send Alipay app credentials and the payment order number. Refunds send Alipay app credentials, payment order number, and refund amount. The local refund reason is not sent by the current Alipay refund call.
+* WeChat Pay API v3 through the official `wechatpay/wechatpay` PHP SDK: order queries send WeChat Pay merchant credentials and the payment order number. Refunds send merchant credentials, payment order number, refund number, full refund amount, and the refund reason entered by the operator.
+
+Service information:
+
+* Alipay: https://open.alipay.com/
+* WeChat Pay: https://pay.weixin.qq.com/
+
+Merchant private keys and public keys are stored in the site's WordPress database options. Keep access to administrator accounts, backups, and database exports restricted.
 
 == Installation ==
 

@@ -8,6 +8,7 @@
 ## 维护文档
 
 - [项目改造历史与当前状态](PROJECT-HISTORY.zh-CN.md)
+- [WordPress.org 上架准备记录](WPORG-LISTING-PREP.zh-CN.md)
 - [首次真实商户联调清单](REFUND-INTEGRATION-CHECKLIST.md)
 
 ## 功能
