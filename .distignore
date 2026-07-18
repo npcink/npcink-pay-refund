@@ -12,6 +12,7 @@ source-assets/
 sj/
 bin/
 build/
+tests/
 node_modules/
 vite/
 admin/sdk/

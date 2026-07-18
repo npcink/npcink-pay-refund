@@ -4,10 +4,12 @@
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
     "require": {
+        "php": ">=8.1",
         "wechatpay/wechatpay": "^1.4",
         "alipaysdk/easysdk": "^2.2.3"
     },
     "scripts": {
+        "test": "php tests/run.php",
         "build:zip": "bash bin/build-zip.sh",
         "verify": "bash bin/verify.sh"
     }

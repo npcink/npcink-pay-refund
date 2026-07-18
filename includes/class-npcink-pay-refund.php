@@ -77,7 +77,6 @@ class Npcink_Pay_Refund
 		$this->plugin_name = 'npcink-pay-refund';
 
 		$this->load_dependencies();
-		$this->set_locale();
 		if (is_admin()) {
 			$this->define_admin_hooks();
 		}
@@ -89,7 +88,6 @@ class Npcink_Pay_Refund
 	 * Include the following files that make up the plugin:
 	 *
 	 * - Npcink_Pay_Refund_Loader. Orchestrates the hooks of the plugin.
-	 * - Npcink_Pay_Refund_I18n. Defines internationalization functionality.
 	 * - Npcink_Pay_Refund_Admin. Defines all hooks for the admin area.
 	 * - Public-facing hooks are intentionally omitted; this plugin only exposes admin workflows.
 	 *
@@ -109,12 +107,6 @@ class Npcink_Pay_Refund
 		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-npcink-pay-refund-loader.php';
 
 		/**
-		 * The class responsible for defining internationalization functionality
-		 * of the plugin.
-		 */
-		require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-npcink-pay-refund-i18n.php';
-
-		/**
 		 * The class responsible for defining all actions that occur in the admin area.
 		 */
 		require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-npcink-pay-refund-admin.php';
@@ -122,23 +114,6 @@ class Npcink_Pay_Refund
 
 
 		$this->loader = new Npcink_Pay_Refund_Loader();
-	}
-
-	/**
-	 * Define the locale for this plugin for internationalization.
-	 *
-	 * Uses the Npcink_Pay_Refund_I18n class in order to set the domain and to register the hook
-	 * with WordPress.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 */
-	private function set_locale()
-	{
-
-		$plugin_i18n = new Npcink_Pay_Refund_I18n();
-
-		$this->loader->add_action('plugins_loaded', $plugin_i18n, 'load_plugin_textdomain');
 	}
 
 	/**

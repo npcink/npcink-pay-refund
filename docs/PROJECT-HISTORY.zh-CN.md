@@ -9,10 +9,11 @@
 - 主文件：`npcink-pay-refund.php`
 - Text Domain：`npcink-pay-refund`
 - Composer 包名：`npcink/pay-refund`
-- 当前版本：`1.3.2`
+- 最低 PHP：`8.1`
+- 当前版本：`1.3.3`
 - GitHub 仓库：`https://github.com/muze-page/npcink-pay-refund`
 - GitHub Release：`https://github.com/muze-page/npcink-pay-refund/releases/tag/v1.3.0`
-- 本地待发布包：`build/npcink-pay-refund-1.3.2.zip`
+- 本地待发布包：`build/npcink-pay-refund-1.3.3.zip`
 
 当前本地仓库目录是 `/Users/muze/gitee/npcink-pay-refund`。这是本机路径，不影响插件源码、GitHub remote、发布包或 WordPress 安装目录。若要继续降噪，可把本地目录移动到 `/Users/muze/github/npcink-pay-refund`。
 
@@ -117,6 +118,19 @@
 - “通道状态”不再展示 `SUCCESS`、`PROCESSING` 等英文 API 状态码，改为中文状态文案
 
 详细开发复盘见 `docs/DEVELOPMENT-SUMMARY-1.3.2.zh-CN.md`。
+
+## 1.3.3 WordPress.org 审核与退款安全修正
+
+为满足 WordPress.org 插件目录的审核要求：
+
+- `readme.txt` 的贡献者账号改为实际提交账号 `muze233`
+- 移除已由 WordPress.org 自动处理的 `load_plugin_textdomain()` 调用及其无用加载类
+- 将最低 PHP 版本统一为 `8.1`，与发布包内 Composer 依赖保持一致
+- 微信全额退款使用订单原总额，正确覆盖使用代金券的订单
+- 本地退款记录写入失败时保留对账标记和重复退款锁；支付宝可在后续订单查询时只补记本地记录，不会再次调用退款接口
+- 移除支付宝签名请求中的无效占位回调地址
+
+支付密钥的保存与读取方式保持不变。
 
 ## 发布与验证
 
