@@ -70,8 +70,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 			);
 			// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			if ($exists) {
+				self::clear_refund_reconciliation($order, $type);
 				self::release_refund_claim($order, $type);
-				return false;
+				return true;
 			}
 
 			$data = array(
@@ -85,6 +86,15 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom refund table insert.
 			$result = $wpdb->insert($table_name, $data);
+			if (false === $result) {
+				self::save_refund_reconciliation($data);
+				$reference = substr(hash('sha256', $type . '|' . $order), 0, 12);
+				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Preserve a concise reconciliation signal without logging credentials or gateway payloads.
+				error_log('Npcink_Pay_Refund local audit write failed; reconciliation reference ' . $reference . '.');
+				return false;
+			}
+
+			self::clear_refund_reconciliation($order, $type);
 			self::release_refund_claim($order, $type);
 			return $result;
 		}
@@ -114,6 +124,11 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 			$type = sanitize_text_field($type);
 
 			if (self::has_refund_record($order, $type)) {
+				self::clear_refund_reconciliation($order, $type);
+				return false;
+			}
+
+			if (!empty(self::get_refund_reconciliation($order, $type))) {
 				return false;
 			}
 
@@ -138,6 +153,66 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 		public static function refund_lock_name($order, $type)
 		{
 			return 'npcink_pay_refund_lock_' . md5(sanitize_text_field($type) . '|' . sanitize_text_field($order));
+		}
+
+		public static function refund_reconciliation_name($order, $type)
+		{
+			return 'npcink_pay_refund_reconcile_' . md5(sanitize_text_field($type) . '|' . sanitize_text_field($order));
+		}
+
+		public static function save_refund_reconciliation($data)
+		{
+			$order = isset($data['n_order']) ? sanitize_text_field($data['n_order']) : '';
+			$type = isset($data['n_type']) ? sanitize_text_field($data['n_type']) : '';
+			if ('' === $order || '' === $type) {
+				return false;
+			}
+
+			$data['n_order'] = $order;
+			$data['n_type'] = $type;
+			$data['recording_failed_at'] = time();
+
+			return update_option(self::refund_reconciliation_name($order, $type), $data, false);
+		}
+
+		public static function get_refund_reconciliation($order, $type)
+		{
+			$data = get_option(self::refund_reconciliation_name($order, $type), array());
+			return is_array($data) ? $data : array();
+		}
+
+		/**
+		 * Retry only the local audit write for a refund already accepted by a provider.
+		 *
+		 * This deliberately does not call either payment gateway. The stored
+		 * reconciliation payload is the source of truth for the retry.
+		 */
+		public static function retry_refund_reconciliation($order, $type)
+		{
+			$data = self::get_refund_reconciliation($order, $type);
+			foreach (array('n_time', 'n_user', 'n_amount', 'n_order', 'n_reason', 'n_type') as $field) {
+				if (!array_key_exists($field, $data)) {
+					return false;
+				}
+			}
+
+			if (sanitize_text_field($order) !== sanitize_text_field($data['n_order']) || sanitize_text_field($type) !== sanitize_text_field($data['n_type'])) {
+				return false;
+			}
+
+			return self::add_data(
+				$data['n_time'],
+				$data['n_user'],
+				$data['n_amount'],
+				$data['n_order'],
+				$data['n_reason'],
+				$data['n_type']
+			);
+		}
+
+		public static function clear_refund_reconciliation($order, $type)
+		{
+			delete_option(self::refund_reconciliation_name($order, $type));
 		}
 
 

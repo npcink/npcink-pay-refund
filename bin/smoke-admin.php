@@ -62,7 +62,12 @@ $original_secrets = get_option('npcink_pay_refund_secrets', null);
 $created_users = array();
 
 try {
-	$plugin_dir = trailingslashit(WP_PLUGIN_DIR) . 'npcink-pay-refund/';
+	$plugin_dir_override = getenv('NPCINK_PAY_REFUND_SMOKE_PLUGIN_DIR');
+	$plugin_dir = $plugin_dir_override ? trailingslashit($plugin_dir_override) : trailingslashit(WP_PLUGIN_DIR) . 'npcink-pay-refund/';
+	if ($plugin_dir_override) {
+		npcink_pay_refund_smoke_assert(file_exists($plugin_dir . 'npcink-pay-refund.php'), 'missing packaged plugin bootstrap');
+		require_once $plugin_dir . 'npcink-pay-refund.php';
+	}
 	foreach (array(
 		'admin/class-npcink-pay-refund-admin.php',
 		'admin/partials/npcink-pay-refund-admin-authority.php',

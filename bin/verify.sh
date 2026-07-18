@@ -11,8 +11,12 @@ PCP_SLUG="${PCP_SLUG:-npcink-pay-refund}"
 
 cd "$ROOT_DIR"
 
+composer test
 composer validate --strict
-composer audit
+if ! composer audit; then
+	echo "Retrying Composer security audit after a transient network failure." >&2
+	composer audit
+fi
 
 find . \
 	-path './vendor' -prune -o \
@@ -34,30 +38,77 @@ if ! grep -Fx "${PACKAGE_SLUG}/vendor/autoload.php" <<< "$ZIP_LIST" >/dev/null; 
 	echo "Release zip is missing vendor/autoload.php." >&2
 	exit 1
 fi
-if grep -E "^${PACKAGE_SLUG}/(vite/|bin/|build/|admin/sdk/)" <<< "$ZIP_LIST" >/dev/null; then
+if grep -E "^${PACKAGE_SLUG}/(vite/|bin/|build/|tests/|admin/sdk/)" <<< "$ZIP_LIST" >/dev/null; then
 	echo "Release zip contains excluded development or legacy SDK paths." >&2
 	exit 1
 fi
 
+if ! unzip -p "$ZIP_FILE" "${PACKAGE_SLUG}/npcink-pay-refund.php" | grep -Eq '^ \* Requires PHP:[[:space:]]+8\.1$'; then
+	echo "Packaged plugin header does not require PHP 8.1." >&2
+	exit 1
+fi
+if ! unzip -p "$ZIP_FILE" "${PACKAGE_SLUG}/readme.txt" | grep -Eq '^Requires PHP:[[:space:]]*8\.1$'; then
+	echo "Packaged WordPress.org readme does not require PHP 8.1." >&2
+	exit 1
+fi
+PACKAGED_PHP_REQUIREMENT="$(unzip -p "$ZIP_FILE" "${PACKAGE_SLUG}/composer.json" | php -r '$data = json_decode(stream_get_contents(STDIN), true); echo is_array($data) && isset($data["require"]["php"]) ? $data["require"]["php"] : "";')"
+if [ "$PACKAGED_PHP_REQUIREMENT" != ">=8.1" ]; then
+	echo "Packaged Composer metadata does not require PHP 8.1." >&2
+	exit 1
+fi
+
 if command -v wp >/dev/null 2>&1 && [ -d "$WP_PATH" ]; then
-	WP_CLI_ARGS=(
+	WP_CLI_BASE_ARGS=(
 		--path="$WP_PATH"
 		--url="$WP_URL"
 		--allow-root
 	)
+	WP_CLI_ARGS=("${WP_CLI_BASE_ARGS[@]}")
 	if [ -n "$WP_SKIP_PLUGINS" ]; then
 		WP_CLI_ARGS+=(--skip-plugins="$WP_SKIP_PLUGINS")
 	fi
+	PCP_WP_CLI_ARGS=("${WP_CLI_ARGS[@]}")
 
-	wp plugin install "$ZIP_FILE" --force --activate "${WP_CLI_ARGS[@]}" >/tmp/npcink-pay-refund-install-verify.out
+	PLUGIN_PATH="$WP_PATH/wp-content/plugins/$PACKAGE_SLUG"
+	PLUGIN_REAL_PATH="$(php -r '$path = realpath($argv[1]); echo false === $path ? "" : $path;' "$PLUGIN_PATH")"
+	ROOT_REAL_PATH="$(cd "$ROOT_DIR" && pwd -P)"
+	PACKAGE_CHECK_DIR=""
+
+	cleanup_package_check() {
+		if [ -n "$PACKAGE_CHECK_DIR" ] && [ -d "$PACKAGE_CHECK_DIR" ]; then
+			rm -rf -- "$PACKAGE_CHECK_DIR"
+		fi
+	}
+	trap cleanup_package_check EXIT
+
+	if [ -L "$PLUGIN_PATH" ] && [ "$PLUGIN_REAL_PATH" = "$ROOT_REAL_PATH" ]; then
+		wp plugin activate "$PACKAGE_SLUG" "${WP_CLI_ARGS[@]}" >/tmp/npcink-pay-refund-install-verify.out
+		PACKAGE_CHECK_DIR="$(mktemp -d "$WP_PATH/wp-content/plugins/${PACKAGE_SLUG}-package-check.XXXXXX")"
+		rsync -a --delete "$ROOT_DIR/build/$PACKAGE_SLUG/" "$PACKAGE_CHECK_DIR/"
+		PCP_TARGET="$(basename "$PACKAGE_CHECK_DIR")"
+	else
+		wp plugin install "$ZIP_FILE" --force --activate "${WP_CLI_ARGS[@]}" >/tmp/npcink-pay-refund-install-verify.out
+	fi
+
 	wp eval-file "$ROOT_DIR/bin/smoke-admin.php" "${WP_CLI_ARGS[@]}"
+	if [ -n "$PACKAGE_CHECK_DIR" ]; then
+		PACKAGE_SKIP_PLUGINS="$PACKAGE_SLUG"
+		if [ -n "$WP_SKIP_PLUGINS" ]; then
+			PACKAGE_SKIP_PLUGINS="$WP_SKIP_PLUGINS,$PACKAGE_SKIP_PLUGINS"
+		fi
+		NPCINK_PAY_REFUND_SMOKE_PLUGIN_DIR="$PACKAGE_CHECK_DIR" \
+			wp eval-file "$ROOT_DIR/bin/smoke-admin.php" \
+			"${WP_CLI_BASE_ARGS[@]}" \
+			--skip-plugins="$PACKAGE_SKIP_PLUGINS"
+		PCP_WP_CLI_ARGS=("${WP_CLI_BASE_ARGS[@]}" --skip-plugins="$PACKAGE_SKIP_PLUGINS")
+	fi
 
 	wp plugin check "$PCP_TARGET" \
 		--slug="$PCP_SLUG" \
 		--format=json \
 		--exclude-directories=build,bin \
 		--exclude-files=.gitignore,.distignore \
-		"${WP_CLI_ARGS[@]}" >/tmp/npcink-pay-refund-pcp-verify.out
+		"${PCP_WP_CLI_ARGS[@]}" >/tmp/npcink-pay-refund-pcp-verify.out
 
 	php <<'PHP'
 <?php

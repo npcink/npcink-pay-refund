@@ -1,10 +1,10 @@
 === Npcink Pay Refund ===
-Contributors: muze
+Contributors: muze233
 Tags: alipay, wechat pay, refund, payment, admin tools
 Requires at least: 6.0
 Tested up to: 7.0
-Requires PHP: 7.4
-Stable tag: 1.3.2
+Requires PHP: 8.1
+Stable tag: 1.3.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -90,6 +90,15 @@ Payment secrets are stored in a separate non-autoloaded WordPress option named `
 4. Refund record search and filtering.
 
 == Changelog ==
+
+= 1.3.3 =
+
+* Declared the official WordPress.org contributor account.
+* Removed deprecated manual translation-domain loading for the WordPress.org directory.
+* Aligned the published PHP requirement with the packaged Composer dependencies at PHP 8.1.
+* Fixed full WeChat refunds for orders that used coupons by sending the original order total.
+* Preserved a reconciliation marker and duplicate-refund lock when local audit recording fails, with a gateway-free local retry path.
+* Removed the invalid placeholder Alipay callback URL from signed requests.
 
 = 1.3.2 =
 
