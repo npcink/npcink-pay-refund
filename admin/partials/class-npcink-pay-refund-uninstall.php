@@ -70,6 +70,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Uninstall')) {
             self::delete_options_by_prefix('npcink_pay_refund_pending_wx_');
             self::delete_options_by_prefix('npcink_pay_refund_lock_');
             self::delete_options_by_prefix('npcink_pay_refund_reconcile_');
+			self::delete_options_by_prefix('npcink_pay_refund_uncertain_');
         }
 
         public static function delete_options_by_prefix($prefix)

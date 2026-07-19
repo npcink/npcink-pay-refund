@@ -4,7 +4,7 @@ Tags: alipay, wechat pay, refund, payment, admin tools
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.3.3
+Stable tag: 1.3.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,8 +36,7 @@ Alipay:
 * Service: Alipay Open Platform / Alipay EasySDK.
 * Endpoint used by the SDK: openapi.alipay.com.
 * Data sent for order queries: Alipay app credentials and the payment order number entered by the operator.
-* Data sent for refunds: Alipay app credentials, payment order number, and refund amount.
-* The refund reason entered in WordPress is stored in the local refund record. It is not sent by the current Alipay refund call.
+* Data sent for refunds: Alipay app credentials, payment order number, refund amount, refund request number, and the refund reason entered by the operator.
 * Service information: https://open.alipay.com/
 
 WeChat Pay:
@@ -90,6 +89,15 @@ Payment secrets are stored in a separate non-autoloaded WordPress option named `
 4. Refund record search and filtering.
 
 == Changelog ==
+
+= 1.3.4 =
+
+* Added stable provider refund request numbers and query-first retries for ambiguous Alipay and WeChat responses.
+* Required the response returned by EasySDK's signature-verified Alipay execution path to match the submitted order and amount before recording local success.
+* Persisted the minimum refund context before provider submission so network interruptions cannot silently release duplicate-refund protection.
+* Allowed WeChat resubmission only after the signed refund query explicitly reports `RESOURCE_NOT_EXISTS`, reusing the original request parameters.
+* Added an admin reconciliation notice for uncertain provider results, pending WeChat refunds, and failed local audit writes.
+* Added GitHub Actions verification across PHP 8.1 and 8.4.
 
 = 1.3.3 =
 

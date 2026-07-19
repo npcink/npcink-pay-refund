@@ -10,10 +10,10 @@
 - Text Domain：`npcink-pay-refund`
 - Composer 包名：`npcink/pay-refund`
 - 最低 PHP：`8.1`
-- 当前版本：`1.3.3`
+- 当前开发版本：`1.3.4`
 - GitHub 仓库：`https://github.com/muze-page/npcink-pay-refund`
-- GitHub Release：`https://github.com/muze-page/npcink-pay-refund/releases/tag/v1.3.0`
-- 本地待发布包：`build/npcink-pay-refund-1.3.3.zip`
+- 最新稳定 GitHub Release：`https://github.com/muze-page/npcink-pay-refund/releases/tag/v1.3.3`
+- 1.3.4 候选包：`build/npcink-pay-refund-1.3.4.zip`
 
 当前本地仓库目录是 `/Users/muze/gitee/npcink-pay-refund`。这是本机路径，不影响插件源码、GitHub remote、发布包或 WordPress 安装目录。若要继续降噪，可把本地目录移动到 `/Users/muze/github/npcink-pay-refund`。
 
@@ -131,6 +131,20 @@
 - 移除支付宝签名请求中的无效占位回调地址
 
 支付密钥的保存与读取方式保持不变。
+
+## 1.3.4 结果不明状态与查询优先重试
+
+1.3.4 把“接口报错”进一步拆分为“明确失败”和“提供方结果不明”，重点避免网络中断后误放开重复退款：
+
+- 支付宝通过 EasySDK 通用接口显式传入稳定 `out_request_no`
+- 支付宝和微信都在退款提交前保存不含密钥、网关原文的最小请求上下文
+- 支付宝结果不明时使用 `alipay.trade.fastpay.refund.query` 查询原退款请求号；只有明确未查询到退款才按原请求号和原参数重试
+- 微信结果不明时先按原 `out_refund_no` 查询；只有签名验证后的查询明确返回 `404 RESOURCE_NOT_EXISTS` 才允许重试
+- 鉴权失败、网络异常、系统超时、未知状态或响应订单号不匹配时继续保留状态和重复退款保护
+- 后台通知汇总支付宝 uncertain、微信 pending 和本地 audit reconciliation 状态，提醒操作者先查询核对
+- GitHub Actions 在 PHP 8.1 和 8.4 上执行同一套发布验证
+
+本版本的自动化验证只能证明本地状态机、打包和兼容性基线；真实支付宝、微信商户退款仍须由商户操作者按 `docs/REFUND-INTEGRATION-CHECKLIST.md` 验证，未执行前不得记录为线上退款通过。
 
 ## 发布与验证
 

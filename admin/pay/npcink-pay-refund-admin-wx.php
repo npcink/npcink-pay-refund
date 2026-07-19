@@ -8,6 +8,7 @@ if (!defined('ABSPATH')) {
 use GuzzleHttp\Exception\RequestException;
 use WeChatPay\Builder;
 use WeChatPay\Crypto\Rsa;
+use WeChatPay\Formatter;
 
 
 if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
@@ -137,37 +138,102 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 
         public static function api_call($callback)
         {
+			$result = self::api_call_result($callback);
+			return 'success' === $result['state'] ? $result['data'] : null;
+		}
+
+		public static function api_call_result($callback)
+		{
             if (!self::ensure_client_ready()) {
-                return null;
+				return array('state' => 'unknown', 'data' => null, 'http_status' => 0, 'code' => 'CONFIG_ERROR');
             }
 
             try {
                 $response = call_user_func($callback, self::$client);
                 $data = json_decode((string) $response->getBody());
-                return is_object($data) ? $data : null;
-            } catch (RequestException $e) {
+				if (!is_object($data)) {
+					return array('state' => 'unknown', 'data' => null, 'http_status' => (int) $response->getStatusCode(), 'code' => 'INVALID_RESPONSE');
+				}
+
+				return array('state' => 'success', 'data' => $data, 'http_status' => (int) $response->getStatusCode(), 'code' => '');
+			} catch (RequestException $e) {
+				$response = $e->getResponse();
+				$http_status = $response ? (int) $response->getStatusCode() : 0;
+				$body_text = $response ? (string) $response->getBody() : '';
+				$body = '' !== $body_text ? json_decode($body_text, true) : array();
+				$code = is_array($body) && isset($body['code']) && is_scalar($body['code']) ? sanitize_text_field((string) $body['code']) : '';
+				$verified = self::error_response_signature_is_valid($response, $body_text);
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
                 error_log('Npcink_Pay_Refund WeChat API request failed: ' . $e->getMessage() . self::api_error_log_context($e->getResponse()));
-                return null;
+				return array(
+					'state' => $verified ? self::classify_api_error($http_status, $code) : 'unknown',
+					'data' => null,
+					'http_status' => $http_status,
+					'code' => $code,
+					'verified' => $verified,
+				);
             } catch (Exception $e) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
                 error_log('Npcink_Pay_Refund WeChat API request failed: ' . $e->getMessage());
-                return null;
+				return array('state' => 'unknown', 'data' => null, 'http_status' => 0, 'code' => '');
             } catch (Throwable $e) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
                 error_log('Npcink_Pay_Refund WeChat API request failed: ' . $e->getMessage());
-                return null;
+				return array('state' => 'unknown', 'data' => null, 'http_status' => 0, 'code' => '');
             }
         }
 
+		public static function classify_api_error($http_status, $code)
+		{
+			if (404 === (int) $http_status && 'RESOURCE_NOT_EXISTS' === strtoupper((string) $code)) {
+				return 'not_found';
+			}
+
+			return 'unknown';
+		}
+
+		public static function error_response_signature_is_valid($response, $body)
+		{
+			if (!$response || empty(self::$merchant_config['platform_key_id']) || empty(self::$merchant_config['platform_public_key'])) {
+				return false;
+			}
+
+			$nonce = $response->getHeaderLine('Wechatpay-Nonce');
+			$serial = $response->getHeaderLine('Wechatpay-Serial');
+			$signature = $response->getHeaderLine('Wechatpay-Signature');
+			$timestamp = $response->getHeaderLine('Wechatpay-Timestamp');
+			if ('' === $nonce || '' === $serial || '' === $signature || '' === $timestamp) {
+				return false;
+			}
+			if ((string) self::$merchant_config['platform_key_id'] !== $serial || !ctype_digit($timestamp) || abs(time() - (int) $timestamp) > 300) {
+				return false;
+			}
+
+			try {
+				return Rsa::verify(
+					Formatter::response($timestamp, $nonce, (string) $body),
+					$signature,
+					self::$merchant_config['platform_public_key']
+				);
+			} catch (Throwable $e) {
+				return false;
+			}
+		}
+
         public static function request_json($method, $uri, $options = array())
         {
+			$result = self::request_json_result($method, $uri, $options);
+			return 'success' === $result['state'] ? $result['data'] : null;
+		}
+
+		public static function request_json_result($method, $uri, $options = array())
+		{
             $method = strtolower($method);
             if (!in_array($method, array('get', 'post'), true)) {
-                return null;
+				return array('state' => 'unknown', 'data' => null, 'http_status' => 0, 'code' => 'INVALID_METHOD');
             }
 
-            return self::api_call(function ($client) use ($method, $uri, $options) {
+			return self::api_call_result(function ($client) use ($method, $uri, $options) {
                 return $client->chain($uri)->{$method}($options);
             });
         }
@@ -187,9 +253,15 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 
         public static function get_refund($order_id)
         {
-            $refund_id = sanitize_text_field($order_id) . '-refund';
+			$result = self::get_refund_result($order_id);
+			return 'success' === $result['state'] ? $result['data'] : null;
+		}
 
-            return self::api_call(function ($client) use ($refund_id) {
+		public static function get_refund_result($order_id)
+		{
+			$refund_id = self::refund_request_id($order_id);
+
+			return self::api_call_result(function ($client) use ($refund_id) {
                 return $client->v3->refund->domestic->refunds->_out_refund_no_->get(array(
                     'out_refund_no' => $refund_id,
                 ));
@@ -210,15 +282,47 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
                 wp_send_json_error(array('message' => self::api_error_message()), 400);
             }
 
-            //选项值
-            $config = Npcink_Pay_Refund_Admin::npcConfig('wx');
-            
             // 获取传递的订单
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Verified by require_refund_ajax_permission().
             $order_id = isset($_REQUEST['order_id']) ? sanitize_text_field(wp_unslash($_REQUEST['order_id'])) : '';
             if ('' === $order_id) {
                 wp_send_json_error(array('message' => __('请输入微信订单号。', 'npcink-pay-refund')), 400);
             }
+
+			$pending_not_found = false;
+			$pending = self::get_pending_refund($order_id);
+			if (!empty($pending)) {
+				$pending_result = self::get_refund_result($order_id);
+				if ('success' === $pending_result['state'] && !empty($pending_result['data']->status) && self::refund_response_matches($pending_result['data'], $order_id)) {
+					$recorded = self::sync_refund_status($order_id, $pending_result['data']);
+					if (false === $recorded) {
+						wp_send_json_error(array(
+							'message' => self::local_recording_error_message(),
+							'provider_status' => 'SUCCESS',
+							'reconciliation_required' => true,
+						), 500);
+					}
+
+					wp_send_json_success(array(
+						'html' => self::render_refund_query_html($pending_result['data']),
+						'order_id' => $order_id,
+						'refund_status' => $pending_result['data']->status,
+						'poll' => 'PROCESSING' === $pending_result['data']->status,
+					));
+				}
+
+				if ('not_found' !== $pending_result['state']) {
+					wp_send_json_success(array(
+						'html' => self::render_pending_refund_html($order_id, $pending) . '<p class="description">' . esc_html__('微信退款结果暂时无法确认。订单保持锁定，请稍后查询；不要更换商户退款单号。', 'npcink-pay-refund') . '</p>',
+						'order_id' => $order_id,
+						'refund_status' => 'UNKNOWN',
+						'poll' => true,
+						'provider_status' => 'UNKNOWN',
+					));
+				}
+
+				$pending_not_found = true;
+			}
 
             // 发送请求
 
@@ -270,6 +374,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
                     //if (true) {
                     if ($data->trade_state === "SUCCESS" && $order_amount > 0 && Npcink_Pay_Refund_Admin_Public::contrast_time($time)) {
 
+						if ($pending_not_found) {
+							$response_html .= '<p class="notice notice-warning inline npcink-pay-refund-refund-notice"><strong>' . esc_html__('上次退款单尚未在微信查询到；再次提交时将复用原商户退款单号和原参数。', 'npcink-pay-refund') . '</strong></p>';
+						}
                         $response_html .= '<p>退款原因：<input type="text" id="npcink-pay-refund-wx-reason" placeholder="请输入退款原因"></p>';
                         $response_html .= '<p>点击退款按钮后请稍等进行退款处理</p>';
                         $response_html .= "<button id='wx-order-btn' class='button button-primary refund ' data-order-id='" . esc_attr($order) . "' data-order-amount='" . esc_attr($order_amount) . "'>微信全额退款</button>";
@@ -299,11 +406,53 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 
             // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Verified by require_refund_ajax_permission(); sanitized by Npcink_Pay_Refund_Admin::sanitize_textarea_value().
             $reason = isset($_POST['order_reason']) ? Npcink_Pay_Refund_Admin::sanitize_textarea_value(wp_unslash($_POST['order_reason'])) : ''; //退款原因
-            $api_reason = self::format_refund_reason($reason);
 
-            if ('' === $order_id || '' === $api_reason) {
-                wp_send_json_error(array('message' => __('订单号和退款原因不能为空。', 'npcink-pay-refund')), 400);
+			if ('' === $order_id) {
+				wp_send_json_error(array('message' => __('订单号不能为空。', 'npcink-pay-refund')), 400);
             }
+
+			$pending = self::get_pending_refund($order_id);
+			$retrying_pending = false;
+			if (!empty($pending)) {
+				$pending_result = self::get_refund_result($order_id);
+				if ('success' === $pending_result['state'] && !empty($pending_result['data']->status) && self::refund_response_matches($pending_result['data'], $order_id)) {
+					$recorded = self::sync_refund_status($order_id, $pending_result['data']);
+					if (false === $recorded) {
+						wp_send_json_error(array(
+							'message' => self::local_recording_error_message(),
+							'provider_status' => 'SUCCESS',
+							'reconciliation_required' => true,
+						), 500);
+					}
+
+					wp_send_json_success(array(
+						'html' => self::render_refund_query_html($pending_result['data']),
+						'order_id' => $order_id,
+						'refund_status' => $pending_result['data']->status,
+						'poll' => 'PROCESSING' === $pending_result['data']->status,
+					));
+				}
+
+				if ('not_found' !== $pending_result['state']) {
+					wp_send_json_success(array(
+						'html' => self::render_pending_refund_html($order_id, $pending) . '<p class="description">' . esc_html__('微信退款结果暂时无法确认。已先查询原商户退款单号且未得到明确结果，本次不会再次提交。', 'npcink-pay-refund') . '</p>',
+						'order_id' => $order_id,
+						'refund_status' => 'UNKNOWN',
+						'poll' => true,
+						'provider_status' => 'UNKNOWN',
+					));
+				}
+
+				$retrying_pending = true;
+				if (!empty($pending['reason'])) {
+					$reason = $pending['reason'];
+				}
+			}
+
+			$api_reason = self::format_refund_reason($reason);
+			if ('' === $api_reason) {
+				wp_send_json_error(array('message' => __('退款原因不能为空。', 'npcink-pay-refund')), 400);
+			}
 
             $order_data = self::get_transaction($order_id);
             if (!$order_data || empty($order_data->trade_state)) {
@@ -321,81 +470,57 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
                 wp_send_json_error(array('message' => __('订单金额无效，未执行退款。', 'npcink-pay-refund')), 400);
             }
 
-
-
             // 准备退款订单号
-            $order_refund_id =  $order_id . "-refund";
-            $pending = self::get_pending_refund($order_id);
-            if (!empty($pending)) {
-                $pending_data = self::get_refund($order_id);
-                if ($pending_data && !empty($pending_data->status)) {
-                    $order = isset($pending_data->out_trade_no) ? $pending_data->out_trade_no : $order_id;
-                    $recorded = self::sync_refund_status($order, $pending_data);
-                    if (false === $recorded) {
-                        wp_send_json_error(array(
-                            'message' => self::local_recording_error_message(),
-                            'provider_status' => 'SUCCESS',
-                            'reconciliation_required' => true,
-                        ), 500);
-                    }
-                    wp_send_json_success(array(
-                        'html' => self::render_refund_query_html($pending_data),
-                        'order_id' => $order,
-                        'refund_status' => $pending_data->status,
-                        'poll' => 'PROCESSING' === $pending_data->status,
-                    ));
-                }
-
-                wp_send_json_success(array(
-                    'html' => self::render_pending_refund_html($order_id, $pending),
-                    'order_id' => $order_id,
-                    'refund_status' => 'PROCESSING',
-                    'poll' => true,
-                ));
+			$order_refund_id = self::refund_request_id($order_id);
+			if ($retrying_pending && !empty($pending['request_id']) && !hash_equals($order_refund_id, sanitize_text_field($pending['request_id']))) {
+				wp_send_json_error(array('message' => __('保存的微信退款请求号与当前订单不一致，订单继续锁定。请在微信商户平台核对后再处理。', 'npcink-pay-refund')), 409);
+			}
+			if ($retrying_pending && !empty($pending['request_amount']) && (int) $pending['request_amount'] !== $order_amount) {
+				wp_send_json_error(array('message' => __('订单金额与上次退款请求不一致，订单继续锁定。请在微信商户平台核对后再处理。', 'npcink-pay-refund')), 409);
             }
 
-            if (!Npcink_Pay_Refund_Admin_Public::claim_refund($order_id, '微信')) {
+			if (!$retrying_pending && !Npcink_Pay_Refund_Admin_Public::claim_refund($order_id, '微信')) {
                 wp_send_json_error(array('message' => __('该订单已提交退款或正在处理中，请勿重复操作。', 'npcink-pay-refund')), 409);
             }
 
-            // 发送请求
+			$current_user = wp_get_current_user();
+			$user = $retrying_pending && !empty($pending['user']) ? $pending['user'] : $current_user->display_name;
+			$amount = $retrying_pending && isset($pending['amount']) ? (float) $pending['amount'] : $payer_amount / 100;
+			$time_now = $retrying_pending && !empty($pending['time']) ? $pending['time'] : wp_date('Y-m-d H:i', current_time('timestamp'));
+			if (!self::save_pending_refund($order_id, $user, $amount, $reason, $time_now, $order_amount, true)) {
+				if (!$retrying_pending) {
+					Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '微信');
+				}
+				wp_send_json_error(array('message' => __('无法保存微信退款请求状态，未向微信提交退款。请检查数据库后重试。', 'npcink-pay-refund')), 500);
+			}
+			$pending = self::get_pending_refund($order_id);
 
-            $data = self::request_json(
+			// A retry reaches this POST only after the query returned RESOURCE_NOT_EXISTS.
+			$submit_result = self::request_json_result(
                 'POST',
                 'v3/refund/domestic/refunds',
                 self::refund_request_options($order_id, $order_refund_id, $api_reason, $order_amount)
             );
 
-            if (!$data || empty($data->status)) {
-                Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '微信');
-                wp_send_json_error(array('message' => __('微信退款请求失败，请稍后重试。', 'npcink-pay-refund')), 400);
+			$data = $submit_result['data'];
+			if ('success' !== $submit_result['state'] || !$data || empty($data->status) || !self::refund_response_matches($data, $order_id)) {
+				wp_send_json_success(array(
+					'html' => self::render_pending_refund_html($order_id, $pending) . '<p class="description">' . esc_html__('微信退款请求结果暂时无法确认。订单和原商户退款单号已保留，系统将只查询状态，不会盲目重复提交。', 'npcink-pay-refund') . '</p>',
+					'order_id' => $order_id,
+					'refund_status' => 'UNKNOWN',
+					'poll' => true,
+					'provider_status' => 'UNKNOWN',
+				));
             }
 
-            //当前时间
-            $current_time = current_time('timestamp');
-            $time_now = wp_date('Y-m-d H:i', $current_time);
-            //退款成功时间
-            $time = self::handle_time(isset($data->success_time) ? $data->success_time : '');
-
-            //获取登录用户名
-            $current_user = wp_get_current_user();
-            $user = $current_user->display_name;
-
-            $amount = isset($data->amount->payer_refund) ? $data->amount->payer_refund / 100 : $payer_amount / 100;
-            $order = isset($data->out_trade_no) ? $data->out_trade_no : $order_id;
+			$order = $order_id;
             switch ($data->status) {
                 case "PROCESSING": // 退款处理中，进行退款查询
-                    self::save_pending_refund($order, $user, $amount, $reason, $time_now);
                     $response_html = self::render_refund_query_html($data);
                     $response_html .= '<p class="description">' . esc_html__('微信退款已受理，状态可能需要几秒同步；请稍后再次点击查询刷新结果。', 'npcink-pay-refund') . '</p>';
                     break;
                 case "SUCCESS": // 退款成功，进行退款查询
-                    $recorded = self::record_successful_refund($order, $data, array(
-                        'user' => $user,
-                        'amount' => $amount,
-                        'reason' => $reason,
-                        'time' => $time,
-                    ));
+					$recorded = self::record_successful_refund($order, $data);
                     $response_html = self::render_refund_query_html($data);
                     if (false === $recorded) {
                         wp_send_json_error(array(
@@ -407,16 +532,23 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 
                     break;
                 case "CLOSED": // 退款关闭
+					self::clear_pending_refund($order_id);
                     Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '微信');
                     wp_send_json_error(array('message' => __('退款关闭', 'npcink-pay-refund')), 400);
                     break;
                 case "ABNORMAL": // 退款异常
+					self::clear_pending_refund($order_id);
                     Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '微信');
                     wp_send_json_error(array('message' => __('退款异常，请联系管理员。', 'npcink-pay-refund')), 400);
                     break;
                 default:
-                    Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '微信');
-                    wp_send_json_error(array('message' => __('退款失败，请稍后重试。', 'npcink-pay-refund')), 400);
+					wp_send_json_success(array(
+						'html' => self::render_pending_refund_html($order_id, $pending) . '<p class="description">' . esc_html__('微信返回了未识别的退款状态。订单继续锁定，请在商户平台核对。', 'npcink-pay-refund') . '</p>',
+						'order_id' => $order_id,
+						'refund_status' => 'UNKNOWN',
+						'poll' => true,
+						'provider_status' => 'UNKNOWN',
+					));
             }
 
             wp_send_json_success(array(
@@ -441,12 +573,24 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
                 wp_send_json_error(array('message' => __('订单号不能为空。', 'npcink-pay-refund')), 400);
             }
 
-            $data = self::get_refund($order_id);
-            if (!$data || empty($data->status)) {
-                wp_send_json_error(array('message' => __('退款状态查询失败，请稍后手动查询。', 'npcink-pay-refund')), 400);
+			$query_result = self::get_refund_result($order_id);
+			$data = $query_result['data'];
+			if ('success' !== $query_result['state'] || !$data || empty($data->status) || !self::refund_response_matches($data, $order_id)) {
+				$pending = self::get_pending_refund($order_id);
+				if (!empty($pending)) {
+					wp_send_json_success(array(
+						'html' => self::render_pending_refund_html($order_id, $pending),
+						'order_id' => $order_id,
+						'refund_status' => 'UNKNOWN',
+						'poll' => true,
+						'provider_status' => 'UNKNOWN',
+					));
+				}
+
+				wp_send_json_error(array('message' => __('退款状态查询失败，请稍后手动查询。', 'npcink-pay-refund')), 400);
             }
 
-            $order = isset($data->out_trade_no) ? $data->out_trade_no : $order_id;
+			$order = $order_id;
 
             $recorded = self::sync_refund_status($order, $data);
             if (false === $recorded) {
@@ -483,6 +627,27 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 
             return max(0, (int) $order_data->amount->total);
         }
+
+		public static function refund_request_id($order_id)
+		{
+			$order_id = sanitize_text_field($order_id);
+			$legacy_id = $order_id . '-refund';
+			if (strlen($legacy_id) <= 64 && preg_match('/^[0-9A-Za-z_\-|*@]+$/D', $legacy_id)) {
+				return $legacy_id;
+			}
+
+			return 'npcink-refund-' . substr(hash('sha256', $order_id), 0, 40);
+		}
+
+		public static function refund_response_matches($data, $order_id)
+		{
+			if (!is_object($data) || !isset($data->out_trade_no) || !isset($data->out_refund_no)) {
+				return false;
+			}
+
+			return sanitize_text_field($order_id) === sanitize_text_field($data->out_trade_no)
+				&& self::refund_request_id($order_id) === sanitize_text_field($data->out_refund_no);
+		}
 
         public static function refund_request_options($order_id, $order_refund_id, $reason, $order_amount)
         {
@@ -709,12 +874,12 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
             return '<div class="npcink-pay-refund-result-detail"><dt>' . esc_html($label) . '</dt><dd>' . esc_html($display_value) . '</dd></div>';
         }
 
-        public static function render_pending_refund_html($order_id, $pending)
-        {
-            $data = (object) array(
-                'status' => 'PROCESSING',
-                'out_trade_no' => sanitize_text_field($order_id),
-                'out_refund_no' => sanitize_text_field($order_id) . '-refund',
+		public static function render_pending_refund_html($order_id, $pending)
+		{
+			$data = (object) array(
+				'status' => 'PROCESSING',
+				'out_trade_no' => sanitize_text_field($order_id),
+				'out_refund_no' => self::refund_request_id($order_id),
                 'amount' => (object) array(
                     'payer_refund' => isset($pending['amount']) ? (float) $pending['amount'] * 100 : 0,
                 ),
@@ -728,15 +893,29 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
             return 'npcink_pay_refund_pending_wx_' . md5(sanitize_text_field($order_id));
         }
 
-        public static function save_pending_refund($order_id, $user, $amount, $reason, $time)
+		public static function save_pending_refund($order_id, $user, $amount, $reason, $time, $request_amount = 0, $increment_attempt = false)
         {
-            update_option(
+			$existing = self::get_pending_refund($order_id);
+			if (!empty($existing)) {
+				$user = isset($existing['user']) ? $existing['user'] : $user;
+				$amount = isset($existing['amount']) ? $existing['amount'] : $amount;
+				$reason = isset($existing['reason']) ? $existing['reason'] : $reason;
+				$time = isset($existing['time']) ? $existing['time'] : $time;
+				$request_amount = !empty($existing['request_amount']) ? $existing['request_amount'] : $request_amount;
+			}
+
+			return update_option(
                 self::pending_refund_option_name($order_id),
                 array(
                     'user' => sanitize_text_field($user),
                     'amount' => (float) $amount,
                     'reason' => Npcink_Pay_Refund_Admin::sanitize_textarea_value($reason),
                     'time' => sanitize_text_field($time),
+					'request_id' => self::refund_request_id($order_id),
+					'request_amount' => max(0, (int) $request_amount),
+					'started_at' => isset($existing['started_at']) ? (int) $existing['started_at'] : time(),
+					'last_submit_at' => $increment_attempt ? time() : (isset($existing['last_submit_at']) ? (int) $existing['last_submit_at'] : 0),
+					'submit_attempts' => (isset($existing['submit_attempts']) ? (int) $existing['submit_attempts'] : 0) + ($increment_attempt ? 1 : 0),
                 ),
                 false
             );

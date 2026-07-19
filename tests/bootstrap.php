@@ -11,6 +11,13 @@ function npcink_test_reset_state()
     $GLOBALS['npcink_test_options'] = array();
     $GLOBALS['npcink_test_deleted_options'] = array();
     Npcink_Pay_Refund_Admin::$configs = array();
+	if (class_exists('Npcink_Pay_Refund_Admin_Wx', false)) {
+		Npcink_Pay_Refund_Admin_Wx::$client = null;
+		Npcink_Pay_Refund_Admin_Wx::$merchant_config = array();
+	}
+	if (class_exists('Npcink_Test_Alipay_Refund', false)) {
+		Npcink_Test_Alipay_Refund::reset_provider();
+	}
 }
 
 function sanitize_text_field($value)

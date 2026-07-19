@@ -22,8 +22,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 		public static function run()
 		{
 			add_action('admin_init', array(__CLASS__, 'maybe_upgrade_schema'));
-
-
+			add_action('admin_notices', array(__CLASS__, 'render_reconciliation_notice'));
 
 			//获取当前页hook
 			//add_action('admin_enqueue_scripts', array(__CLASS__, 'hook'));
@@ -71,6 +70,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 			// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			if ($exists) {
 				self::clear_refund_reconciliation($order, $type);
+				self::clear_refund_uncertain($order, $type);
 				self::release_refund_claim($order, $type);
 				return true;
 			}
@@ -87,7 +87,10 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom refund table insert.
 			$result = $wpdb->insert($table_name, $data);
 			if (false === $result) {
-				self::save_refund_reconciliation($data);
+				$reconciliation_saved = self::save_refund_reconciliation($data);
+				if ($reconciliation_saved || !empty(self::get_refund_reconciliation($order, $type))) {
+					self::clear_refund_uncertain($order, $type);
+				}
 				$reference = substr(hash('sha256', $type . '|' . $order), 0, 12);
 				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Preserve a concise reconciliation signal without logging credentials or gateway payloads.
 				error_log('Npcink_Pay_Refund local audit write failed; reconciliation reference ' . $reference . '.');
@@ -95,6 +98,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 			}
 
 			self::clear_refund_reconciliation($order, $type);
+			self::clear_refund_uncertain($order, $type);
 			self::release_refund_claim($order, $type);
 			return $result;
 		}
@@ -125,10 +129,11 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 
 			if (self::has_refund_record($order, $type)) {
 				self::clear_refund_reconciliation($order, $type);
+				self::clear_refund_uncertain($order, $type);
 				return false;
 			}
 
-			if (!empty(self::get_refund_reconciliation($order, $type))) {
+			if (!empty(self::get_refund_reconciliation($order, $type)) || !empty(self::get_refund_uncertain($order, $type))) {
 				return false;
 			}
 
@@ -158,6 +163,59 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 		public static function refund_reconciliation_name($order, $type)
 		{
 			return 'npcink_pay_refund_reconcile_' . md5(sanitize_text_field($type) . '|' . sanitize_text_field($order));
+		}
+
+		public static function refund_uncertain_name($order, $type)
+		{
+			return 'npcink_pay_refund_uncertain_' . md5(sanitize_text_field($type) . '|' . sanitize_text_field($order));
+		}
+
+		/**
+		 * Persist the minimum context required to query a provider before retrying.
+		 *
+		 * Gateway payloads and credentials must never be stored in this option.
+		 */
+		public static function save_refund_uncertain($data)
+		{
+			$required = array('n_time', 'n_user', 'n_amount', 'n_order', 'n_reason', 'n_type', 'request_id');
+			foreach ($required as $field) {
+				if (!array_key_exists($field, $data)) {
+					return false;
+				}
+			}
+
+			$order = sanitize_text_field($data['n_order']);
+			$type = sanitize_text_field($data['n_type']);
+			$request_id = sanitize_text_field($data['request_id']);
+			if ('' === $order || '' === $type || '' === $request_id) {
+				return false;
+			}
+
+			$existing = self::get_refund_uncertain($order, $type);
+			$stored = array(
+				'n_time' => sanitize_text_field($data['n_time']),
+				'n_user' => sanitize_text_field($data['n_user']),
+				'n_amount' => (float) $data['n_amount'],
+				'n_order' => $order,
+				'n_reason' => Npcink_Pay_Refund_Admin::sanitize_textarea_value($data['n_reason']),
+				'n_type' => $type,
+				'request_id' => $request_id,
+				'started_at' => isset($existing['started_at']) ? (int) $existing['started_at'] : time(),
+				'updated_at' => time(),
+			);
+
+			return update_option(self::refund_uncertain_name($order, $type), $stored, false);
+		}
+
+		public static function get_refund_uncertain($order, $type)
+		{
+			$data = get_option(self::refund_uncertain_name($order, $type), array());
+			return is_array($data) ? $data : array();
+		}
+
+		public static function clear_refund_uncertain($order, $type)
+		{
+			delete_option(self::refund_uncertain_name($order, $type));
 		}
 
 		public static function save_refund_reconciliation($data)
@@ -213,6 +271,59 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 		public static function clear_refund_reconciliation($order, $type)
 		{
 			delete_option(self::refund_reconciliation_name($order, $type));
+		}
+
+		public static function count_options_by_prefix($prefix)
+		{
+			global $wpdb;
+			if (!isset($wpdb->options)) {
+				return 0;
+			}
+
+			$options_table = esc_sql($wpdb->options);
+			$like = $wpdb->esc_like($prefix) . '%';
+			// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Lightweight operational count over this plugin's generated options.
+			$count = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$options_table} WHERE option_name LIKE %s",
+					$like
+				)
+			);
+			// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+			return max(0, (int) $count);
+		}
+
+		public static function refund_operational_state_counts()
+		{
+			return array(
+				'uncertain' => self::count_options_by_prefix('npcink_pay_refund_uncertain_'),
+				'wechat_pending' => self::count_options_by_prefix('npcink_pay_refund_pending_wx_'),
+				'reconciliation' => self::count_options_by_prefix('npcink_pay_refund_reconcile_'),
+			);
+		}
+
+		public static function render_reconciliation_notice()
+		{
+			if (!class_exists('Npcink_Pay_Refund_Admin_Authority') || !Npcink_Pay_Refund_Admin_Authority::current_user_can_refund()) {
+				return;
+			}
+
+			$counts = self::refund_operational_state_counts();
+			if (0 === array_sum($counts)) {
+				return;
+			}
+
+			/* translators: 1: Alipay uncertain count, 2: WeChat pending count, 3: local audit reconciliation count. */
+			$message_format = __('退款对账提醒：支付宝结果待确认 %1$d 项，微信待查询或补记 %2$d 项，本地记录待补记 %3$d 项。状态项可能对应同一订单；为避免重复退款，请先查询核对。', 'npcink-pay-refund');
+			$message = sprintf(
+				$message_format,
+				$counts['uncertain'],
+				$counts['wechat_pending'],
+				$counts['reconciliation']
+			);
+
+			echo '<div class="notice notice-warning"><p><strong>' . esc_html__('Npcink Pay Refund', 'npcink-pay-refund') . '：</strong> ' . esc_html($message) . ' <a href="' . esc_url(admin_url('index.php?page=npcink_pay_refund_query')) . '">' . esc_html__('打开订单退款查询', 'npcink-pay-refund') . '</a></p></div>';
 		}
 
 
