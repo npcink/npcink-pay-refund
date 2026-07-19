@@ -1,6 +1,7 @@
 .DS_Store
 **/.DS_Store
 .git/
+.github/
 .gitignore
 **/.gitignore
 **/.gitattributes
