@@ -18,13 +18,14 @@ node_modules/
 vite/
 admin/sdk/
 admin/sdk/guzz/
-docs/PROJECT-HISTORY.zh-CN.md
-docs/WPORG-LISTING-PREP.zh-CN.md
+docs/
+README.md
 vendor/alipaysdk/easysdk/csharp/
 vendor/alipaysdk/easysdk/java/
 vendor/alipaysdk/easysdk/kernel/csharp/
 vendor/alipaysdk/easysdk/kernel/java/
 vendor/alipaysdk/easysdk/php/test/
+vendor/alipaysdk/easysdk/tea/
 vendor/alibabacloud/tea-fileform/tests/
 vendor/alibabacloud/tea-fileform/phpunit.xml
 vendor/**/.php_cs.dist

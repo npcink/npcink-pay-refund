@@ -4,7 +4,7 @@ Tags: alipay, wechat pay, refund, payment, admin tools
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 1.3.4
+Stable tag: 1.3.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -89,6 +89,10 @@ Payment secrets are stored in a separate non-autoloaded WordPress option named `
 4. Refund record search and filtering.
 
 == Changelog ==
+
+= 1.3.5 =
+
+* Removed development-only documentation and Tea SDK source specifications from the release package.
 
 = 1.3.4 =
 

@@ -10,10 +10,10 @@
 - Text Domain：`npcink-pay-refund`
 - Composer 包名：`npcink/pay-refund`
 - 最低 PHP：`8.1`
-- 当前开发版本：`1.3.4`
+- 当前开发版本：`1.3.5`
 - GitHub 仓库：`https://github.com/muze-page/npcink-pay-refund`
 - 最新稳定 GitHub Release：`https://github.com/muze-page/npcink-pay-refund/releases/tag/v1.3.3`
-- 1.3.4 候选包：`build/npcink-pay-refund-1.3.4.zip`
+- 1.3.5 候选包：`build/npcink-pay-refund-1.3.5.zip`
 
 当前本地仓库目录是 `/Users/muze/gitee/npcink-pay-refund`。这是本机路径，不影响插件源码、GitHub remote、发布包或 WordPress 安装目录。若要继续降噪，可把本地目录移动到 `/Users/muze/github/npcink-pay-refund`。
 
@@ -145,6 +145,10 @@
 - GitHub Actions 在 PHP 8.1 和 8.4 上执行同一套发布验证
 
 本版本的自动化验证只能证明本地状态机、打包和兼容性基线；真实支付宝、微信商户退款仍须由商户操作者按 `docs/REFUND-INTEGRATION-CHECKLIST.md` 验证，未执行前不得记录为线上退款通过。
+
+## 1.3.5 WordPress.org 发布包清理
+
+为符合 WordPress.org 的发布文件要求，安装包不再包含维护文档、AI 过程说明或支付宝 EasySDK 的 Tea 源规格文件。这些文件继续保留在源码仓库，既不参与插件运行，也不影响 Composer 自动加载。
 
 ## 发布与验证
 
