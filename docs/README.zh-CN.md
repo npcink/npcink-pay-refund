@@ -11,6 +11,7 @@
 - [1.3.1 开发复盘与维护思路](DEVELOPMENT-SUMMARY-1.3.1.zh-CN.md)
 - [1.3.2 界面压缩与中文状态复盘](DEVELOPMENT-SUMMARY-1.3.2.zh-CN.md)
 - [WordPress.org 上架准备记录](WPORG-LISTING-PREP.zh-CN.md)
+- [WordPress.org 1.3.5 审核与首次发布复盘](WORDPRESS-ORG-RELEASE-RETROSPECTIVE-1.3.5.zh-CN.md)
 - [首次真实商户联调清单](REFUND-INTEGRATION-CHECKLIST.md)
 
 ## 功能
@@ -41,6 +42,14 @@
 ## 更新记录
 
 ### 2026
+
+#### 0726
+
+> 1.3.5（WordPress.org 首次发布）
+
+- 清理目录安装包中的维护文档和 EasySDK Tea 源规格文件
+- `Contributors` 与实际 WordPress.org 用户名 `muze233` 对齐
+- 发布到 WordPress.org SVN `trunk/` 和 `tags/1.3.5/`（`r3623533`）
 
 #### 0719
 

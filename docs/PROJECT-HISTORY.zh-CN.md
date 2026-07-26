@@ -12,8 +12,9 @@
 - 最低 PHP：`8.1`
 - 当前开发版本：`1.3.5`
 - GitHub 仓库：`https://github.com/muze-page/npcink-pay-refund`
-- 最新稳定 GitHub Release：`https://github.com/muze-page/npcink-pay-refund/releases/tag/v1.3.3`
-- 1.3.5 候选包：`build/npcink-pay-refund-1.3.5.zip`
+- WordPress.org 当前发布版本：`1.3.5`
+- WordPress.org 目录页：`https://wordpress.org/plugins/npcink-pay-refund/`
+- WordPress.org SVN 发布修订：`r3623533`
 
 当前本地仓库目录是 `/Users/muze/gitee/npcink-pay-refund`。这是本机路径，不影响插件源码、GitHub remote、发布包或 WordPress 安装目录。若要继续降噪，可把本地目录移动到 `/Users/muze/github/npcink-pay-refund`。
 
@@ -149,6 +150,8 @@
 ## 1.3.5 WordPress.org 发布包清理
 
 为符合 WordPress.org 的发布文件要求，安装包不再包含维护文档、AI 过程说明或支付宝 EasySDK 的 Tea 源规格文件。这些文件继续保留在源码仓库，既不参与插件运行，也不影响 Composer 自动加载。
+
+目录审核通过后，1.3.5 已发布到 WordPress.org 的 `trunk/` 和 `tags/1.3.5/`，SVN 修订为 `r3623533`。完整审核整改、发布证据和后续发布流程见 `docs/WORDPRESS-ORG-RELEASE-RETROSPECTIVE-1.3.5.zh-CN.md`。
 
 ## 发布与验证
 
