@@ -10,8 +10,9 @@
 - Text Domain：`npcink-pay-refund`
 - Composer 包名：`npcink/pay-refund`
 - 最低 PHP：`8.1`
-- 当前开发版本：`1.3.5`
-- GitHub 仓库：`https://github.com/muze-page/npcink-pay-refund`
+- 当前开发版本：`1.3.6`
+- GitHub 仓库：`https://github.com/npcink/npcink-pay-refund`
+- 最新稳定 GitHub Release：`v1.3.3`
 - WordPress.org 当前发布版本：`1.3.5`
 - WordPress.org 目录页：`https://wordpress.org/plugins/npcink-pay-refund/`
 - WordPress.org SVN 发布修订：`r3623533`
@@ -147,11 +148,19 @@
 
 本版本的自动化验证只能证明本地状态机、打包和兼容性基线；真实支付宝、微信商户退款仍须由商户操作者按 `docs/REFUND-INTEGRATION-CHECKLIST.md` 验证，未执行前不得记录为线上退款通过。
 
+1.3.3 到 1.3.6 的对抗式审查方法、退款状态机约束、发布证据分层和后续维护流程，见 `docs/DEVELOPMENT-RETROSPECTIVE-1.3.3-1.3.6.zh-CN.md`。
+
 ## 1.3.5 WordPress.org 发布包清理
 
 为符合 WordPress.org 的发布文件要求，安装包不再包含维护文档、AI 过程说明或支付宝 EasySDK 的 Tea 源规格文件。这些文件继续保留在源码仓库，既不参与插件运行，也不影响 Composer 自动加载。
 
 目录审核通过后，1.3.5 已发布到 WordPress.org 的 `trunk/` 和 `tags/1.3.5/`，SVN 修订为 `r3623533`。完整审核整改、发布证据和后续发布流程见 `docs/WORDPRESS-ORG-RELEASE-RETROSPECTIVE-1.3.5.zh-CN.md`。
+
+## 1.3.6 安全依赖更新候选
+
+1.3.5 发布后，`composer audit` 新增了针对 Guzzle 7.15.1 之前版本的 4 条中危安全公告。开发分支将 Guzzle 从 7.13.2 升级到 7.15.1，并同步升级 `guzzlehttp/promises` 到 2.5.1、`guzzlehttp/psr7` 到 2.13.0。
+
+由于 WordPress.org 1.3.5 已是不可变的公开发布事实，修复后的依赖包使用 1.3.6 候选版本，不复用 1.3.5 版本号。真实商户验证、GitHub 合并/tag/Release 和 WordPress.org 1.3.6 发布仍是后续独立门禁。
 
 ## 发布与验证
 
@@ -216,12 +225,13 @@ composer verify
 
 项目已从 Gitee 切到 GitHub：
 
-- 当前 `origin`：`https://github.com/muze-page/npcink-pay-refund.git`
+- 当前 `origin`：`https://github.com/npcink/npcink-pay-refund.git`
 - Gitee remote 不再使用
 - GitHub 仓库为 public
 - `main` 已推送到 GitHub
-- `v1.3.0` tag 已推送
-- `v1.3.0` Release 已上传 `npcink-pay-refund-1.3.0.zip`
+- GitHub 最新稳定 tag 和 Release 仍为 `v1.3.3`
+- 1.3.4 退款安全改造、1.3.5 发布包清理与 1.3.6 安全依赖更新当前位于草稿 PR #2，尚未合入 `main`
+- WordPress.org 已发布 1.3.5；它与 GitHub `main` / Release 的版本事实必须分别记录，不能相互代替
 
 历史 tag `v1.0.8`、`v1.1.1`、`v1.1.2` 也已随 tags 推送到 GitHub。旧提交历史中仍可能出现旧项目名，这是正常 Git 历史，不建议 rewrite。
 

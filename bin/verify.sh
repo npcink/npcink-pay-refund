@@ -42,6 +42,14 @@ if grep -E "^${PACKAGE_SLUG}/(vite/|bin/|build/|tests/|admin/sdk/)" <<< "$ZIP_LI
 	echo "Release zip contains excluded development or legacy SDK paths." >&2
 	exit 1
 fi
+if grep -E "^${PACKAGE_SLUG}/(docs/|README\.md$|vendor/alipaysdk/easysdk/tea/)" <<< "$ZIP_LIST" >/dev/null; then
+	echo "Release zip contains excluded maintenance documentation or EasySDK Tea sources." >&2
+	exit 1
+fi
+if grep -E "^${PACKAGE_SLUG}/(.*/)?Teafile$|^${PACKAGE_SLUG}/.*\.tea$" <<< "$ZIP_LIST" >/dev/null; then
+	echo "Release zip contains excluded Tea specification files." >&2
+	exit 1
+fi
 
 if ! unzip -p "$ZIP_FILE" "${PACKAGE_SLUG}/npcink-pay-refund.php" | grep -Eq '^ \* Requires PHP:[[:space:]]+8\.1$'; then
 	echo "Packaged plugin header does not require PHP 8.1." >&2
@@ -54,6 +62,24 @@ fi
 PACKAGED_PHP_REQUIREMENT="$(unzip -p "$ZIP_FILE" "${PACKAGE_SLUG}/composer.json" | php -r '$data = json_decode(stream_get_contents(STDIN), true); echo is_array($data) && isset($data["require"]["php"]) ? $data["require"]["php"] : "";')"
 if [ "$PACKAGED_PHP_REQUIREMENT" != ">=8.1" ]; then
 	echo "Packaged Composer metadata does not require PHP 8.1." >&2
+	exit 1
+fi
+PACKAGED_PLUGIN_VERSION="$(
+	unzip -p "$ZIP_FILE" "${PACKAGE_SLUG}/npcink-pay-refund.php" |
+		php -r '$content=stream_get_contents(STDIN); if (preg_match("/^ \\* Version:\\s*([0-9A-Za-z.-]+)\\s*$/m", $content, $matches)) { echo $matches[1]; }'
+)"
+PACKAGED_RUNTIME_VERSION="$(
+	unzip -p "$ZIP_FILE" "${PACKAGE_SLUG}/npcink-pay-refund.php" |
+		php -r '$content=stream_get_contents(STDIN); if (preg_match("/NPCINK_PAY_REFUND_VERSION\\x27, \\x27([0-9A-Za-z.-]+)\\x27/", $content, $matches)) { echo $matches[1]; }'
+)"
+PACKAGED_STABLE_TAG="$(
+	unzip -p "$ZIP_FILE" "${PACKAGE_SLUG}/readme.txt" |
+		php -r '$content=stream_get_contents(STDIN); if (preg_match("/^Stable tag:\\s*([0-9A-Za-z.-]+)\\s*$/m", $content, $matches)) { echo $matches[1]; }'
+)"
+if [ -z "$PACKAGED_PLUGIN_VERSION" ] ||
+	[ "$PACKAGED_PLUGIN_VERSION" != "$PACKAGED_RUNTIME_VERSION" ] ||
+	[ "$PACKAGED_PLUGIN_VERSION" != "$PACKAGED_STABLE_TAG" ]; then
+	echo "Packaged plugin header, runtime constant, and stable tag are not synchronized." >&2
 	exit 1
 fi
 

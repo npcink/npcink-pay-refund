@@ -54,7 +54,7 @@ function npcink_test_case($name, $callback)
     }
 }
 
-npcink_test_case('published PHP baseline matches Composer', function () {
+npcink_test_case('published PHP and version metadata stay synchronized', function () {
     $root = dirname(__DIR__);
     $composer = json_decode(file_get_contents($root . '/composer.json'), true);
     npcink_test_assert_same('>=8.1', $composer['require']['php'], 'Composer must declare the runtime PHP floor');
@@ -63,9 +63,20 @@ npcink_test_case('published PHP baseline matches Composer', function () {
     $readme = file_get_contents($root . '/readme.txt');
     npcink_test_assert_true((bool) preg_match('/Requires PHP:\s+8\.1/', $plugin), 'Plugin header must require PHP 8.1');
     npcink_test_assert_true((bool) preg_match('/^Requires PHP:\s*8\.1$/m', $readme), 'WordPress.org readme must require PHP 8.1');
-	npcink_test_assert_true((bool) preg_match('/Version:\s+1\.3\.4/', $plugin), 'Plugin header must publish version 1.3.4');
-	npcink_test_assert_true((bool) preg_match("/NPCINK_PAY_REFUND_VERSION', '1\\.3\\.4'/", $plugin), 'Runtime constant must match version 1.3.4');
-	npcink_test_assert_true((bool) preg_match('/^Stable tag:\s*1\.3\.4$/m', $readme), 'WordPress.org stable tag must match version 1.3.4');
+
+	$header_match = preg_match('/^ \* Version:\s*([0-9A-Za-z.-]+)\s*$/m', $plugin, $header_matches);
+	npcink_test_assert_same(1, $header_match, 'Plugin header must publish a version');
+	$published_version = $header_matches[1];
+	$quoted_version = preg_quote($published_version, '/');
+
+	npcink_test_assert_true(
+		(bool) preg_match("/NPCINK_PAY_REFUND_VERSION', '{$quoted_version}'/", $plugin),
+		'Runtime constant must match the plugin header version'
+	);
+	npcink_test_assert_true(
+		(bool) preg_match("/^Stable tag:\\s*{$quoted_version}$/m", $readme),
+		'WordPress.org stable tag must match the plugin header version'
+	);
 });
 
 npcink_test_case('WeChat full refund uses original total for coupon orders', function () {

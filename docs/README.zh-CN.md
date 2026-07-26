@@ -10,6 +10,7 @@
 - [项目改造历史与当前状态](PROJECT-HISTORY.zh-CN.md)
 - [1.3.1 开发复盘与维护思路](DEVELOPMENT-SUMMARY-1.3.1.zh-CN.md)
 - [1.3.2 界面压缩与中文状态复盘](DEVELOPMENT-SUMMARY-1.3.2.zh-CN.md)
+- [1.3.3–1.3.6 对抗式审查与发布工程复盘](DEVELOPMENT-RETROSPECTIVE-1.3.3-1.3.6.zh-CN.md)
 - [WordPress.org 上架准备记录](WPORG-LISTING-PREP.zh-CN.md)
 - [WordPress.org 1.3.5 审核与首次发布复盘](WORDPRESS-ORG-RELEASE-RETROSPECTIVE-1.3.5.zh-CN.md)
 - [首次真实商户联调清单](REFUND-INTEGRATION-CHECKLIST.md)
@@ -44,6 +45,12 @@
 ### 2026
 
 #### 0726
+
+> 1.3.6（安全依赖更新候选）
+
+- 将 Guzzle 从 7.13.2 升级到 7.15.1，并同步升级 Promises 与 PSR-7
+- 修复版本一致性测试硬编码 1.3.4 导致的 CI 失败
+- 真实商户退款和新候选包仍由操作者独立验证
 
 > 1.3.5（WordPress.org 首次发布）
 
