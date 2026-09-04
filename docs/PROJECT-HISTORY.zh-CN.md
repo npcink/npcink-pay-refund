@@ -17,7 +17,7 @@
 - WordPress.org 目录页：`https://wordpress.org/plugins/npcink-pay-refund/`
 - WordPress.org SVN 发布修订：`r3680629`
 
-当前本地仓库目录是 `/Users/muze/gitee/npcink-pay-refund`。这是本机路径，不影响插件源码、GitHub remote、发布包或 WordPress 安装目录。若要继续降噪，可把本地目录移动到 `/Users/muze/github/npcink-pay-refund`。
+当前本地仓库目录是 `/Users/muze/gitee/npcink-pay-refund`。这是本机路径，不影响插件源码、GitHub remote、发布包或 WordPress 安装目录。目录迁移只是个人整理选项，不属于发布、运行或维护要求；当前保持原路径。
 
 ## 命名改造
 
@@ -243,14 +243,9 @@ composer verify
 
 ## 后续建议
 
-短期建议：
+维护建议：
 
-- 把本地仓库目录从 `/Users/muze/gitee/magick-refund` 移到 `/Users/muze/github/npcink-pay-refund`
 - 继续用 `composer verify` 作为每次变更后的最小回归门槛
-- 首次真实商户联调按 `docs/REFUND-INTEGRATION-CHECKLIST.md` 执行并记录结果
-
-发布前建议：
-
-- 补充 GitHub README 截图和后台入口说明
-- 增加真实支付宝、微信沙箱或低风险订单联调记录
+- 后续版本按 `docs/REFUND-INTEGRATION-CHECKLIST.md` 使用精确版本化 ZIP 记录真实商户联调结果
 - 如开始有真实用户，再引入显式 schema/version migration，不要直接改 option/table/action 名称
+- 退款成功后自动修改业务订单状态、部分退款、异步任务和多商户配置仍属于后续独立设计，不纳入当前插件边界

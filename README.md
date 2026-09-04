@@ -15,6 +15,33 @@ Npcink Pay Refund provides an admin-side refund workflow for Alipay and WeChat P
 
 The release package must be generated with `composer build:zip` so the required Composer dependencies are included.
 
+== Admin workflow ==
+
+The plugin adds two WordPress admin pages:
+
+* Configuration: `Plugins -> Refund Configuration` (`plugins.php?page=npcink_pay_refund_config`)
+* Refund operations: `Dashboard -> Order Refund` (`index.php?page=npcink_pay_refund_query`)
+
+The plugin is an admin-side order query, refund, and refund-log tool. It is not a checkout gateway, does not create payments, and does not process payment notifications or change third-party order status.
+
+== Screenshots ==
+
+=== Order query and refund ===
+
+![Order query and refund](assets/screenshot-1.png)
+
+=== Refund result ===
+
+![Refund result](assets/screenshot-2.png)
+
+=== Refund records ===
+
+![Refund records](assets/screenshot-3.png)
+
+=== Plugin configuration and permissions ===
+
+![Plugin configuration and permissions](assets/screenshot-4.png)
+
 == Third-party services ==
 
 This plugin connects to external payment APIs only after an administrator configures merchant credentials and an authorized WordPress user performs a query, refund, or configuration check.

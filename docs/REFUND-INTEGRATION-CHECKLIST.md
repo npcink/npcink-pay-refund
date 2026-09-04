@@ -6,9 +6,9 @@ Use this checklist for the first real merchant run. Do not test refunds against 
 
 - Build package: `composer build:zip`
 - Verify package: `composer verify`
-- For the current release candidate, install `build/npcink-pay-refund-1.3.7.zip`, not a raw source archive.
-- WordPress.org 1.3.5 is the current public version; do not record its live result as evidence for the changed 1.3.7 dependency bundle and refund workflow.
-- For a later candidate, install the exact versioned ZIP printed by `composer build:zip`; record its version and SHA-256 before testing.
+- For the current release, install `build/npcink-pay-refund-1.3.7.zip`, not a raw source archive.
+- WordPress.org currently publishes 1.3.7. Record live results only for the exact versioned ZIP and merchant credentials being tested.
+- For a later release, install the exact versioned ZIP printed by `composer build:zip`; record its version and SHA-256 before testing.
 - Confirm `vendor/autoload.php` exists in the installed plugin.
 - Record the package SHA-256 before installing it.
 
