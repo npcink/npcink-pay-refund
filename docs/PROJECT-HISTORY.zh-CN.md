@@ -10,7 +10,7 @@
 - Text Domain：`npcink-pay-refund`
 - Composer 包名：`npcink/pay-refund`
 - 最低 PHP：`8.1`
-- 当前开发版本：`1.3.6`
+- 当前开发版本：`1.3.7`
 - GitHub 仓库：`https://github.com/npcink/npcink-pay-refund`
 - 最新稳定 GitHub Release：`v1.3.3`
 - WordPress.org 当前发布版本：`1.3.5`
@@ -161,6 +161,12 @@
 1.3.5 发布后，`composer audit` 新增了针对 Guzzle 7.15.1 之前版本的 4 条中危安全公告。开发分支将 Guzzle 从 7.13.2 升级到 7.15.1，并同步升级 `guzzlehttp/promises` 到 2.5.1、`guzzlehttp/psr7` 到 2.13.0。
 
 由于 WordPress.org 1.3.5 已是不可变的公开发布事实，修复后的依赖包使用 1.3.6 候选版本，不复用 1.3.5 版本号。真实商户验证、GitHub 合并/tag/Release 和 WordPress.org 1.3.6 发布仍是后续独立门禁。
+
+## 1.3.7 退款边界与发布候选
+
+1.3.7 在 1.3.6 的依赖更新基础上，移除订单号静默改写，补充异常退款状态队列、退款操作人隔离、独立退款 capability、`wp-config.php` 密钥注入和更严格的 WordPress 时区校验。微信退款在 `CLOSED/ABNORMAL` 终态后推进新的商户退款单号，避免后续尝试复用已关闭退款单。
+
+当前精确候选包由 `composer build:zip` 生成，真实 WordPress、Plugin Check 和支付宝/微信商户联调仍是独立发布门禁，不能用本地测试替代。
 
 ## 发布与验证
 

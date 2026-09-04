@@ -2,20 +2,21 @@
 # This file is distributed under the GPL-2.0+.
 msgid ""
 msgstr ""
-"Project-Id-Version: Npcink Pay Refund 1.3.0\n"
+"Project-Id-Version: Npcink Pay Refund 1.3.7\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/npcink-pay-refund\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-07-08T02:29:52+00:00\n"
+"POT-Creation-Date: 2026-09-04T03:07:16+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: npcink-pay-refund\n"
 
 #. Plugin Name of the plugin
 #: npcink-pay-refund.php
+#: admin/pay/npcink-pay-refund-admin-public.php:368
 msgid "Npcink Pay Refund"
 msgstr ""
 
@@ -62,525 +63,791 @@ msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:74
 #: admin/partials/npcink-pay-refund-admin-config.php:81
-#: admin/partials/npcink-pay-refund-admin-query.php:98
+#: admin/partials/npcink-pay-refund-admin-query.php:103
 msgid "支付宝"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:75
-#: admin/partials/npcink-pay-refund-admin-config.php:108
-#: admin/partials/npcink-pay-refund-admin-query.php:97
+#: admin/partials/npcink-pay-refund-admin-config.php:109
+#: admin/partials/npcink-pay-refund-admin-query.php:102
 msgid "微信"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:76
-#: admin/partials/npcink-pay-refund-admin-config.php:149
+#: admin/partials/npcink-pay-refund-admin-config.php:151
 msgid "退款权限"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:77
-#: admin/partials/npcink-pay-refund-admin-config.php:187
+#: admin/partials/npcink-pay-refund-admin-config.php:189
 msgid "数据与卸载"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:84
-#: admin/pay/npcink-pay-refund-admin-zfb.php:264
+#: admin/pay/npcink-pay-refund-admin-zfb.php:579
 msgid "APP ID"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:90
-#: admin/pay/npcink-pay-refund-admin-zfb.php:265
+#: admin/partials/npcink-pay-refund-admin-config.php:87
+msgid "在支付宝开放平台控制台对应应用的应用信息中查看 APPID。"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-config.php:91
+#: admin/pay/npcink-pay-refund-admin-zfb.php:580
 msgid "应用私钥"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:93
-msgid "留空表示保留现有应用私钥。"
+#: admin/partials/npcink-pay-refund-admin-config.php:94
+msgid "由支付宝开放平台密钥工具生成并由商户自行保存，请粘贴完整应用私钥；留空表示保留现有应用私钥。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:97
-#: admin/pay/npcink-pay-refund-admin-zfb.php:266
+#: admin/partials/npcink-pay-refund-admin-config.php:98
+#: admin/pay/npcink-pay-refund-admin-zfb.php:581
 msgid "支付宝公钥"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:100
-msgid "留空表示保留现有支付宝公钥。"
+#: admin/partials/npcink-pay-refund-admin-config.php:101
+msgid "在支付宝开放平台对应应用的接口加签方式或密钥配置中查看支付宝公钥；注意不要填写本地生成的应用公钥。留空表示保留现有支付宝公钥。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:111
-#: admin/pay/npcink-pay-refund-admin-wx.php:416
+#: admin/partials/npcink-pay-refund-admin-config.php:112
+#: admin/pay/npcink-pay-refund-admin-wx.php:728
 msgid "商户号"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:117
+#: admin/partials/npcink-pay-refund-admin-config.php:115
+msgid "微信支付商户后台 → 账户中心 → 商户信息 → 基本账户信息"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-config.php:119
 msgid "证书序列号"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:120
-msgid "商户 API 证书序列号，用于生成微信支付请求签名。"
+#: admin/partials/npcink-pay-refund-admin-config.php:122
+msgid "商户 API 证书序列号，用于生成微信支付请求签名；可在微信支付商户平台 → 账户中心 → API 安全 → 商户 API 证书详情中查看。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:124
-#: admin/pay/npcink-pay-refund-admin-wx.php:432
-msgid "微信支付公钥 ID / 平台证书序列号"
-msgstr ""
-
-#: admin/partials/npcink-pay-refund-admin-config.php:127
-msgid "保存时不强制填写；如需执行微信查询或退款，SDK 仍需要可用于验签的微信支付公钥 ID 或平台证书序列号。"
-msgstr ""
-
-#: admin/partials/npcink-pay-refund-admin-config.php:131
-#: admin/pay/npcink-pay-refund-admin-wx.php:418
+#: admin/partials/npcink-pay-refund-admin-config.php:126
+#: admin/pay/npcink-pay-refund-admin-wx.php:730
 msgid "商户私钥"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:134
-msgid "留空表示保留现有商户私钥。"
+#: admin/partials/npcink-pay-refund-admin-config.php:129
+msgid "填写申请商户 API 证书时生成的 apiclient_key.pem 私钥内容；可在微信支付商户平台 → 账户中心 → API 安全 中管理商户 API 证书。（先生成了私钥证书，才有证书序列号，是对应的）。留空表示保留现有商户私钥。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:138
-#: admin/pay/npcink-pay-refund-admin-wx.php:433
+#: admin/partials/npcink-pay-refund-admin-config.php:133
+#: admin/pay/npcink-pay-refund-admin-wx.php:744
+msgid "微信支付公钥 ID / 平台证书序列号"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-config.php:136
+msgid "使用微信支付公钥模式时填写微信支付公钥 ID；使用平台证书模式时填写平台证书序列号。可在微信支付商户平台 → 账户中心 → API 安全 → 微信支付公钥 中查看。保存时不强制填写。"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-config.php:140
+#: admin/pay/npcink-pay-refund-admin-wx.php:745
 msgid "微信支付公钥 / 平台证书"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:141
-msgid "保存时不强制填写；如需执行微信查询或退款，SDK 仍需要可用于验签的微信支付公钥或平台证书 PEM。留空表示保留现有值。"
+#: admin/partials/npcink-pay-refund-admin-config.php:143
+msgid "使用微信支付公钥模式时填写微信支付公钥 PEM；使用平台证书模式时填写平台证书 PEM。可在微信支付商户平台 → 账户中心 → API 安全 → 微信支付公钥 查看或下载；留空表示保留现有值。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:152
+#: admin/partials/npcink-pay-refund-admin-config.php:154
 msgid "退款专员"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:153
+#: admin/partials/npcink-pay-refund-admin-config.php:155
 msgid "管理员默认拥有退款权限，无需添加；只有作者及以上权限的非管理员用户可以被添加为退款专员。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:161
+#: admin/partials/npcink-pay-refund-admin-config.php:163
 msgid "可访问页面"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:162
+#: admin/partials/npcink-pay-refund-admin-config.php:164
 msgid "退款专员登录后台后，仅放行这里配置的管理页面。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:164
+#: admin/partials/npcink-pay-refund-admin-config.php:166
 msgid "添加页面"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:169
+#: admin/partials/npcink-pay-refund-admin-config.php:171
 msgid "名称"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:170
+#: admin/partials/npcink-pay-refund-admin-config.php:172
 msgid "链接"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:171
-#: admin/partials/npcink-pay-refund-admin-config.php:288
+#: admin/partials/npcink-pay-refund-admin-config.php:173
+#: admin/partials/npcink-pay-refund-admin-config.php:307
+#: admin/partials/npcink-pay-refund-admin-query.php:125
 msgid "操作"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:190
+#: admin/partials/npcink-pay-refund-admin-config.php:192
 msgid "运行说明"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:195
+#: admin/partials/npcink-pay-refund-admin-config.php:197
 msgid "退款记录"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:196
+#: admin/partials/npcink-pay-refund-admin-config.php:198
 msgid "统计数据保存在数据库表 npcink_pay_refund_order 中。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:199
+#: admin/partials/npcink-pay-refund-admin-config.php:201
 msgid "退款原因"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:200
+#: admin/partials/npcink-pay-refund-admin-config.php:202
 msgid "退款原因仅自己可见。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:203
+#: admin/partials/npcink-pay-refund-admin-config.php:205
 msgid "操作入口"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:204
+#: admin/partials/npcink-pay-refund-admin-config.php:206
 msgid "退款操作界面在“仪表盘” -> “订单退款”中。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:207
+#: admin/partials/npcink-pay-refund-admin-config.php:209
 msgid "支付密钥"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:208
+#: admin/partials/npcink-pay-refund-admin-config.php:210
 msgid "支付密钥已单独保存；留空密钥字段会保留现有值。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:216
+#: admin/partials/npcink-pay-refund-admin-config.php:218
 msgid "数据导出"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:220
-msgid "下载全部退款记录表格"
+#: admin/partials/npcink-pay-refund-admin-config.php:222
+msgid "下载退款记录表格"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:227
+#: admin/partials/npcink-pay-refund-admin-config.php:225
+msgid "为避免一次性导出过大，当前默认导出最新 5000 条退款记录；如记录超过上限，下载时会提示。"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-config.php:230
+msgid "退款策略"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-config.php:234
+msgid "可退款时间窗口"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-config.php:237
+msgid "天"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-config.php:238
+msgid "超过该天数的已支付订单不会显示退款按钮，后端也会阻止退款请求。实际可退款期限仍以支付通道和商户签约规则为准。"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-config.php:246
 msgid "删除数据库表"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:231
+#: admin/partials/npcink-pay-refund-admin-config.php:250
 msgid "卸载插件时删除退款记录表。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:236
+#: admin/partials/npcink-pay-refund-admin-config.php:255
 msgid "清空设置选项"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:240
+#: admin/partials/npcink-pay-refund-admin-config.php:259
 msgid "卸载插件时删除退款配置和密钥配置。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:260
+#: admin/partials/npcink-pay-refund-admin-config.php:279
 msgid "例如：订单退款"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:263
+#: admin/partials/npcink-pay-refund-admin-config.php:282
 msgid "例如：https://example.com/wp-admin/admin.php?page=refund"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:266
-#: admin/partials/npcink-pay-refund-admin-config.php:345
+#: admin/partials/npcink-pay-refund-admin-config.php:285
+#: admin/partials/npcink-pay-refund-admin-config.php:364
 msgid "移除"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:277
+#: admin/partials/npcink-pay-refund-admin-config.php:296
 msgid "搜索退款专员"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:278
+#: admin/partials/npcink-pay-refund-admin-config.php:297
 msgid "搜索用户名、昵称或邮箱"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:285
+#: admin/partials/npcink-pay-refund-admin-config.php:304
 msgid "姓名"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:286
+#: admin/partials/npcink-pay-refund-admin-config.php:305
 msgid "账号"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:287
+#: admin/partials/npcink-pay-refund-admin-config.php:306
 msgid "角色"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:295
-#: admin/partials/npcink-pay-refund-admin-config.php:367
+#: admin/partials/npcink-pay-refund-admin-config.php:314
+#: admin/partials/npcink-pay-refund-admin-config.php:388
 msgid "尚未添加退款专员。请搜索作者及以上权限的非管理员用户后添加。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:310
+#: admin/partials/npcink-pay-refund-admin-config.php:329
 msgid "检测微信配置"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:310
+#: admin/partials/npcink-pay-refund-admin-config.php:329
 msgid "检测支付宝配置"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:315
+#: admin/partials/npcink-pay-refund-admin-config.php:334
 msgid "配置检测"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:316
+#: admin/partials/npcink-pay-refund-admin-config.php:335
 msgid "保存配置后检测 SDK、必填字段和密钥格式；不会发起真实退款。"
 msgstr ""
 
 #. translators: 1: user login, 2: user ID.
-#: admin/partials/npcink-pay-refund-admin-config.php:340
+#: admin/partials/npcink-pay-refund-admin-config.php:359
 #, php-format
 msgid "账号：%1$s · ID：%2$d"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:362
+#: admin/partials/npcink-pay-refund-admin-config.php:383
 msgid "正在搜索..."
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:363
+#: admin/partials/npcink-pay-refund-admin-config.php:384
 msgid "请输入用户名、昵称或邮箱关键字搜索退款专员。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:364
+#: admin/partials/npcink-pay-refund-admin-config.php:385
 msgid "没有找到可添加的作者及以上非管理员用户。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:365
+#: admin/partials/npcink-pay-refund-admin-config.php:386
 msgid "搜索失败，请稍后重试。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:366
+#: admin/partials/npcink-pay-refund-admin-config.php:387
 msgid "已添加"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:368
+#: admin/partials/npcink-pay-refund-admin-config.php:389
 msgid "正在检测配置..."
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:369
+#: admin/partials/npcink-pay-refund-admin-config.php:390
 msgid "配置检测失败，请稍后重试。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:414
-#: admin/partials/npcink-pay-refund-admin-config.php:449
-#: admin/partials/npcink-pay-refund-admin-config.php:482
+#: admin/partials/npcink-pay-refund-admin-config.php:435
+#: admin/partials/npcink-pay-refund-admin-config.php:470
+#: admin/partials/npcink-pay-refund-admin-config.php:503
 msgid "请求校验失败。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:418
+#: admin/partials/npcink-pay-refund-admin-config.php:439
 msgid "您没有权限下载退款记录。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:453
+#: admin/partials/npcink-pay-refund-admin-config.php:474
 msgid "您没有权限搜索退款专员。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:486
+#: admin/partials/npcink-pay-refund-admin-config.php:507
 msgid "您没有权限检测支付配置。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:491
+#: admin/partials/npcink-pay-refund-admin-config.php:512
 msgid "未知支付渠道。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:657
+#: admin/partials/npcink-pay-refund-admin-config.php:680
 msgid "已配置，留空则不修改"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:657
+#: admin/partials/npcink-pay-refund-admin-config.php:680
 msgid "未配置"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-query.php:91
-msgid "搜索退款记录"
-msgstr ""
-
-#: admin/partials/npcink-pay-refund-admin-query.php:92
-msgid "搜索订单号、操作员或原因"
-msgstr ""
-
-#: admin/partials/npcink-pay-refund-admin-query.php:94
-msgid "支付类型"
+#. translators: %d: configured refund window in days.
+#: admin/partials/npcink-pay-refund-admin-query.php:73
+#, php-format
+msgid "支付时间超过 %d 天的订单无法使用本功能进行退款"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-query.php:96
-msgid "全部类型"
+msgid "搜索退款记录"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-query.php:97
+msgid "搜索订单号、操作员或原因"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-query.php:99
+msgid "支付类型"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-query.php:101
+msgid "全部类型"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-query.php:106
 msgid "起始日期"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-query.php:104
+#: admin/partials/npcink-pay-refund-admin-query.php:109
 msgid "结束日期"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-query.php:107
+#: admin/partials/npcink-pay-refund-admin-query.php:112
 msgid "重置"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:98
+#: admin/partials/npcink-pay-refund-admin-query.php:116
+msgid "待处理退款状态"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-query.php:117
+msgid "以下订单需要先查询核对；系统不会因为状态不明而自动再次提交退款。"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-query.php:120
+msgid "状态"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-query.php:121
+msgid "渠道"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-query.php:122
+msgid "订单号"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-query.php:123
+msgid "退款请求号"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-query.php:124
+msgid "金额"
+msgstr ""
+
+#. translators: 1: Alipay uncertain count, 2: WeChat pending count, 3: local audit reconciliation count.
+#: admin/pay/npcink-pay-refund-admin-public.php:360
+#, php-format
+msgid "退款对账提醒：支付宝结果待确认 %1$d 项，微信待查询或补记 %2$d 项，本地记录待补记 %3$d 项。状态项可能对应同一订单；为避免重复退款，请先查询核对。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-public.php:368
+msgid "打开订单退款查询"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:107
 msgid "微信支付配置不可用，请检查商户号、商户 API 证书序列号、商户私钥，以及用于验签的微信支付公钥 ID / 平台证书序列号和微信支付公钥 / 平台证书。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:181
+#: admin/pay/npcink-pay-refund-admin-wx.php:289
 msgid "请输入微信订单号。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:189
+#: admin/pay/npcink-pay-refund-admin-wx.php:316
+msgid "微信退款结果暂时无法确认。订单保持锁定，请稍后查询；不要更换商户退款单号。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:332
 msgid "微信订单查询失败，请检查订单号和鉴权配置。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:216
+#: admin/pay/npcink-pay-refund-admin-wx.php:363
 msgid "未支付"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:219
+#: admin/pay/npcink-pay-refund-admin-wx.php:366
+#: admin/pay/npcink-pay-refund-admin-wx.php:1013
 msgid "已关闭"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:222
+#: admin/pay/npcink-pay-refund-admin-wx.php:369
 msgid "若您输入的是微信订单号，且重复看到这句话，请联系管理员"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:261
-#: admin/pay/npcink-pay-refund-admin-zfb.php:150
-msgid "订单号和退款原因不能为空。"
+#: admin/pay/npcink-pay-refund-admin-wx.php:378
+msgid "上次退款单尚未在微信查询到；再次提交时将复用原商户退款单号和原参数。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:266
-#: admin/pay/npcink-pay-refund-admin-zfb.php:162
-msgid "订单查询失败，未执行退款。"
-msgstr ""
-
-#: admin/pay/npcink-pay-refund-admin-wx.php:271
-msgid "该订单当前状态或时间窗口不可退款。"
-msgstr ""
-
-#: admin/pay/npcink-pay-refund-admin-wx.php:276
-msgid "订单金额无效，未执行退款。"
-msgstr ""
-
-#: admin/pay/npcink-pay-refund-admin-wx.php:284
-#: admin/pay/npcink-pay-refund-admin-zfb.php:176
-msgid "该订单已提交退款或正在处理中，请勿重复操作。"
-msgstr ""
-
-#: admin/pay/npcink-pay-refund-admin-wx.php:309
-msgid "微信退款请求失败，请稍后重试。"
-msgstr ""
-
-#: admin/pay/npcink-pay-refund-admin-wx.php:340
-msgid "退款关闭"
-msgstr ""
-
-#: admin/pay/npcink-pay-refund-admin-wx.php:344
-msgid "退款异常，请联系管理员。"
-msgstr ""
-
-#: admin/pay/npcink-pay-refund-admin-wx.php:348
-msgid "退款失败，请稍后重试。"
-msgstr ""
-
-#: admin/pay/npcink-pay-refund-admin-wx.php:410
-msgid "微信支付 SDK"
+#. translators: %d: configured refund window in days.
+#: admin/pay/npcink-pay-refund-admin-wx.php:386
+#, php-format
+msgid "订单时间超过 %d 天，无法使用本功能退款，请联系管理员操作"
 msgstr ""
 
 #: admin/pay/npcink-pay-refund-admin-wx.php:411
-#: admin/pay/npcink-pay-refund-admin-zfb.php:259
-msgid "Composer 自动加载正常。"
+#: admin/pay/npcink-pay-refund-admin-wx.php:573
+#: admin/pay/npcink-pay-refund-admin-zfb.php:166
+msgid "订单号不能为空。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:411
-msgid "未找到微信支付 SDK，请重新生成发布包。"
-msgstr ""
-
-#: admin/pay/npcink-pay-refund-admin-wx.php:417
-msgid "商户 API 证书序列号"
-msgstr ""
-
-#: admin/pay/npcink-pay-refund-admin-wx.php:426
-#: admin/pay/npcink-pay-refund-admin-wx.php:441
-#: admin/pay/npcink-pay-refund-admin-zfb.php:274
-msgid "已配置。"
-msgstr ""
-
-#: admin/pay/npcink-pay-refund-admin-wx.php:426
-#: admin/pay/npcink-pay-refund-admin-zfb.php:274
-msgid "未配置。"
-msgstr ""
-
-#: admin/pay/npcink-pay-refund-admin-wx.php:441
-msgid "保存时允许留空；执行微信查询或退款前必须配置。"
+#: admin/pay/npcink-pay-refund-admin-wx.php:438
+msgid "微信退款结果暂时无法确认。已先查询原商户退款单号且未得到明确结果，本次不会再次提交。"
 msgstr ""
 
 #: admin/pay/npcink-pay-refund-admin-wx.php:454
-#: admin/pay/npcink-pay-refund-admin-wx.php:462
-#: admin/pay/npcink-pay-refund-admin-wx.php:469
-msgid "密钥解析"
+msgid "退款原因不能为空。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:455
-msgid "商户私钥和微信支付公钥可解析。"
+#: admin/pay/npcink-pay-refund-admin-wx.php:459
+#: admin/pay/npcink-pay-refund-admin-zfb.php:196
+msgid "订单查询失败，未执行退款。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:455
-msgid "客户端未完成初始化。"
-msgstr ""
-
-#: admin/pay/npcink-pay-refund-admin-wx.php:463
-msgid "解析失败，请检查 PEM 内容和序列号。"
+#: admin/pay/npcink-pay-refund-admin-wx.php:464
+msgid "该订单当前状态或时间窗口不可退款。"
 msgstr ""
 
 #: admin/pay/npcink-pay-refund-admin-wx.php:470
+msgid "订单金额无效，未执行退款。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:476
+msgid "保存的微信退款请求号与当前订单不一致，订单继续锁定。请在微信商户平台核对后再处理。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:479
+msgid "订单金额与上次退款请求不一致，订单继续锁定。请在微信商户平台核对后再处理。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:483
+#: admin/pay/npcink-pay-refund-admin-zfb.php:214
+msgid "该订单已提交退款或正在处理中，请勿重复操作。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:494
+msgid "无法保存微信退款请求状态，未向微信提交退款。请检查数据库后重试。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:508
+msgid "微信退款请求结果暂时无法确认。订单和原商户退款单号已保留，系统将只查询状态，不会盲目重复提交。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:520
+msgid "微信退款已受理，状态可能需要几秒同步；请稍后再次点击查询刷新结果。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:537
+msgid "退款关闭"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:542
+msgid "退款异常，请联系管理员。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:546
+msgid "微信返回了未识别的退款状态。订单继续锁定，请在商户平台核对。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:590
+msgid "退款状态查询失败，请稍后手动查询。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:673
+msgid "微信退款已成功，但本地退款记录保存失败。订单已锁定等待管理员对账，请勿重复退款。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:722
+msgid "微信支付 SDK"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:723
+#: admin/pay/npcink-pay-refund-admin-zfb.php:574
+msgid "Composer 自动加载正常。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:723
+msgid "未找到微信支付 SDK，请重新生成发布包。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:729
+msgid "商户 API 证书序列号"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:738
+#: admin/pay/npcink-pay-refund-admin-wx.php:753
+#: admin/pay/npcink-pay-refund-admin-zfb.php:589
+msgid "已配置。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:738
+#: admin/pay/npcink-pay-refund-admin-zfb.php:589
+msgid "未配置。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:753
+msgid "保存时允许留空；执行微信查询或退款前必须配置。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:764
+msgid "商户私钥字段当前像是商户 API 证书（apiclient_cert.pem），请填写 apiclient_key.pem 私钥内容。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:766
+msgid "商户私钥无法解析，请检查是否为 apiclient_key.pem 的完整 PEM 内容。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:768
+msgid "微信支付公钥 / 平台证书无法解析，请检查 PEM 内容是否完整。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:775
+#: admin/pay/npcink-pay-refund-admin-wx.php:789
+#: admin/pay/npcink-pay-refund-admin-wx.php:797
+#: admin/pay/npcink-pay-refund-admin-wx.php:804
+msgid "密钥解析"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:790
+msgid "商户私钥和微信支付公钥可解析。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:790
+msgid "客户端未完成初始化。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:798
+msgid "解析失败，请检查 PEM 内容和序列号。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:805
 msgid "解析失败，请检查依赖和 PEM 内容。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:477
+#: admin/pay/npcink-pay-refund-admin-wx.php:812
 msgid "微信配置本地检测通过。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:477
+#: admin/pay/npcink-pay-refund-admin-wx.php:812
 msgid "微信配置仍有阻塞项。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:501
+#: admin/pay/npcink-pay-refund-admin-wx.php:827
 msgid "退款查询失败，请稍后重试。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-wx.php:512
-msgid "请重试"
+#: admin/pay/npcink-pay-refund-admin-wx.php:859
+msgid "商户订单号"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:68
-#: admin/pay/npcink-pay-refund-admin-zfb.php:141
-msgid "支付宝配置不可用，请检查 APP ID、应用私钥和支付宝公钥。"
+#: admin/pay/npcink-pay-refund-admin-wx.php:860
+msgid "商户退款单号"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:74
+#: admin/pay/npcink-pay-refund-admin-wx.php:861
+msgid "退款金额"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:861
+msgid "元"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:862
+msgid "退款时间"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:863
+msgid "通道状态"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:872
+msgid "暂无"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:999
+msgid "成功"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:1000
+msgid "退款成功"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:1001
+msgid "微信支付已确认退款完成，可在微信支付商户平台核对到账状态。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:1006
+msgid "处理中"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:1007
+msgid "退款处理中"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:1008
+msgid "微信支付已受理退款，状态通常会在稍后同步；可等待自动同步或稍后手动查询。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:1014
+msgid "退款已关闭"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:1015
+msgid "微信支付返回退款单已关闭，通常不能继续通过同一退款单处理。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:1020
+msgid "异常"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:1021
+msgid "退款异常"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:1022
+msgid "微信支付返回退款异常，请到微信支付商户平台查看原因并处理。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:1027
+msgid "未知"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:1028
+msgid "退款状态未知"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-wx.php:1029
+msgid "暂时无法确认退款状态，请稍后再次查询。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-zfb.php:79
 msgid "请输入支付宝订单号。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:121
+#: admin/pay/npcink-pay-refund-admin-zfb.php:87
+#: admin/pay/npcink-pay-refund-admin-zfb.php:174
+msgid "支付宝配置不可用，请检查 APP ID、应用私钥和支付宝公钥。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-zfb.php:124
+msgid "原退款请求尚未在支付宝查询到；再次提交时将复用原退款请求号和原参数。"
+msgstr ""
+
+#. translators: %d: configured refund window in days.
+#: admin/pay/npcink-pay-refund-admin-zfb.php:132
+#, php-format
+msgid "该订单时间超过 %d 天，无法使用本功能退款，请联系管理员操作"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-zfb.php:140
 msgid "支付宝订单查询失败，请检查订单号或稍后重试。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:126
+#: admin/pay/npcink-pay-refund-admin-zfb.php:145
 msgid "调用失败，请检查支付宝配置或稍后重试。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:166
+#: admin/pay/npcink-pay-refund-admin-zfb.php:184
+msgid "订单号和退款原因不能为空。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-zfb.php:200
 msgid "该订单当前状态不可退款。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:170
-msgid "该订单时间超过 7 天，未执行退款。"
-msgstr ""
-
-#: admin/pay/npcink-pay-refund-admin-zfb.php:203
-msgid "支付宝退款失败，请稍后重试或联系管理员检查日志。"
+#. translators: %d: configured refund window in days.
+#: admin/pay/npcink-pay-refund-admin-zfb.php:205
+#, php-format
+msgid "该订单时间超过 %d 天，未执行退款。"
 msgstr ""
 
 #: admin/pay/npcink-pay-refund-admin-zfb.php:211
+msgid "订单金额与原支付宝退款请求不一致，订单继续锁定。请在支付宝商家平台核对后再处理。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-zfb.php:231
+msgid "无法保存退款请求状态，未向支付宝提交退款。请检查数据库后重试。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-zfb.php:253
+msgid "支付宝退款已成功，但本地退款记录保存失败。订单已锁定等待管理员对账，请勿重复退款。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-zfb.php:268
+msgid "支付宝退款结果暂时无法确认。订单已锁定；再次查询或退款时会先用原退款请求号核对状态，请勿另行重复退款。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-zfb.php:278
+msgid "支付宝退款失败，请稍后重试或联系管理员检查日志。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-zfb.php:288
+msgid "支付宝退款调用中断，结果暂时无法确认。订单已锁定；再次操作时会先查询原退款请求号，请勿重复退款。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-zfb.php:293
 msgid "退款失败，请检查支付宝配置或稍后重试。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:258
+#: admin/pay/npcink-pay-refund-admin-zfb.php:465
+msgid "支付宝已确认退款成功，但本地退款记录保存失败。订单继续锁定，请修复数据库后再次查询。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-zfb.php:473
+msgid "已退款，状态已通过支付宝查询确认"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-zfb.php:480
+msgid "支付宝退款结果仍无法确认。订单保持锁定，请稍后再次查询，并在支付宝商家平台核对；请勿创建新的退款。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-zfb.php:510
+msgid "支付宝退款已经成功，但本地退款记录仍无法保存。订单继续锁定，请修复数据库后再次查询该订单。"
+msgstr ""
+
+#: admin/pay/npcink-pay-refund-admin-zfb.php:573
 msgid "支付宝 SDK"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:259
+#: admin/pay/npcink-pay-refund-admin-zfb.php:574
 msgid "未找到支付宝 EasySDK，请重新生成发布包。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:284
-#: admin/pay/npcink-pay-refund-admin-zfb.php:291
-#: admin/pay/npcink-pay-refund-admin-zfb.php:298
+#: admin/pay/npcink-pay-refund-admin-zfb.php:599
+#: admin/pay/npcink-pay-refund-admin-zfb.php:606
+#: admin/pay/npcink-pay-refund-admin-zfb.php:613
 msgid "SDK 初始化"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:285
+#: admin/pay/npcink-pay-refund-admin-zfb.php:600
 msgid "本地初始化通过；真实订单查询仍需商户配置有效。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:292
+#: admin/pay/npcink-pay-refund-admin-zfb.php:607
 msgid "初始化失败，请检查密钥内容。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:299
+#: admin/pay/npcink-pay-refund-admin-zfb.php:614
 msgid "初始化失败，请检查依赖和密钥内容。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:306
+#: admin/pay/npcink-pay-refund-admin-zfb.php:621
 msgid "支付宝配置本地检测通过。"
 msgstr ""
 
-#: admin/pay/npcink-pay-refund-admin-zfb.php:306
+#: admin/pay/npcink-pay-refund-admin-zfb.php:621
 msgid "支付宝配置仍有阻塞项。"
 msgstr ""
 

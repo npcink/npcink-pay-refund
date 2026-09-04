@@ -1,14 +1,3 @@
-// 定义 trimHyphen() 函数
-//订单处理算法
-//将格式转换D606224553221068-0转为D606224553221068
-function trimHyphen(input) {
-  // 判断输入值的末尾是否是 "-1" 或 "-2" 的形式，如果是，则直接返回原始输入值
-  if (input.endsWith("-1") || input.endsWith("-2") || input.endsWith("-3")) {
-    return input;
-  }
-  return input.replace(/-\d+$/, "");
-}
-
 jQuery(document).ready(function ($) {
   var refundQuery = window.npcinkPayRefundQuery || {};
   var wxRefundPollTimer = null;
@@ -116,7 +105,7 @@ jQuery(document).ready(function ($) {
     var data = {
       action: "npcink_pay_refund_zfb_order_query",
       nonce: refundQuery.nonce,
-      param: trimHyphen($("#npcink-pay-refund-zfb-input").val()),
+      param: $.trim($("#npcink-pay-refund-zfb-input").val()),
     };
 
     $.ajax({
@@ -140,18 +129,25 @@ jQuery(document).ready(function ($) {
   //支付宝退款
   $(document).on("click", "#order-btn", function () {
     var $button = $(this);
+    var orderId = String($button.data("order-id") || "");
+    var amount = String($button.data("order-amount") || "");
+    var reason = $.trim($("#npcink-pay-refund-zfb-reason").val());
     const data = {
       action: "npcink_pay_refund_zfb_order_refund",
       nonce: refundQuery.nonce,
-      order_id: $button.data("order-id"), //订单号
+      order_id: orderId, //订单号
       order_time: $button.data("order-time"), // 获取订单时间
       order_amount: $button.data("order-amount"), // 获取订单总金额
-      order_reason: $("#npcink-pay-refund-zfb-reason").val(), // 获取订单退款原因
+      order_reason: reason, // 获取订单退款原因
     };
 
     //退款原因为空则进行提示
-    if ($("#npcink-pay-refund-zfb-reason").val() === "") {
+    if (reason === "") {
       showRefundNotice($("#npcink-pay-refund-zfb-data"), "请输入退款原因。");
+      return false;
+    }
+
+    if (!window.confirm("确认向支付宝提交全额退款？\n订单号：" + orderId + "\n金额：" + amount + "\n原因：" + reason)) {
       return false;
     }
 
@@ -183,7 +179,7 @@ jQuery(document).ready(function ($) {
     var data = {
       action: "npcink_pay_refund_wx_order_query",
       nonce: refundQuery.nonce,
-      order_id: trimHyphen($("#npcink-pay-refund-wx-input").val()),
+      order_id: $.trim($("#npcink-pay-refund-wx-input").val()),
     };
 
     $.ajax({
@@ -206,18 +202,25 @@ jQuery(document).ready(function ($) {
   //微信退款
   $(document).on("click", "#wx-order-btn", function () {
     var $button = $(this);
+    var orderId = String($button.data("order-id") || "");
+    var amount = String($button.data("order-amount") || "");
+    var reason = $.trim($("#npcink-pay-refund-wx-reason").val());
 
     const data = {
       action: "npcink_pay_refund_wx_order_refund",
       nonce: refundQuery.nonce,
-      order_id: $button.data("order-id"), //订单号
+      order_id: orderId, //订单号
       order_amount: $button.data("order-amount"), // 获取订单总金额
-      order_reason: $("#npcink-pay-refund-wx-reason").val(), //获取退款原因
+      order_reason: reason, //获取退款原因
     };
 
     //退款原因为空则进行提示
-    if ($("#npcink-pay-refund-wx-reason").val() === "") {
+    if (reason === "") {
       showRefundNotice($("#npcink-pay-refund-wx-data"), "请输入退款原因。");
+      return false;
+    }
+
+    if (!window.confirm("确认向微信支付提交全额退款？\n订单号：" + orderId + "\n金额：" + (parseInt(amount, 10) / 100).toFixed(2) + " 元\n原因：" + reason)) {
       return false;
     }
 
@@ -248,12 +251,50 @@ jQuery(document).ready(function ($) {
 
   //数据展示
   var $refundRecordsBody = $("#npcink-pay-refund-records tbody");
+  var $operationalRecordsBody = $("#npcink-pay-refund-operational-records tbody");
   var $recordKeyword = $("#npcink-pay-refund-record-keyword");
   var $recordType = $("#npcink-pay-refund-record-type");
   var $recordDateFrom = $("#npcink-pay-refund-record-date-from");
   var $recordDateTo = $("#npcink-pay-refund-record-date-to");
   var $recordSummary = $("#npcink-pay-refund-record-summary");
   var dataArray = parseRefundRecords(refundQuery.data || "[]");
+  var operationalRows = Array.isArray(refundQuery.operational) ? refundQuery.operational : [];
+
+  function renderOperationalRows() {
+    if (!$operationalRecordsBody.length) {
+      return;
+    }
+    $operationalRecordsBody.empty();
+    if (!operationalRows.length) {
+      $("<tr>").append($("<td>", { colspan: 6, text: "暂无待处理退款状态。" })).appendTo($operationalRecordsBody);
+      return;
+    }
+    operationalRows.forEach(function (row) {
+      var channel = normalizeRecordValue(row.channel);
+      var order = normalizeRecordValue(row.order);
+      var amount = Number(row.amount || 0).toFixed(2);
+      var $button = $("<button>", { type: "button", class: "button npcink-pay-refund-open-operational", text: "查询" })
+        .attr("data-channel", channel).attr("data-order", order);
+      $("<tr>")
+        .append($("<td>", { text: normalizeRecordValue(row.state) }))
+        .append($("<td>", { text: channel }))
+        .append($("<td>", { text: order }))
+        .append($("<td>", { text: normalizeRecordValue(row.request_id) || "-" }))
+        .append($("<td>", { text: amount }))
+        .append($("<td>").append($button))
+        .appendTo($operationalRecordsBody);
+    });
+  }
+
+  $operationalRecordsBody.on("click", ".npcink-pay-refund-open-operational", function () {
+    var $button = $(this);
+    var channel = $button.attr("data-channel");
+    var order = $button.attr("data-order");
+    var $input = channel === "微信" ? $("#npcink-pay-refund-wx-input") : $("#npcink-pay-refund-zfb-input");
+    var $query = channel === "微信" ? $("#npcink-pay-refund-wx-button") : $("#npcink-pay-refund-zfb-button");
+    $input.val(order);
+    $query.trigger("click");
+  });
 
   function parseRefundRecords(rawData) {
     try {
@@ -369,5 +410,6 @@ jQuery(document).ready(function ($) {
     renderRecords();
   });
 
+  renderOperationalRows();
   renderRecords();
 });

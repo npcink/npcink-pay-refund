@@ -60,7 +60,7 @@
 已生成 WordPress.org 截图资产：
 
 - `assets/screenshot-1.png`：支付宝配置、密钥占位和配置检测。
-- `assets/screenshot-2.png`：退款专员权限和可访问页面。
+- `assets/screenshot-2.png`：退款专员权限和退款记录可见范围。
 - `assets/screenshot-3.png`：订单退款操作台和近期退款记录。
 - `assets/screenshot-4.png`：退款记录搜索和筛选。
 

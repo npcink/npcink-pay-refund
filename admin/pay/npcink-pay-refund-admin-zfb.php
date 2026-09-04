@@ -185,8 +185,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
             }
 
             //获取登录用户名
-			$current_user = wp_get_current_user();
-			$user = !empty($retry_context['n_user']) ? $retry_context['n_user'] : $current_user->display_name;
+				$current_user = wp_get_current_user();
+				$user = !empty($retry_context['n_user']) ? $retry_context['n_user'] : $current_user->display_name;
+				$user_id = !empty($retry_context['n_user_id']) ? absint($retry_context['n_user_id']) : (int) $current_user->ID;
             $refund_claimed = false;
 			$refund_uncertain_saved = !empty($retry_context);
 
@@ -218,7 +219,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                 $request_id = self::refund_request_id($order_id);
                 $refund_context = array(
                     'n_time' => $order_time,
-                    'n_user' => $user,
+					'n_user' => $user,
+					'n_user_id' => $user_id,
                     'n_amount' => $order_amount,
                     'n_order' => $order_id,
                     'n_reason' => $order_reason,
@@ -246,7 +248,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                     $table_html .= "</td></tr>";
                     $table_html .= "</table>";
 
-                    $recorded = Npcink_Pay_Refund_Admin_Public::add_data($order_time, $user, $order_amount, $order_id, $order_reason, '支付宝');
+						$recorded = Npcink_Pay_Refund_Admin_Public::add_data($order_time, $user, $order_amount, $order_id, $order_reason, '支付宝', $user_id);
                     if (false === $recorded) {
                         $refund_claimed = false;
                         wp_send_json_error(array(
@@ -436,6 +438,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 					$uncertain['n_order'],
 					$uncertain['n_reason'],
 					$uncertain['n_type']
+					, isset($uncertain['n_user_id']) ? $uncertain['n_user_id'] : 0
 				);
 				if (false === $recorded) {
 					return array('state' => 'recording_failed', 'context' => $uncertain);
@@ -527,10 +530,13 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
             ));
         }
 
-        public static function ensure_sdk_ready()
-        {
-            try {
-                if (!class_exists(Factory::class) || !class_exists(Config::class)) {
+		public static function ensure_sdk_ready()
+		{
+			try {
+				if (function_exists('npcink_pay_refund_load_vendor')) {
+					npcink_pay_refund_load_vendor();
+				}
+				if (!class_exists(Factory::class) || !class_exists(Config::class)) {
                     return false;
                 }
                 if (!self::config_has_required_fields()) {
@@ -561,9 +567,12 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
             return true;
         }
 
-        public static function diagnose_config()
-        {
-            $config = Npcink_Pay_Refund_Admin::npcConfig('zfb');
+		public static function diagnose_config()
+		{
+			if (function_exists('npcink_pay_refund_load_vendor')) {
+				npcink_pay_refund_load_vendor();
+			}
+			$config = Npcink_Pay_Refund_Admin::npcConfig('zfb');
             $items = array();
             $ok = true;
 

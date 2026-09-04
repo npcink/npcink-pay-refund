@@ -16,7 +16,7 @@
  * Plugin Name:       Npcink Pay Refund
  * Plugin URI:        https://www.npc.ink/277376.html
  * Description:       支持支付宝官方和微信官方退款功能，使用官方提供的SDK，带权限控制。
- * Version:           1.3.6
+ * Version:           1.3.7
  * Author:            Muze
  * Author URI:        https://www.npc.ink
  * Requires at least: 6.0
@@ -37,7 +37,7 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('NPCINK_PAY_REFUND_VERSION', '1.3.6');
+define('NPCINK_PAY_REFUND_VERSION', '1.3.7');
 
 /**
  * The code that runs during plugin activation.
@@ -68,8 +68,14 @@ register_deactivation_hook(__FILE__, 'npcink_pay_refund_deactivate');
  */
 require plugin_dir_path(__FILE__) . 'includes/class-npcink-pay-refund.php';
 
-if (file_exists(plugin_dir_path(__FILE__) . 'vendor/autoload.php')) {
-	require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
+function npcink_pay_refund_load_vendor()
+{
+	static $loaded = false;
+	if (!$loaded && file_exists(plugin_dir_path(__FILE__) . 'vendor/autoload.php')) {
+		require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
+		$loaded = true;
+	}
+	return $loaded;
 }
 
 

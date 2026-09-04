@@ -532,11 +532,17 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 
                     break;
                 case "CLOSED": // 退款关闭
+					if (!self::advance_refund_request_id($order_id)) {
+						wp_send_json_error(array('message' => __('微信退款单已关闭，但新的退款尝试号保存失败。订单继续锁定，请检查数据库后再处理。', 'npcink-pay-refund')), 500);
+					}
 					self::clear_pending_refund($order_id);
                     Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '微信');
                     wp_send_json_error(array('message' => __('退款关闭', 'npcink-pay-refund')), 400);
                     break;
                 case "ABNORMAL": // 退款异常
+					if (!self::advance_refund_request_id($order_id)) {
+						wp_send_json_error(array('message' => __('微信退款状态异常，但新的退款尝试号保存失败。订单继续锁定，请检查数据库后再处理。', 'npcink-pay-refund')), 500);
+					}
 					self::clear_pending_refund($order_id);
                     Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '微信');
                     wp_send_json_error(array('message' => __('退款异常，请联系管理员。', 'npcink-pay-refund')), 400);
@@ -592,11 +598,14 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 
 			$order = $order_id;
 
-            $recorded = self::sync_refund_status($order, $data);
-            if (false === $recorded) {
+			$recorded = self::sync_refund_status($order, $data);
+			if (false === $recorded) {
+				$message = in_array($data->status, array('CLOSED', 'ABNORMAL'), true)
+					? __('微信退款已进入终态，但新的退款尝试号保存失败。订单继续锁定，请检查数据库后再处理。', 'npcink-pay-refund')
+					: self::local_recording_error_message();
                 wp_send_json_error(array(
-                    'message' => self::local_recording_error_message(),
-                    'provider_status' => 'SUCCESS',
+                    'message' => $message,
+                    'provider_status' => sanitize_text_field($data->status),
                     'reconciliation_required' => true,
                 ), 500);
             }
@@ -632,11 +641,31 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 		{
 			$order_id = sanitize_text_field($order_id);
 			$legacy_id = $order_id . '-refund';
+			$attempt = (int) get_option(self::refund_attempt_option_name($order_id), 0);
+			if ($attempt > 0) {
+				$attempted_id = $legacy_id . '-' . $attempt;
+				if (strlen($attempted_id) <= 64 && preg_match('/^[0-9A-Za-z_\-|*@]+$/D', $attempted_id)) {
+					return $attempted_id;
+				}
+				return 'npcink-refund-' . substr(hash('sha256', $order_id . '|' . $attempt), 0, 40);
+			}
 			if (strlen($legacy_id) <= 64 && preg_match('/^[0-9A-Za-z_\-|*@]+$/D', $legacy_id)) {
 				return $legacy_id;
 			}
 
 			return 'npcink-refund-' . substr(hash('sha256', $order_id), 0, 40);
+		}
+
+		public static function refund_attempt_option_name($order_id)
+		{
+			return 'npcink_pay_refund_attempt_wx_' . md5(sanitize_text_field($order_id));
+		}
+
+		public static function advance_refund_request_id($order_id)
+		{
+			$option = self::refund_attempt_option_name($order_id);
+			$attempt = (int) get_option($option, 0) + 1;
+			return update_option($option, $attempt, false);
 		}
 
 		public static function refund_response_matches($data, $order_id)
@@ -691,6 +720,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
             }
 
             try {
+				if (function_exists('npcink_pay_refund_load_vendor')) {
+					npcink_pay_refund_load_vendor();
+				}
                 self::config();
                 return self::client_is_ready();
             } catch (Exception $e) {
@@ -712,6 +744,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 
         public static function diagnose_config()
         {
+			if (function_exists('npcink_pay_refund_load_vendor')) {
+				npcink_pay_refund_load_vendor();
+			}
             $config = Npcink_Pay_Refund_Admin::npcConfig('wx');
             $items = array();
             $ok = true;
@@ -907,6 +942,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 			return update_option(
                 self::pending_refund_option_name($order_id),
                 array(
+					'n_order' => sanitize_text_field($order_id),
+					'n_user_id' => isset($existing['n_user_id']) ? absint($existing['n_user_id']) : (function_exists('get_current_user_id') ? get_current_user_id() : 0),
                     'user' => sanitize_text_field($user),
                     'amount' => (float) $amount,
                     'reason' => Npcink_Pay_Refund_Admin::sanitize_textarea_value($reason),
@@ -956,7 +993,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
                 return false;
             }
 
-            $recorded = Npcink_Pay_Refund_Admin_Public::add_data($time, $user, $amount, $order_id, $reason, '微信');
+			$recorded = Npcink_Pay_Refund_Admin_Public::add_data($time, $user, $amount, $order_id, $reason, '微信', isset($pending['n_user_id']) ? $pending['n_user_id'] : 0);
             if (false === $recorded) {
                 self::save_pending_refund($order_id, $user, $amount, $reason, $time);
                 return false;
@@ -976,6 +1013,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
             if ('SUCCESS' === $data->status) {
                 return self::record_successful_refund($order_id, $data);
             } elseif (in_array($data->status, array('CLOSED', 'ABNORMAL'), true)) {
+				if (!self::advance_refund_request_id($order_id)) {
+					return false;
+				}
                 self::clear_pending_refund($order_id);
                 Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '微信');
             }
@@ -1059,11 +1099,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
             } catch (Exception $e) {
                 return '';
             }
-            $timezone = get_option('timezone_string');
-            if (empty($timezone)) {
-                $timezone = 'UTC';
-            }
-            $datetime->setTimezone(new DateTimeZone($timezone));
+			$timezone = function_exists('wp_timezone') ? wp_timezone() : new DateTimeZone('UTC');
+			$datetime->setTimezone($timezone);
             return $datetime->format('Y-m-d H:i:s');
             //首先创建了一个 DateTime 对象，将时间字符串作为构造函数的参数传入。然后使用 setTimezone() 方法将时区从 UTC 转换为 WordPress 设置的时区。最后调用 format() 方法将时间格式化成指定格式的时间字符串。
         }

@@ -19,19 +19,28 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Uninstall')) {
             //获取选项值
             //选项值
             $config = Npcink_Pay_Refund_Admin::npcConfig('config');
+			foreach (get_users(array('capability' => 'npcink_refund_orders', 'fields' => 'ids')) as $user_id) {
+				$user = get_userdata(absint($user_id));
+				if ($user) {
+					$user->remove_cap('npcink_refund_orders');
+				}
+			}
+			$administrator = get_role('administrator');
+			if ($administrator) {
+				$administrator->remove_cap('npcink_refund_orders');
+			}
             //数据库状态
-            $mySql =  Npcink_Pay_Refund_Admin::get_options($config, 'mysql');
-            if ($mySql === 1) {
+            // Preserve an explicit unchecked value; get_options() treats 0 as empty.
+            $mySql = is_array($config) && array_key_exists('mysql', $config) ? (int) $config['mysql'] : 1;
+            if (1 === $mySql) {
                 self::delete_sql();
             }
 
             //选项状态
-            $myConfig =  Npcink_Pay_Refund_Admin::get_options($config, 'config');
-            if ($myConfig === 1) {
+            $myConfig = is_array($config) && array_key_exists('config', $config) ? (int) $config['config'] : 1;
+            if (1 === $myConfig) {
                 self::delete_option();
             }
-            //登录时，限定指定ID人员仅可访问指定页面
-            //add_action('admin_init', array(__CLASS__, 'restrict_access'));
         }
         /**
          * 删除数据库
@@ -67,10 +76,12 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Uninstall')) {
             delete_option('npcink_pay_refund_config');
             delete_option('npcink_pay_refund_secrets');
             delete_option('npcink_pay_refund_schema_version');
+			delete_option('npcink_pay_refund_capability_version');
             self::delete_options_by_prefix('npcink_pay_refund_pending_wx_');
             self::delete_options_by_prefix('npcink_pay_refund_lock_');
             self::delete_options_by_prefix('npcink_pay_refund_reconcile_');
-			self::delete_options_by_prefix('npcink_pay_refund_uncertain_');
+            self::delete_options_by_prefix('npcink_pay_refund_uncertain_');
+			self::delete_options_by_prefix('npcink_pay_refund_attempt_wx_');
         }
 
         public static function delete_options_by_prefix($prefix)

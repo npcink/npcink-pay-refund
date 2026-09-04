@@ -52,7 +52,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 		/**
 		 * 添加数据进数据库文件中
 		 */
-		public static function add_data($time, $user, $amount, $order, $reason, $type)
+		public static function add_data($time, $user, $amount, $order, $reason, $type, $user_id = 0)
 		{
 			global $wpdb;
 			$table_name = esc_sql($wpdb->prefix . 'npcink_pay_refund_order');
@@ -80,6 +80,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 				'n_time' => sanitize_text_field($time),
 				'n_order' => $order,
 				'n_user' => sanitize_text_field($user),
+				'n_user_id' => absint($user_id) ?: (function_exists('get_current_user_id') ? get_current_user_id() : 0),
 				'n_type' => $type,
 				'n_reason' => Npcink_Pay_Refund_Admin::sanitize_textarea_value($reason)
 			);
@@ -195,6 +196,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 			$stored = array(
 				'n_time' => sanitize_text_field($data['n_time']),
 				'n_user' => sanitize_text_field($data['n_user']),
+				'n_user_id' => isset($data['n_user_id']) ? absint($data['n_user_id']) : 0,
 				'n_amount' => (float) $data['n_amount'],
 				'n_order' => $order,
 				'n_reason' => Npcink_Pay_Refund_Admin::sanitize_textarea_value($data['n_reason']),
@@ -228,6 +230,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 
 			$data['n_order'] = $order;
 			$data['n_type'] = $type;
+			if (isset($data['n_user_id'])) {
+				$data['n_user_id'] = absint($data['n_user_id']);
+			}
 			$data['recording_failed_at'] = time();
 
 			return update_option(self::refund_reconciliation_name($order, $type), $data, false);
@@ -265,6 +270,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 				$data['n_order'],
 				$data['n_reason'],
 				$data['n_type']
+				, isset($data['n_user_id']) ? $data['n_user_id'] : 0
 			);
 		}
 
@@ -303,6 +309,48 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 			);
 		}
 
+		/**
+		 * Return the oldest unresolved refund states so an operator can act on the
+		 * exact order instead of only seeing an aggregate admin notice.
+		 */
+		public static function refund_operational_state_rows($limit = 100)
+		{
+			global $wpdb;
+			if (!isset($wpdb->options)) {
+				return array();
+			}
+
+			$rows = array();
+			$prefixes = array(
+				'npcink_pay_refund_uncertain_' => '支付宝待确认',
+				'npcink_pay_refund_pending_wx_' => '微信待查询',
+				'npcink_pay_refund_reconcile_' => '本地记录待补记',
+			);
+			foreach ($prefixes as $prefix => $label) {
+				$options_table = esc_sql($wpdb->options);
+				$like = $wpdb->esc_like($prefix) . '%';
+				// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Lightweight operational queue over this plugin's generated options.
+				$names = $wpdb->get_col($wpdb->prepare("SELECT option_name FROM {$options_table} WHERE option_name LIKE %s ORDER BY option_id ASC LIMIT %d", $like, max(1, (int) $limit)));
+				// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				foreach ((array) $names as $name) {
+					$data = get_option($name, array());
+					if (!is_array($data) || empty($data['n_order'])) {
+						continue;
+					}
+					$rows[] = array(
+						'state' => $label,
+						'channel' => sanitize_text_field($data['n_type'] ?? ('微信待查询' === $label ? '微信' : '支付宝')),
+						'order' => sanitize_text_field($data['n_order']),
+						'request_id' => sanitize_text_field($data['request_id'] ?? ''),
+						'amount' => isset($data['n_amount']) ? (float) $data['n_amount'] : (isset($data['amount']) ? (float) $data['amount'] : 0),
+						'updated_at' => isset($data['updated_at']) ? (int) $data['updated_at'] : (isset($data['recording_failed_at']) ? (int) $data['recording_failed_at'] : (isset($data['last_submit_at']) ? (int) $data['last_submit_at'] : 0)),
+					);
+				}
+			}
+
+			return array_slice($rows, 0, max(1, (int) $limit));
+		}
+
 		public static function render_reconciliation_notice()
 		{
 			if (!class_exists('Npcink_Pay_Refund_Admin_Authority') || !Npcink_Pay_Refund_Admin_Authority::current_user_can_refund()) {
@@ -331,24 +379,16 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 		//若输入的时间与当前时间对比超过配置的退款时间窗口，则输出false
 		public static function contrast_time($time)
 		{
-			// 将 $time 转换为 DateTime 对象
-			$timeObj = DateTime::createFromFormat('Y-m-d H:i:s', $time);
-			if (!$timeObj) {
+			$timezone = function_exists('wp_timezone') ? wp_timezone() : new DateTimeZone('UTC');
+			$timeObj = DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', (string) $time, $timezone);
+			$errors = DateTimeImmutable::getLastErrors();
+			if (!$timeObj || (is_array($errors) && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
 				return false;
 			}
 
-			// 计算时间差
-			$interval = $timeObj->diff(new DateTime());
-
-			// 判断时间差是否超过配置的退款时间窗口
-			if ($interval->days > self::refund_window_days()) {
-				// 超过配置天数，返回 false
-				$result = false;
-			} else {
-				// 没有超过配置天数，返回 true
-				$result = true;
-			}
-			return $result;
+			$age = time() - $timeObj->getTimestamp();
+			$day_seconds = defined('DAY_IN_SECONDS') ? DAY_IN_SECONDS : 86400;
+			return $age >= 0 && $age <= self::refund_window_days() * $day_seconds;
 		}
 
 		public static function refund_window_days()

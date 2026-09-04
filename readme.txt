@@ -2,9 +2,9 @@
 Contributors: muze233
 Tags: alipay, wechat pay, refund, payment, admin tools
 Requires at least: 6.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.3.6
+Stable tag: 1.3.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,7 +20,7 @@ Features:
 
 * Query Alipay and WeChat Pay orders from the WordPress admin.
 * Run full refunds for eligible paid orders.
-* Restrict refund access to administrators and selected refund operators.
+* Restrict refund actions to administrators and selected refund operators through a dedicated capability.
 * Store refund records in a custom WordPress database table.
 * Keep payment secrets in a separate non-autoloaded option.
 * Prevent duplicate refund submissions with order-level locking.
@@ -47,7 +47,9 @@ WeChat Pay:
 * Data sent for refunds: WeChat Pay merchant credentials, payment order number, refund number, full refund amount, and the refund reason entered by the operator.
 * Service information: https://pay.weixin.qq.com/
 
-Merchant private keys and public keys are stored in the site's WordPress database options. Keep access to administrator accounts, backups, and database exports restricted.
+By default, merchant private keys and public keys are stored in the site's WordPress database options. Keep access to administrator accounts, backups, and database exports restricted.
+
+For deployments that keep secrets outside the database, define `NPCINK_PAY_REFUND_ZFB_PRIVATE_KEY`, `NPCINK_PAY_REFUND_ZFB_PUBLIC_KEY`, `NPCINK_PAY_REFUND_WX_CERT_KEY`, and `NPCINK_PAY_REFUND_WX_PLATFORM_PUBLIC_KEY` in `wp-config.php`. These constants take precedence over saved option values and are never written by the settings form.
 
 == Installation ==
 
@@ -84,11 +86,19 @@ Payment secrets are stored in a separate non-autoloaded WordPress option named `
 == Screenshots ==
 
 1. Alipay configuration with masked secret fields and local configuration check.
-2. Refund operator permissions and allowed admin pages.
+2. Refund operator permissions and refund record visibility.
 3. Order refund console for WeChat Pay and Alipay with recent refund records.
 4. Refund record search and filtering.
 
 == Changelog ==
+
+= 1.3.7 =
+
+* Removed legacy order-number suffix rewriting so provider queries use the exact entered order number.
+* Updated bundled Guzzle dependencies to versions without the August 2026 security advisories.
+* Added explicit confirmation, pending/uncertain refund visibility, and operator-scoped refund records.
+* Added dedicated refund capabilities, optional wp-config.php secret injection, and safer WordPress-timezone validation.
+* Advanced WeChat refund request numbers after terminal refund states so a later attempt does not reuse a closed refund number.
 
 = 1.3.6 =
 

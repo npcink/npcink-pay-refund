@@ -112,6 +112,21 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                     <button type="button" class="button" id="npcink-pay-refund-record-reset"><?php echo esc_html__('重置', 'npcink-pay-refund'); ?></button>
                     <span class="description" id="npcink-pay-refund-record-summary"></span>
                 </div>
+                <section class="npcink-pay-refund-operational-state" aria-labelledby="npcink-pay-refund-operational-state-title">
+                    <h2 id="npcink-pay-refund-operational-state-title"><?php echo esc_html__('待处理退款状态', 'npcink-pay-refund'); ?></h2>
+                    <p class="description"><?php echo esc_html__('以下订单需要先查询核对；系统不会因为状态不明而自动再次提交退款。', 'npcink-pay-refund'); ?></p>
+                    <table id="npcink-pay-refund-operational-records" class="wp-list-table widefat fixed striped">
+                        <thead><tr>
+                            <th><?php echo esc_html__('状态', 'npcink-pay-refund'); ?></th>
+                            <th><?php echo esc_html__('渠道', 'npcink-pay-refund'); ?></th>
+                            <th><?php echo esc_html__('订单号', 'npcink-pay-refund'); ?></th>
+                            <th><?php echo esc_html__('退款请求号', 'npcink-pay-refund'); ?></th>
+                            <th><?php echo esc_html__('金额', 'npcink-pay-refund'); ?></th>
+                            <th><?php echo esc_html__('操作', 'npcink-pay-refund'); ?></th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </section>
                 <table id="npcink-pay-refund-records" class="wp-list-table widefat fixed striped">
                     <thead>
                         <tr>
@@ -163,6 +178,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                 'nonce' => wp_create_nonce('npcink_pay_refund_action'),
                 //20条退款记录
                 'data' =>   self::get_data(),
+				'operational' => Npcink_Pay_Refund_Admin_Public::refund_operational_state_rows(),
             ));
         }
 
@@ -199,16 +215,21 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
             // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom refund table dashboard query with a sanitized table name.
             $results = $wpdb->get_results(
                 $wpdb->prepare(
-                    "SELECT id, n_amount, n_time, n_order, n_user, n_type, n_reason FROM {$table_name} ORDER BY id DESC LIMIT %d",
+                "SELECT id, n_amount, n_time, n_order, n_user, n_user_id, n_type, n_reason FROM {$table_name} ORDER BY id DESC LIMIT %d",
                     20
                 )
             );
             // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
             $dataArray = array();
+			$current_user = wp_get_current_user();
+			$can_view_all = current_user_can('manage_options');
 
             if (!empty($results)) {
                 foreach ($results as $result) {
+					if (!$can_view_all && (!$current_user || (int) $result->n_user_id !== (int) $current_user->ID)) {
+						continue;
+					}
                     $data = array(
                         'id' => $result->id,
                         'amount' => $result->n_amount,

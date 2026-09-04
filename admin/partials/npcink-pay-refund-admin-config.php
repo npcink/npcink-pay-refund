@@ -41,11 +41,13 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
         {
             self::ensure_option_autoload_policy();
 
-            register_setting(
+			register_setting(
                 'npcink_pay_refund_config_group',
                 'npcink_pay_refund_config',
                 array(__CLASS__, 'sanitize_config')
             );
+			add_action('add_option_npcink_pay_refund_config', array(__CLASS__, 'sync_refund_capabilities_on_add'), 10, 2);
+			add_action('update_option_npcink_pay_refund_config', array(__CLASS__, 'sync_refund_capabilities'), 10, 3);
         }
 
         public static function menu_displays()
@@ -160,8 +162,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                         <div class="npcink-pay-refund-settings-section">
                             <div class="npcink-pay-refund-settings-section-header npcink-pay-refund-settings-section-header-inline">
                                 <div>
-                                    <h3><?php echo esc_html__('可访问页面', 'npcink-pay-refund'); ?></h3>
-                                    <p><?php echo esc_html__('退款专员登录后台后，仅放行这里配置的管理页面。', 'npcink-pay-refund'); ?></p>
+                                    <h3><?php echo esc_html__('旧版页面链接（仅作记录）', 'npcink-pay-refund'); ?></h3>
+                                    <p><?php echo esc_html__('此处仅保留旧配置中的链接提示，不再限制退款专员访问其他 WordPress 后台页面。退款权限由独立 capability 控制。', 'npcink-pay-refund'); ?></p>
                                 </div>
                                 <button type="button" class="button" id="npcink-pay-refund-add-link-row"><?php echo esc_html__('添加页面', 'npcink-pay-refund'); ?></button>
                             </div>
@@ -199,7 +201,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                                     </tr>
                                     <tr>
                                         <th scope="row"><?php echo esc_html__('退款原因', 'npcink-pay-refund'); ?></th>
-                                        <td><?php echo esc_html__('退款原因仅自己可见。', 'npcink-pay-refund'); ?></td>
+                                        <td><?php echo esc_html__('退款专员只能看到自己提交的记录；管理员可以查看全部记录。', 'npcink-pay-refund'); ?></td>
                                     </tr>
                                     <tr>
                                         <th scope="row"><?php echo esc_html__('操作入口', 'npcink-pay-refund'); ?></th>
@@ -580,6 +582,31 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
             return array_values(array_unique($user_ids));
         }
 
+		public static function sync_refund_capabilities($old_value, $value, $option)
+		{
+			$old_ids = self::value(self::object_to_array($old_value), array('user', 'user'), array());
+			$new_ids = self::value(self::object_to_array($value), array('user', 'user'), array());
+			$old_ids = array_unique(array_map('absint', (array) $old_ids));
+			$new_ids = array_unique(array_map('absint', (array) $new_ids));
+			foreach (array_diff($old_ids, $new_ids) as $user_id) {
+				$user = get_userdata($user_id);
+				if ($user) {
+					$user->remove_cap('npcink_refund_orders');
+				}
+			}
+			foreach ($new_ids as $user_id) {
+				$user = get_userdata($user_id);
+				if ($user && self::is_refund_user_assignable($user)) {
+					$user->add_cap('npcink_refund_orders');
+				}
+			}
+		}
+
+		public static function sync_refund_capabilities_on_add($option, $value)
+		{
+			self::sync_refund_capabilities(array(), $value, $option);
+		}
+
         public static function is_refund_user_assignable($user)
         {
             if (!$user instanceof WP_User) {
@@ -634,6 +661,10 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                     if (empty($saved[$section][$field]) && !empty($legacy_config[$section][$field])) {
                         $saved[$section][$field] = $legacy_config[$section][$field];
                     }
+					$constant = 'NPCINK_PAY_REFUND_' . strtoupper($section) . '_' . strtoupper($field);
+					if (defined($constant) && '' !== trim((string) constant($constant))) {
+						$saved[$section][$field] = (string) constant($constant);
+					}
                 }
             }
 
@@ -642,7 +673,10 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
 
         public static function save_secrets($input)
         {
-            $secrets = self::get_secrets();
+			// Read persisted values directly so wp-config.php constants are never
+			// copied back into the database by an unrelated settings save.
+			$secrets = self::object_to_array(get_option('npcink_pay_refund_secrets', array()));
+			$legacy_config = self::object_to_array(get_option('npcink_pay_refund_config', array()));
 
             foreach (self::secret_fields() as $section => $fields) {
                 if (!isset($secrets[$section]) || !is_array($secrets[$section])) {
@@ -650,6 +684,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                 }
 
                 foreach ($fields as $field) {
+					if (empty($secrets[$section][$field]) && !empty($legacy_config[$section][$field])) {
+						$secrets[$section][$field] = $legacy_config[$section][$field];
+					}
                     if (isset($input[$section][$field])) {
                         $value = Npcink_Pay_Refund_Admin::sanitize_textarea_value($input[$section][$field]);
                         if ('' !== $value) {

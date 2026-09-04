@@ -6,11 +6,19 @@ Use this checklist for the first real merchant run. Do not test refunds against 
 
 - Build package: `composer build:zip`
 - Verify package: `composer verify`
-- For the current security-update candidate, install `build/npcink-pay-refund-1.3.6.zip`, not a raw source archive.
-- WordPress.org 1.3.5 is the current public version; do not record its live result as evidence for the changed 1.3.6 dependency bundle.
+- For the current release candidate, install `build/npcink-pay-refund-1.3.7.zip`, not a raw source archive.
+- WordPress.org 1.3.5 is the current public version; do not record its live result as evidence for the changed 1.3.7 dependency bundle and refund workflow.
 - For a later candidate, install the exact versioned ZIP printed by `composer build:zip`; record its version and SHA-256 before testing.
 - Confirm `vendor/autoload.php` exists in the installed plugin.
 - Record the package SHA-256 before installing it.
+
+## Local WordPress Verification
+
+- Verified on 2026-09-04 with WordPress 7.1 and MySQL 8.0.35 in an isolated temporary database.
+- Confirmed installation from the exact 1.3.7 ZIP, old-table schema upgrade (`n_user_id`), activation, deactivation, reactivation, and uninstall cleanup.
+- Confirmed administrator/refund-operator/subscriber capability behavior with `bin/smoke-admin.php`.
+- Confirmed WP-CLI Plugin Check returned `No errors found`.
+- This evidence covers the local WordPress lifecycle only; it does not replace real Alipay or WeChat merchant verification.
 
 ## Alipay
 
@@ -42,6 +50,6 @@ Use this checklist for the first real merchant run. Do not test refunds against 
 
 - Leaving secret fields empty must retain existing saved secrets.
 - Refund specialists must be author-or-above non-admin users.
-- Non-admin refund specialists should only access the configured admin pages.
+- Non-admin refund specialists should be able to use refund operations and see only their own refund records; the plugin must not block unrelated WordPress admin pages.
 - CSV export should open without formula execution for values starting with `=`, `+`, `-`, or `@`.
 - Real merchant execution is operator-owned evidence. A passing local/CI suite must not be recorded as a successful live refund.

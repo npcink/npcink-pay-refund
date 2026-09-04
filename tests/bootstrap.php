@@ -25,6 +25,11 @@ function sanitize_text_field($value)
     return trim(strip_tags((string) $value));
 }
 
+function absint($value)
+{
+    return abs((int) $value);
+}
+
 function esc_sql($value)
 {
     return $value;

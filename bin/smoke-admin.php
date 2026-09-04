@@ -87,6 +87,9 @@ try {
 	npcink_pay_refund_smoke_assert(class_exists('Npcink_Pay_Refund_Admin_Authority'), 'authority class is unavailable');
 	npcink_pay_refund_smoke_assert(class_exists('Npcink_Pay_Refund_Admin_Zfb'), 'Alipay class is unavailable');
 	npcink_pay_refund_smoke_assert(class_exists('Npcink_Pay_Refund_Admin_Wx'), 'WeChat class is unavailable');
+	// WP-CLI eval-file does not run admin_init; register settings explicitly so
+	// option updates exercise the same capability-sync hook as wp-admin.
+	Npcink_Pay_Refund_Admin_Config::register_settings();
 
 	$admin_id = npcink_pay_refund_smoke_first_user_with_cap('manage_options');
 	npcink_pay_refund_smoke_assert($admin_id > 0, 'no administrator user found');

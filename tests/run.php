@@ -77,6 +77,18 @@ npcink_test_case('published PHP and version metadata stay synchronized', functio
 		(bool) preg_match("/^Stable tag:\\s*{$quoted_version}$/m", $readme),
 		'WordPress.org stable tag must match the plugin header version'
 	);
+	$checklist = file_get_contents($root . '/docs/REFUND-INTEGRATION-CHECKLIST.md');
+	npcink_test_assert_true(false !== strpos($checklist, 'build/npcink-pay-refund-' . $published_version . '.zip'), 'Integration checklist must target the published package version');
+	npcink_test_assert_true(false === strpos($checklist, 'only access the configured admin pages'), 'Integration checklist must not describe the removed admin-page restriction');
+	npcink_test_assert_true(false === strpos($readme, 'allowed admin pages'), 'Published readme must not describe the removed admin-page restriction');
+});
+
+npcink_test_case('order numbers are passed to providers without legacy suffix rewriting', function () {
+	$root = dirname(__DIR__);
+	$script = file_get_contents($root . '/admin/js/npcink-pay-refund-admin.js');
+	npcink_test_assert_true(false === strpos($script, 'function trimHyphen'), 'Provider order inputs must not use the legacy suffix normalizer');
+	npcink_test_assert_true(false !== strpos($script, 'param: $.trim($("#npcink-pay-refund-zfb-input").val())'), 'Alipay query must pass the entered order number');
+	npcink_test_assert_true(false !== strpos($script, 'order_id: $.trim($("#npcink-pay-refund-wx-input").val())'), 'WeChat query must pass the entered order number');
 });
 
 npcink_test_case('WeChat full refund uses original total for coupon orders', function () {
@@ -224,6 +236,8 @@ npcink_test_case('WeChat retries only after explicit refund-not-found and preser
 	npcink_test_assert_same('Original reason', $pending['reason'], 'Retry must preserve the original reason');
 	npcink_test_assert_same(1000, $pending['request_amount'], 'Retry must preserve the original amount');
 	npcink_test_assert_same(2, $pending['submit_attempts'], 'Submission attempts must remain observable');
+	Npcink_Pay_Refund_Admin_Wx::advance_refund_request_id($order);
+	npcink_test_assert_same($order . '-refund-1', Npcink_Pay_Refund_Admin_Wx::refund_request_id($order), 'A closed or abnormal refund must advance to a new request id');
 });
 
 npcink_test_case('WeChat refund-not-found response must have a fresh valid platform signature', function () {

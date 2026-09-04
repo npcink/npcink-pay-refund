@@ -30,11 +30,20 @@ class Npcink_Pay_Refund_Activator
 	 *
 	 * @since    1.0.0
 	 */
-	public static function activate()
-	{
+		public static function activate()
+		{
 
-		self::create_refund_order();
-	}
+			self::create_refund_order();
+			self::add_refund_capability();
+		}
+
+		public static function add_refund_capability()
+		{
+			$role = get_role('administrator');
+			if ($role) {
+				$role->add_cap('npcink_refund_orders');
+			}
+		}
 
 	/**
 	 * 创建数据库存储退款记录
@@ -49,14 +58,16 @@ class Npcink_Pay_Refund_Activator
 		$sql = "CREATE TABLE $table_name (
 			id mediumint(9) NOT NULL AUTO_INCREMENT,
 			n_amount decimal(10,2) NOT NULL,
-			n_time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+			n_time datetime NOT NULL,
 			n_order varchar(255) NOT NULL,
 			n_user varchar(255) NOT NULL,
+			n_user_id bigint(20) unsigned NOT NULL DEFAULT 0,
 			n_type varchar(255) NOT NULL,
 			n_reason text NOT NULL,
 			PRIMARY KEY (id),
 			UNIQUE KEY n_order_type (n_order(191), n_type(32)),
-			KEY n_time (n_time)
+			KEY n_time (n_time),
+			KEY n_user_id (n_user_id)
 		) $charset_collate;";
 
 		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
