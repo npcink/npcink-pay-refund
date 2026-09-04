@@ -2,9 +2,9 @@
 
 ## 待改进
 
-- 真实商户配置下补充支付宝、微信订单查询与退款联调记录
+- 真实商户配置下的支付宝、微信订单查询与退款联调已由商户操作者手工确认；后续版本仍按清单逐次记录
 - 在 7b2 中，退款成功后自动修改订单状态
-- 1.3.7：修复订单号静默截断、补充异常退款队列和退款记录操作者隔离；发布前需使用精确版本化 ZIP 完成真实商户联调
+- 1.3.7 已完成发布：修复订单号静默截断、补充异常退款队列和退款记录操作者隔离，并完成精确 ZIP、WordPress 生命周期、Plugin Check 与商户联调
 
 ## 维护文档
 
@@ -15,6 +15,7 @@
 - [WordPress.org 上架准备记录](WPORG-LISTING-PREP.zh-CN.md)
 - [WordPress.org 1.3.5 审核与首次发布复盘](WORDPRESS-ORG-RELEASE-RETROSPECTIVE-1.3.5.zh-CN.md)
 - [首次真实商户联调清单](REFUND-INTEGRATION-CHECKLIST.md)
+- [开发与发布规范](DEVELOPMENT-AND-RELEASE-STANDARDS.zh-CN.md)
 
 ## 功能
 
