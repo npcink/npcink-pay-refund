@@ -4,7 +4,32 @@
 
 - 真实商户配置下的支付宝、微信订单查询与退款联调已由商户操作者手工确认；后续版本仍按清单逐次记录
 - 在 7b2 中，退款成功后自动修改订单状态
-- 1.3.7 已完成发布：修复订单号静默截断、补充异常退款队列和退款记录操作者隔离，并完成精确 ZIP、WordPress 生命周期、Plugin Check 与商户联调
+
+## 后台入口
+
+- 配置：`插件 -> 退款配置`，页面 slug 为 `plugins.php?page=npcink_pay_refund_config`
+- 退款操作：`仪表盘 -> 订单退款`，页面 slug 为 `index.php?page=npcink_pay_refund_query`
+- 插件只负责后台订单查询、退款和退款记录，不创建支付、不处理支付通知，也不修改第三方订单状态。
+
+## 后台截图
+
+### 订单查询与退款
+
+![订单查询与退款](../assets/screenshot-1.png)
+
+### 退款结果
+
+![退款结果](../assets/screenshot-2.png)
+
+### 退款记录
+
+![退款记录](../assets/screenshot-3.png)
+
+### 插件配置与权限
+
+![插件配置与权限](../assets/screenshot-4.png)
+
+1.3.7 已完成发布：修复订单号静默截断、补充异常退款队列和退款记录操作者隔离，并完成精确 ZIP、WordPress 生命周期、Plugin Check 与商户联调。
 
 ## 维护文档
 
