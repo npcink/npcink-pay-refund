@@ -19,6 +19,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Uninstall')) {
             //获取选项值
             //选项值
             $config = Npcink_Pay_Refund_Admin::npcConfig('config');
+			// Grants are removed even when settings are preserved; reinstall must rebuild them.
+			delete_option('npcink_pay_refund_capability_version');
 			foreach (get_users(array('capability' => 'npcink_refund_orders', 'fields' => 'ids')) as $user_id) {
 				$user = get_userdata(absint($user_id));
 				if ($user) {

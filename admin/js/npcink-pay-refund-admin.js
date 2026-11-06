@@ -257,8 +257,51 @@ jQuery(document).ready(function ($) {
   var $recordDateFrom = $("#npcink-pay-refund-record-date-from");
   var $recordDateTo = $("#npcink-pay-refund-record-date-to");
   var $recordSummary = $("#npcink-pay-refund-record-summary");
-  var dataArray = parseRefundRecords(refundQuery.data || "[]");
-  var operationalRows = Array.isArray(refundQuery.operational) ? refundQuery.operational : [];
+  var recordPage = refundQuery.records || { rows: [], total: 0, page: 1, pages: 0 };
+  var dataArray = recordPage.rows || [];
+  var operationalPage = refundQuery.operational || { rows: [], next_cursor: 0 };
+  var operationalRows = operationalPage.rows || [];
+  var recordRequest;
+  var recordSequence = 0;
+  var filterTimer;
+
+  function requestRecords(page) {
+    var sequence = ++recordSequence;
+    if (recordRequest) { recordRequest.abort(); }
+    recordRequest = $.ajax({
+      url: refundQuery.ajaxurl, method: "POST", dataType: "json",
+      data: { action: "npcink_pay_refund_records", nonce: refundQuery.nonce, page: page,
+        keyword: $recordKeyword.val(), type: $recordType.val(), from: $recordDateFrom.val(), to: $recordDateTo.val() }
+    }).done(function (response) {
+      if (sequence !== recordSequence) { return; }
+      if (!response.success) { $recordSummary.text("记录查询失败，请重试。"); return; }
+      recordPage = response.data;
+      dataArray = recordPage.rows || [];
+      renderRecords();
+    }).fail(function (xhr, status) {
+      if (status !== "abort" && sequence === recordSequence) { $recordSummary.text("记录查询失败，请重试。"); }
+    });
+  }
+
+  function requestOperational(cursor) {
+    $("#npcink-pay-refund-operational-next, #npcink-pay-refund-operational-reset").prop("disabled", true);
+    $.post(refundQuery.ajaxurl, { action: "npcink_pay_refund_operational", nonce: refundQuery.nonce, cursor: cursor })
+      .done(function (response) {
+        if (!response.success) { return; }
+        operationalPage = response.data;
+        operationalRows = operationalPage.rows || [];
+        renderOperationalRows();
+      }).fail(function () {
+        $operationalRecordsBody.empty().append($("<tr>").append($("<td>", { colspan: 6, text: "待处理状态查询失败，请重试。" })));
+      }).always(function () {
+        $("#npcink-pay-refund-operational-reset").prop("disabled", false);
+        $("#npcink-pay-refund-operational-next").prop("disabled", !operationalPage.next_cursor);
+      });
+  }
+  $("#npcink-pay-refund-operational-next").on("click", function () { requestOperational(operationalPage.next_cursor); });
+  $("#npcink-pay-refund-operational-reset").on("click", function () { requestOperational(0); });
+  $("#npcink-pay-refund-record-prev").on("click", function () { requestRecords(recordPage.page - 1); });
+  $("#npcink-pay-refund-record-next").on("click", function () { requestRecords(recordPage.page + 1); });
 
   function renderOperationalRows() {
     if (!$operationalRecordsBody.length) {
@@ -266,7 +309,7 @@ jQuery(document).ready(function ($) {
     }
     $operationalRecordsBody.empty();
     if (!operationalRows.length) {
-      $("<tr>").append($("<td>", { colspan: 6, text: "暂无待处理退款状态。" })).appendTo($operationalRecordsBody);
+      $("<tr>").append($("<td>", { colspan: 6, text: operationalPage.next_cursor ? "本批无可显示状态，请继续下一批。" : "本批无待处理退款状态。" })).appendTo($operationalRecordsBody);
       return;
     }
     operationalRows.forEach(function (row) {
@@ -296,65 +339,8 @@ jQuery(document).ready(function ($) {
     $query.trigger("click");
   });
 
-  function parseRefundRecords(rawData) {
-    try {
-      var records = JSON.parse(rawData);
-      return Array.isArray(records) ? records : [];
-    } catch (error) {
-      return [];
-    }
-  }
-
   function normalizeRecordValue(value) {
     return value === null || value === undefined ? "" : String(value);
-  }
-
-  function getRecordDate(record) {
-    var time = normalizeRecordValue(record.time);
-    var match = time.match(/^(\d{4}-\d{2}-\d{2})/);
-    return match ? match[1] : "";
-  }
-
-  function getFilteredRecords() {
-    var keyword = $.trim($recordKeyword.val()).toLowerCase();
-    var type = $recordType.val();
-    var dateFrom = $recordDateFrom.val();
-    var dateTo = $recordDateTo.val();
-
-    return dataArray.filter(function (record) {
-      var recordType = normalizeRecordValue(record.type);
-      var recordDate = getRecordDate(record);
-      var searchable = [
-        record.id,
-        record.amount,
-        record.time,
-        record.order,
-        record.user,
-        record.type,
-        record.reason,
-      ]
-        .map(normalizeRecordValue)
-        .join(" ")
-        .toLowerCase();
-
-      if (keyword && searchable.indexOf(keyword) === -1) {
-        return false;
-      }
-
-      if (type && recordType !== type) {
-        return false;
-      }
-
-      if (dateFrom && (!recordDate || recordDate < dateFrom)) {
-        return false;
-      }
-
-      if (dateTo && (!recordDate || recordDate > dateTo)) {
-        return false;
-      }
-
-      return true;
-    });
   }
 
   function renderRecordType(type) {
@@ -367,7 +353,7 @@ jQuery(document).ready(function ($) {
   }
 
   function renderRecords() {
-    var records = getFilteredRecords();
+    var records = dataArray;
     $refundRecordsBody.empty();
 
     if (!records.length) {
@@ -397,19 +383,25 @@ jQuery(document).ready(function ($) {
       });
     }
 
-    $recordSummary.text("显示 " + records.length + " 条，共 " + dataArray.length + " 条。");
+    $recordSummary.text("第 " + recordPage.page + " 页，显示 " + records.length + " 条，共 " + recordPage.total + " 条。");
+    $("#npcink-pay-refund-record-prev").prop("disabled", recordPage.page <= 1);
+    $("#npcink-pay-refund-record-next").prop("disabled", recordPage.page >= recordPage.pages);
   }
 
-  $recordKeyword.on("input", renderRecords);
-  $recordType.add($recordDateFrom).add($recordDateTo).on("change", renderRecords);
+  $recordKeyword.on("input", function () {
+    clearTimeout(filterTimer);
+    filterTimer = setTimeout(function () { requestRecords(1); }, 250);
+  });
+  $recordType.add($recordDateFrom).add($recordDateTo).on("change", function () { requestRecords(1); });
   $("#npcink-pay-refund-record-reset").on("click", function () {
     $recordKeyword.val("");
     $recordType.val("");
     $recordDateFrom.val("");
     $recordDateTo.val("");
-    renderRecords();
+    requestRecords(1);
   });
 
+  $("#npcink-pay-refund-operational-next").prop("disabled", !operationalPage.next_cursor);
   renderOperationalRows();
   renderRecords();
 });

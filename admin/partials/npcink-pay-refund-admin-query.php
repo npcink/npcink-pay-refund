@@ -20,6 +20,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
             self::$plugin_name = $name;
             self::$plugin_version = $version;
             //添加菜单
+            add_action('wp_ajax_npcink_pay_refund_records', array(__CLASS__, 'ajax_records'));
+            add_action('wp_ajax_npcink_pay_refund_operational', array(__CLASS__, 'ajax_operational'));
             add_action('admin_menu', array(__CLASS__, 'query_menu'));
             //加载 CSS 和 JS 资源
             add_action('admin_enqueue_scripts', array(__CLASS__, 'load_admin_script'));
@@ -66,7 +68,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                 <!--标题-->
                 <h2><?php echo esc_html(get_admin_page_title()); ?></h2>
                 <ul class="ul_meat">
-                    <li>每天早上8点账户清零，可尝试下午或有用户支付后，再进行退款操作</li>
+                    <li>退款前请确认商户账户有足够可用余额；不足时按支付平台提示处理</li>
                     <li>
                         <?php
                         /* translators: %d: configured refund window in days. */
@@ -77,14 +79,14 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                 </ul>
 
                 <h2><?php echo self::svg_icon($wx_icon); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- self::svg_icon() returns wp_kses()-sanitized SVG. ?>微信订单查询</h2>
-                <input type="text" id="npcink-pay-refund-wx-input" placeholder="请输入微信订单号">
+                <input type="text" id="npcink-pay-refund-wx-input" placeholder="请输入微信商户订单号（out_trade_no）">
                 <button id="npcink-pay-refund-wx-button" class="button button-primary">查询</button>
                 <div class="table_style">
                     <div id="npcink-pay-refund-wx-data"></div>
                 </div>
 
                 <h2><?php echo self::svg_icon($zfb_icon); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- self::svg_icon() returns wp_kses()-sanitized SVG. ?>支付宝订单查询</h2>
-                <input type="text" id="npcink-pay-refund-zfb-input" placeholder="请输入支付宝订单号">
+                <input type="text" id="npcink-pay-refund-zfb-input" placeholder="请输入支付宝商户订单号（out_trade_no）">
                 <button id="npcink-pay-refund-zfb-button" class="button button-primary">查询</button>
                 <div class="table_style">
                     <div id="npcink-pay-refund-zfb-data"></div>
@@ -112,6 +114,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                     <button type="button" class="button" id="npcink-pay-refund-record-reset"><?php echo esc_html__('重置', 'npcink-pay-refund'); ?></button>
                     <span class="description" id="npcink-pay-refund-record-summary"></span>
                 </div>
+                <p><button type="button" class="button" id="npcink-pay-refund-record-prev">上一页</button> <button type="button" class="button" id="npcink-pay-refund-record-next">下一页</button></p>
                 <section class="npcink-pay-refund-operational-state" aria-labelledby="npcink-pay-refund-operational-state-title">
                     <h2 id="npcink-pay-refund-operational-state-title"><?php echo esc_html__('待处理退款状态', 'npcink-pay-refund'); ?></h2>
                     <p class="description"><?php echo esc_html__('以下订单需要先查询核对；系统不会因为状态不明而自动再次提交退款。', 'npcink-pay-refund'); ?></p>
@@ -126,6 +129,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                         </tr></thead>
                         <tbody></tbody>
                     </table>
+                    <p><button type="button" class="button" id="npcink-pay-refund-operational-reset">回到首批</button> <button type="button" class="button" id="npcink-pay-refund-operational-next">下一批</button></p>
                 </section>
                 <table id="npcink-pay-refund-records" class="wp-list-table widefat fixed striped">
                     <thead>
@@ -177,8 +181,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                 'ajaxurl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('npcink_pay_refund_action'),
                 //20条退款记录
-                'data' =>   self::get_data(),
-				'operational' => Npcink_Pay_Refund_Admin_Public::refund_operational_state_rows(),
+                'records' => self::records_page(),
+				'operational' => Npcink_Pay_Refund_Admin_Public::refund_operational_state_page(),
             ));
         }
 
@@ -209,42 +213,67 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
          */
         public static function get_data()
         {
+            return wp_json_encode(self::records_page()['rows']);
+        }
+
+        public static function ajax_records()
+        {
+            Npcink_Pay_Refund_Admin_Authority::require_refund_ajax_permission();
+            $filters = array();
+            foreach (array('keyword', 'type', 'from', 'to', 'page') as $key) {
+                // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by require_refund_ajax_permission() above.
+                $filters[$key] = isset($_POST[$key]) && is_scalar($_POST[$key]) ? sanitize_text_field(wp_unslash($_POST[$key])) : '';
+            }
+            wp_send_json_success(self::records_page($filters));
+        }
+
+        public static function ajax_operational()
+        {
+            Npcink_Pay_Refund_Admin_Authority::require_refund_ajax_permission();
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by require_refund_ajax_permission() above.
+            $cursor = isset($_POST['cursor']) && is_scalar($_POST['cursor']) ? absint($_POST['cursor']) : 0;
+            wp_send_json_success(Npcink_Pay_Refund_Admin_Public::refund_operational_state_page(100, $cursor));
+        }
+
+        public static function records_page($filters = array())
+        {
             global $wpdb;
-            $table_name = esc_sql($wpdb->prefix . 'npcink_pay_refund_order');
-
-            // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Custom refund table dashboard query with a sanitized table name.
-            $results = $wpdb->get_results(
-                $wpdb->prepare(
-                "SELECT id, n_amount, n_time, n_order, n_user, n_user_id, n_type, n_reason FROM {$table_name} ORDER BY id DESC LIMIT %d",
-                    20
-                )
-            );
-            // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-
-            $dataArray = array();
-			$current_user = wp_get_current_user();
-			$can_view_all = current_user_can('manage_options');
-
-            if (!empty($results)) {
-                foreach ($results as $result) {
-					if (!$can_view_all && (!$current_user || (int) $result->n_user_id !== (int) $current_user->ID)) {
-						continue;
-					}
-                    $data = array(
-                        'id' => $result->id,
-                        'amount' => $result->n_amount,
-                        'time' => $result->n_time,
-                        'order' => $result->n_order,
-                        'user' => $result->n_user,
-                        'type' => $result->n_type,
-                        'reason' => $result->n_reason
-                    );
-                    $dataArray[] = $data;
+            $page = min(100000, max(1, (int) ($filters['page'] ?? 1)));
+            $empty = array('rows' => array(), 'total' => 0, 'page' => $page, 'pages' => 0);
+            if (!Npcink_Pay_Refund_Admin_Authority::current_user_can_refund()) { return $empty; }
+            $table = esc_sql($wpdb->prefix . 'npcink_pay_refund_order');
+            $where = array('1=%d');
+            $args = array(1);
+            if (!current_user_can('manage_options')) {
+                $where[] = 'n_user_id = %d';
+                $args[] = get_current_user_id();
+            }
+            $keyword = substr((string) ($filters['keyword'] ?? ''), 0, 200);
+            if ('' !== $keyword) {
+                $where[] = '(n_order LIKE %s OR n_user LIKE %s OR n_reason LIKE %s)';
+                $like = '%' . $wpdb->esc_like($keyword) . '%';
+                array_push($args, $like, $like, $like);
+            }
+            if (in_array($filters['type'] ?? '', array('微信', '支付宝'), true)) {
+                $where[] = 'n_type = %s'; $args[] = $filters['type'];
+            }
+            foreach (array('from' => '>=', 'to' => '<=') as $key => $operator) {
+                $date = (string) ($filters[$key] ?? '');
+                if (preg_match('/^(\d{4})-(\d{2})-(\d{2})$/D', $date, $parts) && checkdate((int) $parts[2], (int) $parts[3], (int) $parts[1])) {
+                    $where[] = "n_time {$operator} %s";
+                    $args[] = $date . ('from' === $key ? ' 00:00:00' : ' 23:59:59');
                 }
             }
-
-            return wp_json_encode($dataArray); // 将数组以 JSON 格式输出
+            $condition = implode(' AND ', $where);
+            // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- SQL assembled exclusively from fixed predicates and escaped core table; all filter values prepared. Fresh paginated results, WP 6.0 lacks %i.
+            $count_sql = "SELECT COUNT(*) FROM {$table} WHERE {$condition}";
+            $total = (int) $wpdb->get_var($wpdb->prepare($count_sql, $args));
+            $sql = "SELECT id, n_amount AS amount, n_time AS time, n_order AS `order`, n_user AS user, n_type AS type, n_reason AS reason FROM {$table} WHERE {$condition} ORDER BY id DESC LIMIT %d OFFSET %d";
+            $rows = $wpdb->get_results($wpdb->prepare($sql, array_merge($args, array(20, ($page - 1) * 20))));
+            // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter
+            return array('rows' => (array) $rows, 'total' => $total, 'page' => $page, 'pages' => (int) ceil($total / 20));
         }
+
     } //end
 
 

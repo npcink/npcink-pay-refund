@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - codex/refund-audit-remediation
 
 permissions:
   contents: read
@@ -15,14 +16,30 @@ concurrency:
 
 jobs:
   verify:
-    name: PHP ${{ matrix.php }}
+    name: PHP ${{ matrix.php }} / WordPress ${{ matrix.wordpress }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        php:
-          - "8.1"
-          - "8.4"
+        include:
+          - php: "8.1"
+            wordpress: "6.0"
+          - php: "8.4"
+            wordpress: latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: isolated-test-password
+          MYSQL_DATABASE: npcink_refund_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pisolated-test-password"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    env:
+      WP_PATH: ${{ runner.temp }}/npcink-refund-wordpress
+      WP_URL: http://npcink-refund.test
 
     steps:
       - name: Check out repository
@@ -33,12 +50,44 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           coverage: none
-          tools: composer:v2
+          tools: composer:v2, wp-cli
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
 
-      - name: Run release verification
-        env:
-          WP_PATH: ${{ runner.temp }}/wordpress-not-installed
+      - name: Install isolated WordPress
+        run: |
+          wp core download --path="$WP_PATH" --version="${{ matrix.wordpress }}"
+          wp config create --path="$WP_PATH" --dbname=npcink_refund_test --dbuser=root --dbpass=isolated-test-password --dbhost=127.0.0.1:3306
+          wp core install --path="$WP_PATH" --url="$WP_URL" --title=RefundTest --admin_user=test-admin --admin_password=isolated-test-only --admin_email=test@example.invalid --skip-email
+          touch "$WP_PATH/.npcink-refund-test-site"
+          ln -s "$GITHUB_WORKSPACE" "$WP_PATH/wp-content/plugins/npcink-pay-refund"
+          wp plugin activate npcink-pay-refund --path="$WP_PATH"
+
+      - name: Minimum WordPress compatibility and local checks
+        if: matrix.wordpress == '6.0'
+        run: |
+          composer verify:local
+          wp eval-file bin/check-database-locks.php --path="$WP_PATH"
+          wp eval-file bin/check-installed-site.php --path="$WP_PATH"
+          wp eval-file tests/integration.php --path="$WP_PATH"
+          wp eval-file bin/smoke-admin.php --path="$WP_PATH"
+
+      - name: Install Plugin Check
+        if: matrix.wordpress == 'latest'
+        run: wp plugin install plugin-check --activate --path="$WP_PATH"
+
+      - name: Run full release verification
+        if: matrix.wordpress == 'latest'
         run: composer verify
+
+      - name: Preserve candidate identity
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidate-php-${{ matrix.php }}-wp-${{ matrix.wordpress }}
+          path: |
+            build/*.zip
+            build/*.sha256
+            build/*.manifest.json
+          if-no-files-found: warn

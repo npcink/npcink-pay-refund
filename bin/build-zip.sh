@@ -27,4 +27,6 @@ rsync -a --delete --exclude-from="$ROOT_DIR/.distignore" "$ROOT_DIR/" "$STAGE_DI
 	zip -qr "$ZIP_FILE" "$PACKAGE_SLUG"
 )
 
+php "$ROOT_DIR/bin/build-manifest.php" "$ZIP_FILE" "$ROOT_DIR" "$VERSION" "$STAGE_DIR"
+
 echo "$ZIP_FILE"

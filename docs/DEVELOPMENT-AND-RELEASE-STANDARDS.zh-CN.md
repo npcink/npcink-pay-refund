@@ -32,7 +32,7 @@ Npcink Pay Refund 是 WordPress 后台的退款操作工具：查询已有支付
 - `PROCESSING` 只表示处理中，继续保留锁并查询状态。
 - 只有新鲜且验签成功的 `404 RESOURCE_NOT_EXISTS` 才允许按原参数重试。
 - `MCH_NOT_EXISTS`、鉴权失败、签名失败、超时、`SYSTEM_ERROR` 和未知状态都必须保留 pending/锁，转入人工对账。
-- `CLOSED/ABNORMAL` 表示当前退款单终态；清理 pending 前先持久化下一次尝试号，后续请求不能复用旧退款单号。
+- `CLOSED/ABNORMAL` 表示当前退款单终态；通过同一 option 的 CAS 原子写入终态凭据与下一次尝试号（活动 pending 不再单独删除），后续请求不能复用旧退款单号。
 
 ## 4. WordPress 代码约定
 
@@ -52,19 +52,36 @@ Npcink Pay Refund 是 WordPress 后台的退款操作工具：查询已有支付
 composer test
 composer validate --strict
 composer audit
-composer verify
+composer verify:local
+# Full gate: explicit isolated WP_PATH, .npcink-refund-test-site, installed Plugin Check
+WP_PATH=/absolute/path/to/isolated-wordpress composer verify
 ```
 
 证据含义必须分开记录：
 
-- 单元/回归测试：证明状态机和纯逻辑。
+- 单元/回归测试：证明状态机和纯逻辑；微信传输测试只替换 HTTP handler，运行真实 SDK 签名和验签，不能替代商户联调。
 - PHP 8.1/8.4 CI：证明解释器兼容性。
 - 真实 WordPress + MySQL：证明激活、升级、权限、后台烟测和卸载。
 - Plugin Check：证明当前目录规则没有报告问题。
-- 精确 ZIP 清单和 SHA-256：证明上传的制品内容。
+- 精确 ZIP 清单和 SHA-256：清单记录每个包内文件的 SHA-256，以及 Git 跟踪/未跟踪且未忽略源码的内容哈希；`source_tree_sha256` 可识别未提交新文件的内容变化。`tests/build-manifest.py` 独立读取 ZIP 对照完整清单。
 - 真实商户联调：只证明指定凭据、订单和制品下的真实支付行为。
 
+烟测必须使用带 `.npcink-refund-test-site` 标记的隔离站点；断言失败要抛异常，恢复配置和密钥后再返回失败；测试用户使用随机名称，不修改已有用户角色。
+
 任何一层证据都不能替代另一层。尤其不能用本地测试或 Plugin Check 推导支付退款成功。
+
+### 部署数据库预检与旧状态核对
+
+```bash
+# 可针对指定部署目标执行；没有网关调用，不修改插件 options/退款记录。
+wp eval-file /absolute/path/to/npcink-pay-refund/bin/check-database-locks.php --path=/explicit/wordpress
+```
+
+已有站点可再运行 `wp eval-file /absolute/path/to/npcink-pay-refund/bin/check-installed-site.php --path=/explicit/wordpress`，检查实际已激活目录的页面、schema、分页和权限拒绝；该脚本不创建测试用户、不写配置、不发支付请求。它不替代隔离集成测试。
+
+预检需要 `GET_LOCK` 和 `CREATE TEMPORARY TABLE` 权限；临时表/锁在 finally 中清理。它验证可写节点、独立连接排他、释放和临时写入后的同连接读取，共 12 项。若目标缺少临时表权限，需由数据库维护者在相同路由下执行验证，不能将失败解释为已经证明连接模型可用。读写拆分、连接代理、持久连接复用须额外核对路由策略；一次通过不保证后续连接不切换。
+
+升级前由管理员遍历“待处理/待对账”队列的全部游标页，分别登记渠道、原请求号、金额、所有者和商户平台状态；缺失字段的旧状态不猜测补值、不删除锁或修改 attempt 来“解锁”。先查询原请求号，保存脱敏对账证据，确认远端结果后使用本地补记流程。数据库锁与远端退款不是一个事务：即使发送前持锁，发送后连接中断仍必须按原请求号恢复，不能换号重试。
 
 ## 6. 发布流程
 
@@ -73,9 +90,9 @@ composer verify
 3. 同步插件头、运行时版本、`readme.txt`、README、POT 和 changelog。
 4. 运行完整 `composer verify`，并在真实 WordPress 环境执行生命周期和 Plugin Check。
 5. 使用 `composer build:zip` 生成唯一版本化 ZIP，回读文件清单并记录 SHA-256。
-6. 合并到 `main`，创建同版本 Git tag 和 GitHub Release，Release 附上精确 ZIP 与校验值。
-7. 将同一构建目录同步到 WordPress.org SVN `trunk/` 和 `tags/<version>/`，回读远端版本头和排除项。
-8. 由商户操作者按 `REFUND-INTEGRATION-CHECKLIST.md` 完成支付宝/微信低风险联调，再记录结果。
+6. 由商户操作者在明确授权的测试环境按 `REFUND-INTEGRATION-CHECKLIST.md` 完成支付宝/微信联调，记录同一候选 ZIP 的结果；未完成时保留 pending，不签署发布结论。
+7. 合并到 `main`，创建同版本 Git tag 和 GitHub Release，Release 附上已验证的精确 ZIP、校验值和清单；再次构建会产生新的候选身份，不能沿用旧包联调记录。
+8. 将同一构建目录同步到 WordPress.org SVN `trunk/` 和 `tags/<version>/`，回读远端版本头和排除项。
 
 版本号代表不可变制品。依赖安全修复、运行行为变化或发布包变化都必须使用新版本，不能静默替换已发布 ZIP。
 

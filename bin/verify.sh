@@ -2,16 +2,25 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-WP_PATH="${WP_PATH:-/Users/muze/Local Sites/test/app/public}"
-WP_URL="${WP_URL:-http://test.local}"
-WP_SKIP_PLUGINS="${WP_SKIP_PLUGINS:-magick-ai}"
+WP_PATH="${WP_PATH:-}"
+VERIFY_LOCAL_ONLY="${VERIFY_LOCAL_ONLY:-0}"
+WP_URL="${WP_URL:-http://npcink-refund.test}"
+WP_SKIP_PLUGINS="${WP_SKIP_PLUGINS:-}"
 PACKAGE_SLUG="${PACKAGE_SLUG:-npcink-pay-refund}"
 PCP_TARGET="${PCP_TARGET:-$PACKAGE_SLUG}"
 PCP_SLUG="${PCP_SLUG:-npcink-pay-refund}"
 
 cd "$ROOT_DIR"
 
+if [ "$VERIFY_LOCAL_ONLY" != "1" ]; then
+    if ! command -v wp >/dev/null 2>&1 || [ ! -f "$WP_PATH/wp-load.php" ] || [ ! -f "$WP_PATH/.npcink-refund-test-site" ]; then
+        echo "Full verification requires an explicit isolated WP_PATH with .npcink-refund-test-site; use composer verify:local for offline checks." >&2
+        exit 1
+    fi
+fi
+
 composer test
+python3 tests/mutation-permissions.py
 composer validate --strict
 if ! composer audit; then
 	echo "Retrying Composer security audit after a transient network failure." >&2
@@ -31,6 +40,7 @@ else
 fi
 
 ZIP_FILE="$(composer build:zip | tail -n 1)"
+python3 tests/build-manifest.py "$ZIP_FILE"
 
 ZIP_LIST="$(unzip -Z1 "$ZIP_FILE")"
 
@@ -83,7 +93,7 @@ if [ -z "$PACKAGED_PLUGIN_VERSION" ] ||
 	exit 1
 fi
 
-if command -v wp >/dev/null 2>&1 && [ -d "$WP_PATH" ]; then
+if [ "$VERIFY_LOCAL_ONLY" != "1" ]; then
 	WP_CLI_BASE_ARGS=(
 		--path="$WP_PATH"
 		--url="$WP_URL"
@@ -116,6 +126,9 @@ if command -v wp >/dev/null 2>&1 && [ -d "$WP_PATH" ]; then
 		wp plugin install "$ZIP_FILE" --force --activate "${WP_CLI_ARGS[@]}" >/tmp/npcink-pay-refund-install-verify.out
 	fi
 
+	wp eval-file "$ROOT_DIR/bin/check-database-locks.php" "${WP_CLI_ARGS[@]}"
+	wp eval-file "$ROOT_DIR/bin/check-installed-site.php" "${WP_CLI_ARGS[@]}"
+	wp eval-file "$ROOT_DIR/tests/integration.php" "${WP_CLI_ARGS[@]}"
 	wp eval-file "$ROOT_DIR/bin/smoke-admin.php" "${WP_CLI_ARGS[@]}"
 	if [ -n "$PACKAGE_CHECK_DIR" ]; then
 		PACKAGE_SKIP_PLUGINS="$PACKAGE_SLUG"
@@ -140,15 +153,22 @@ if command -v wp >/dev/null 2>&1 && [ -d "$WP_PATH" ]; then
 <?php
 $lines = file('/tmp/npcink-pay-refund-pcp-verify.out', FILE_IGNORE_NEW_LINES);
 $rows = array();
+$recognized = false;
 foreach ($lines as $line) {
 	$trim = trim($line);
+	if ('Success: Checks complete. No errors found.' === $trim) { $recognized = true; }
 	if ('' === $trim || '[' !== $trim[0]) {
 		continue;
 	}
 	$items = json_decode($trim, true);
 	if (is_array($items)) {
+		$recognized = true;
 		$rows = array_merge($rows, $items);
 	}
+}
+if (!$recognized) {
+	fwrite(STDERR, "Plugin Check output was empty or unrecognized.\n");
+	exit(1);
 }
 if (count($rows) > 0) {
 	fwrite(STDERR, 'Plugin Check returned ' . count($rows) . " issue(s).\n");
@@ -157,7 +177,11 @@ if (count($rows) > 0) {
 echo "Plugin Check clean.\n";
 PHP
 else
-	echo "Skipping Plugin Check: wp command or WP_PATH is unavailable." >&2
+	echo "LOCAL ONLY: WordPress, MySQL and Plugin Check were not verified." >&2
 fi
 
-echo "Verification complete: $ZIP_FILE"
+if [ "$VERIFY_LOCAL_ONLY" = "1" ]; then
+    echo "Local verification complete: $ZIP_FILE"
+else
+    echo "Full verification complete: $ZIP_FILE"
+fi
