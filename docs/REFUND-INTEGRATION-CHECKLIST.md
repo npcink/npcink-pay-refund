@@ -6,7 +6,7 @@ Use this checklist for the first real merchant run. Do not test refunds against 
 
 - Build package: `composer build:zip`
 - Verify package: `composer verify`
-- For the unpublished 1.3.9 candidate, install `build/npcink-pay-refund-1.3.9.zip`, not a raw source archive.
+- For the released 1.3.9 package, install `build/npcink-pay-refund-1.3.9.zip`, not a raw source archive.
 - Historical release records identify 1.3.7; the live directory version was not rechecked in this remediation. Record live results only for the exact versioned ZIP and merchant credentials being tested.
 - For a later release, install the exact versioned ZIP printed by `composer build:zip`; record its version and SHA-256 before testing.
 - Confirm `vendor/autoload.php` exists in the installed plugin.
@@ -24,7 +24,7 @@ Use this checklist for the first real merchant run. Do not test refunds against 
 
 ## Candidate evidence record (required before release sign-off)
 
-1.3.9 is not published or merchant-validated. The historical 1.3.7 manual confirmation has no attached version/hash/request log in this repository; preserve it as a historical statement, not evidence for this candidate.
+1.3.9 was published on 2026-11-06 after the user separately confirmed WeChat and Alipay merchant validation for the original package. See RELEASE-1.3.9.zh-CN.md for the exact SHA-256, confirmation scope and remote publication evidence. No order references or amounts were supplied; do not invent them. The historical 1.3.7 manual confirmation remains historical evidence only.
 
 Record one entry per channel, without secrets or full buyer identifiers:
 
