@@ -33,6 +33,8 @@
 
 ## 维护文档
 
+- [1.3.9 收尾、剩余边界与开发复盘](CLOSEOUT-AND-RETROSPECTIVE-1.3.9.zh-CN.md)
+- [1.3.9 正式发布与制品核对记录](RELEASE-1.3.9.zh-CN.md)
 - [项目改造历史与当前状态](PROJECT-HISTORY.zh-CN.md)
 - [1.3.1 开发复盘与维护思路](DEVELOPMENT-SUMMARY-1.3.1.zh-CN.md)
 - [1.3.2 界面压缩与中文状态复盘](DEVELOPMENT-SUMMARY-1.3.2.zh-CN.md)

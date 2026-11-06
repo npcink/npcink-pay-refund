@@ -1,6 +1,6 @@
 # 项目改造历史与当前状态
 
-本文记录 `Npcink Pay Refund` 在 2026-07-08 至 2026-09-04 期间的主要改造决策、验证方式和发布状态，便于后续维护者或 AI 继续接手。
+本文记录 `Npcink Pay Refund` 在 2026-07-08 至 2026-11-06 期间的主要改造决策、验证方式和发布状态，便于后续维护者或 AI 继续接手。当前收尾结论见 [1.3.9 收尾与复盘](CLOSEOUT-AND-RETROSPECTIVE-1.3.9.zh-CN.md)。
 
 ## 当前状态
 
@@ -10,12 +10,12 @@
 - Text Domain：`npcink-pay-refund`
 - Composer 包名：`npcink/pay-refund`
 - 最低 PHP：`8.1`
-- 当前开发版本：`1.3.7`
+- 当前发布版本：`1.3.9`
 - GitHub 仓库：`https://github.com/npcink/npcink-pay-refund`
-- 最新稳定 GitHub Release：`v1.3.7`
-- WordPress.org 当前发布版本：`1.3.7`
+- 最新稳定 GitHub Release：`v1.3.9`
+- WordPress.org 当前发布版本：`1.3.9`
 - WordPress.org 目录页：`https://wordpress.org/plugins/npcink-pay-refund/`
-- WordPress.org SVN 发布修订：`r3680629`
+- WordPress.org SVN 发布修订：`r3787066`
 
 当前本地仓库目录是 `/Users/muze/gitee/npcink-pay-refund`。这是本机路径，不影响插件源码、GitHub remote、发布包或 WordPress 安装目录。目录迁移只是个人整理选项，不属于发布、运行或维护要求；当前保持原路径。
 
@@ -30,7 +30,7 @@
 - 退款记录表改为 `{$wpdb->prefix}npcink_pay_refund_order`
 - 后台资源改为 `admin/js/npcink-pay-refund-*.js` 和 `admin/css/npcink-pay-refund-admin.css`
 
-项目还在开发中，没有用户和历史兼容包袱，因此本次没有做旧 option、旧表名、旧插件入口的迁移兼容。后续如果已经有真实用户，再改运行时标识时必须先设计迁移策略。
+早期命名改造时尚未对外发布，因此当时未做旧 option、旧表名和旧入口迁移。该前提不再适用于当前已发布版本：后续修改运行时标识必须设计迁移，不得将历史上的“没有兼容包袱”用于当前决策。
 
 ## 后台设置与权限
 
@@ -166,7 +166,13 @@
 
 1.3.7 在 1.3.6 的依赖更新基础上，移除订单号静默改写，补充异常退款状态队列、退款操作人隔离、独立退款 capability、`wp-config.php` 密钥注入和更严格的 WordPress 时区校验。微信退款在 `CLOSED/ABNORMAL` 终态后推进新的商户退款单号，避免后续尝试复用已关闭退款单。
 
-当前精确候选包由 `composer build:zip` 生成，真实 WordPress、Plugin Check 和支付宝/微信商户联调仍是独立发布门禁，不能用本地测试替代。
+该段记录 1.3.7 当时的候选过程；后续发布与验收以各版本独立证据为准。
+
+## 1.3.8 审查整改与 1.3.9 正式发布
+
+1.3.8 为未独立发布的整改候选，完成22项审查问题的代码修复或证据机制整改。1.3.9 在此基础上简化待核对状态、筛选、密钥编辑与低频设置入口，保留即时异常提示。详见 [整改记录](AUDIT-REMEDIATION-1.3.8.zh-CN.md) 和 [发布记录](RELEASE-1.3.9.zh-CN.md)。
+
+使用者分别确认微信和支付宝真实退款通过，并授权发布；GitHub 与 WordPress.org 已发布同一验收包的内容。特殊补贴订单、真实断网恢复和生产规模压测不能从普通退款成功推导为已验证，其边界登记在收尾记录中。
 
 ## 发布与验证
 
@@ -196,7 +202,7 @@ composer verify
 - 构建 ZIP
 - 检查 ZIP 必须包含 `vendor/autoload.php`
 - 检查 ZIP 不包含 `vite/`、`bin/`、`build/`、旧 SDK 目录
-- 安装 ZIP 到本地测试站
+- 在显式指定并带隔离标记的 WordPress 站点执行生命周期与精确 ZIP 检查
 - 执行 `bin/smoke-admin.php` 后台烟测
 - 执行 Plugin Check
 
@@ -213,13 +219,9 @@ composer verify
 
 ## 本地测试站
 
-当前本地测试站：
+当前用户指定的目标为 Local `magick-ai.local`，路径 `/Users/muze/Local Sites/magick-ai/app/public`，安装的是发布 ZIP 的独立拷贝。对该站仅运行已安装目录检查、连接预检和实际后台请求检查，不写测试配置、不执行卸载或破坏性故障注入。
 
-- URL：`http://test.local`
-- WordPress 路径：`/Users/muze/Local Sites/test/app/public`
-- 安装后的插件目录：`wp-content/plugins/npcink-pay-refund`
-
-注意：本地测试站安装的是发布 ZIP 解压后的插件拷贝，不是指向当前仓库的 symlink。每次运行 `composer verify` 都会重新安装当前构建出的 ZIP。
+`composer verify` 的完整门禁必须显式传入带 `.npcink-refund-test-site` 标记的隔离 `WP_PATH`；不传路径时拒绝执行。隔离站可将源码插件挂为 symlink，但该临时环境不能与用户已有站点混淆。本轮隔离环境已停用并清理；历史 `test.local` 不是后续默认测试目标。
 
 旧的本地测试残留已清理：
 
@@ -235,9 +237,9 @@ composer verify
 - Gitee remote 不再使用
 - GitHub 仓库为 public
 - `main` 已推送到 GitHub
-- GitHub 最新稳定 tag 和 Release 为 `v1.3.7`
-- `v1.3.7` 已合入 `main`，GitHub Release 已附带精确 ZIP 和 SHA-256
-- WordPress.org 已发布 1.3.7；GitHub Release 与 WordPress.org SVN 修订分别记录，不能相互代替
+- GitHub 最新稳定 tag 和 Release 为 `v1.3.9`
+- `v1.3.9` 源码已合入 `main`，GitHub Release 已附带原始验收 ZIP、SHA-256、文件清单和后续确认记录
+- WordPress.org 已发布 1.3.9；GitHub Release 与 WordPress.org SVN 修订分别记录，不能相互代替
 
 历史 tag `v1.0.8`、`v1.1.1`、`v1.1.2` 也已随 tags 推送到 GitHub。旧提交历史中仍可能出现旧项目名，这是正常 Git 历史，不建议 rewrite。
 
@@ -247,5 +249,5 @@ composer verify
 
 - 继续用 `composer verify` 作为每次变更后的最小回归门槛
 - 后续版本按 `docs/REFUND-INTEGRATION-CHECKLIST.md` 使用精确版本化 ZIP 记录真实商户联调结果
-- 如开始有真实用户，再引入显式 schema/version migration，不要直接改 option/table/action 名称
+- 使用现有独立 schema/capability 迁移版本；实际结构验证成功后才推进标记，不直接改 option/table/action 名称
 - 退款成功后自动修改业务订单状态、部分退款、异步任务和多商户配置仍属于后续独立设计，不纳入当前插件边界
