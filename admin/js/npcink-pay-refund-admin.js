@@ -95,6 +95,7 @@ jQuery(document).ready(function ($) {
         error: function () {
           appendWxPollingNotice($container, "微信退款状态暂时无法同步，请稍后手动查询。", "error");
         },
+        complete: function () { requestOperational(0); },
       });
     }, 1000);
   }
@@ -123,6 +124,7 @@ jQuery(document).ready(function ($) {
           getRefundErrorMessage(xhr, "支付宝订单查询失败，请稍后重试。")
         );
       },
+      complete: function () { requestOperational(0); },
     });
   });
 
@@ -168,6 +170,8 @@ jQuery(document).ready(function ($) {
       },
       complete: function () {
         $button.prop("disabled", false).text("支付宝全额退款");
+        requestOperational(0);
+        requestRecords(1);
       },
     });
   });
@@ -196,6 +200,7 @@ jQuery(document).ready(function ($) {
           getRefundErrorMessage(xhr, "微信订单查询失败，请检查微信鉴权信息或稍后重试。")
         );
       },
+      complete: function () { requestOperational(0); },
     });
   });
 
@@ -245,6 +250,8 @@ jQuery(document).ready(function ($) {
       },
       complete: function () {
         $button.prop("disabled", false).text("微信全额退款");
+        requestOperational(0);
+        requestRecords(1);
       },
     });
   });
@@ -252,6 +259,8 @@ jQuery(document).ready(function ($) {
   //数据展示
   var $refundRecordsBody = $("#npcink-pay-refund-records tbody");
   var $operationalRecordsBody = $("#npcink-pay-refund-operational-records tbody");
+  var $operationalPanel = $("#npcink-pay-refund-operational-state");
+  var $operationalSummary = $("#npcink-pay-refund-operational-summary");
   var $recordKeyword = $("#npcink-pay-refund-record-keyword");
   var $recordType = $("#npcink-pay-refund-record-type");
   var $recordDateFrom = $("#npcink-pay-refund-record-date-from");
@@ -261,6 +270,9 @@ jQuery(document).ready(function ($) {
   var dataArray = recordPage.rows || [];
   var operationalPage = refundQuery.operational || { rows: [], next_cursor: 0 };
   var operationalRows = operationalPage.rows || [];
+  var operationalCursor = 0;
+  var operationalRequest;
+  var operationalSequence = 0;
   var recordRequest;
   var recordSequence = 0;
   var filterTimer;
@@ -283,17 +295,31 @@ jQuery(document).ready(function ($) {
     });
   }
 
+  function showOperationalError() {
+    $operationalPanel.prop("hidden", false).prop("open", true);
+    $operationalSummary.text("退款状态未能刷新 · 请重试");
+    $operationalRecordsBody.empty().append($("<tr>").append($("<td>", {
+      colspan: 6, role: "alert", text: "待处理状态查询失败，不能确认是否仍有待处理项。请刷新首批重试。"
+    })));
+  }
+
   function requestOperational(cursor) {
+    if (!$operationalPanel.length) { return; }
+    var sequence = ++operationalSequence;
+    if (operationalRequest) { operationalRequest.abort(); }
     $("#npcink-pay-refund-operational-next, #npcink-pay-refund-operational-reset").prop("disabled", true);
-    $.post(refundQuery.ajaxurl, { action: "npcink_pay_refund_operational", nonce: refundQuery.nonce, cursor: cursor })
+    operationalRequest = $.post(refundQuery.ajaxurl, { action: "npcink_pay_refund_operational", nonce: refundQuery.nonce, cursor: cursor })
       .done(function (response) {
-        if (!response.success) { return; }
+        if (sequence !== operationalSequence) { return; }
+        if (!response.success || !response.data) { showOperationalError(); return; }
+        operationalCursor = cursor;
         operationalPage = response.data;
         operationalRows = operationalPage.rows || [];
         renderOperationalRows();
-      }).fail(function () {
-        $operationalRecordsBody.empty().append($("<tr>").append($("<td>", { colspan: 6, text: "待处理状态查询失败，请重试。" })));
+      }).fail(function (xhr, status) {
+        if (status !== "abort" && sequence === operationalSequence) { showOperationalError(); }
       }).always(function () {
+        if (sequence !== operationalSequence) { return; }
         $("#npcink-pay-refund-operational-reset").prop("disabled", false);
         $("#npcink-pay-refund-operational-next").prop("disabled", !operationalPage.next_cursor);
       });
@@ -307,6 +333,14 @@ jQuery(document).ready(function ($) {
     if (!$operationalRecordsBody.length) {
       return;
     }
+    var hasMore = !!operationalPage.next_cursor;
+    var hasState = operationalRows.length > 0 || hasMore || operationalCursor > 0;
+    $operationalPanel.prop("hidden", !hasState);
+    if (!hasState) { $operationalPanel.prop("open", false); }
+    $operationalSummary.text(operationalRows.length
+      ? "本批 " + operationalRows.length + " 项退款待核对" + (hasMore ? "（还有更多）" : "") + " · 查看详情"
+      : (hasMore ? "还有退款状态待检查 · 查看详情" : "本批无待处理项 · 返回首批核对"));
+    $("#npcink-pay-refund-operational-next").prop("hidden", !hasMore).prop("disabled", !hasMore);
     $operationalRecordsBody.empty();
     if (!operationalRows.length) {
       $("<tr>").append($("<td>", { colspan: 6, text: operationalPage.next_cursor ? "本批无可显示状态，请继续下一批。" : "本批无待处理退款状态。" })).appendTo($operationalRecordsBody);
@@ -316,7 +350,7 @@ jQuery(document).ready(function ($) {
       var channel = normalizeRecordValue(row.channel);
       var order = normalizeRecordValue(row.order);
       var amount = Number(row.amount || 0).toFixed(2);
-      var $button = $("<button>", { type: "button", class: "button npcink-pay-refund-open-operational", text: "查询" })
+      var $button = $("<button>", { type: "button", class: "button npcink-pay-refund-open-operational", text: "查询核对" })
         .attr("data-channel", channel).attr("data-order", order);
       $("<tr>")
         .append($("<td>", { text: normalizeRecordValue(row.state) }))
@@ -337,6 +371,8 @@ jQuery(document).ready(function ($) {
     var $query = channel === "微信" ? $("#npcink-pay-refund-wx-button") : $("#npcink-pay-refund-zfb-button");
     $input.val(order);
     $query.trigger("click");
+    $input.get(0).scrollIntoView({ block: "center" });
+    $input.trigger("focus");
   });
 
   function normalizeRecordValue(value) {
@@ -364,7 +400,8 @@ jQuery(document).ready(function ($) {
           }).append(
             $("<p>", {
               class: "description npcink-pay-refund-record-empty",
-              text: dataArray.length ? "没有符合筛选条件的退款记录。" : "暂无退款记录。",
+              text: $recordKeyword.val() || $recordType.val() || $recordDateFrom.val() || $recordDateTo.val()
+                ? "没有符合筛选条件的退款记录。" : "暂无退款记录。",
             })
           )
         )
@@ -383,6 +420,9 @@ jQuery(document).ready(function ($) {
       });
     }
 
+    var advancedCount = [$recordType.val(), $recordDateFrom.val(), $recordDateTo.val()].filter(Boolean).length;
+    $("#npcink-pay-refund-filter-summary").text(advancedCount ? "更多筛选（" + advancedCount + " 项已启用）" : "更多筛选");
+    $("#npcink-pay-refund-record-pagination").prop("hidden", recordPage.pages <= 1 && recordPage.page <= 1);
     $recordSummary.text("第 " + recordPage.page + " 页，显示 " + records.length + " 条，共 " + recordPage.total + " 条。");
     $("#npcink-pay-refund-record-prev").prop("disabled", recordPage.page <= 1);
     $("#npcink-pay-refund-record-next").prop("disabled", recordPage.page >= recordPage.pages);
@@ -403,5 +443,8 @@ jQuery(document).ready(function ($) {
 
   $("#npcink-pay-refund-operational-next").prop("disabled", !operationalPage.next_cursor);
   renderOperationalRows();
+  if (window.location.hash === "#npcink-pay-refund-operational-state" && !$operationalPanel.prop("hidden")) {
+    $operationalPanel.prop("open", true);
+  }
   renderRecords();
 });

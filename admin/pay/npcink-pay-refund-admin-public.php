@@ -400,7 +400,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
             $prefixes = array(
                 'npcink_pay_refund_uncertain_' => array('uncertain', '支付宝待确认'),
                 'npcink_pay_refund_pending_wx_' => array('wechat_pending', '微信待查询'),
-                'npcink_pay_refund_reconcile_' => array('reconciliation', '本地记录待补记'),
+                'npcink_pay_refund_reconcile_' => array('reconciliation', '退款已成功，本站记录待补记'),
             );
             $names = array_keys($prefixes);
             $owner_like = '%' . $wpdb->esc_like('s:9:"n_user_id";i:' . get_current_user_id() . ';') . '%';
@@ -443,21 +443,19 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 				return;
 			}
 
+            $screen = function_exists('get_current_screen') ? get_current_screen() : null;
+            // The refund page has its own compact queue; avoid a duplicate banner there.
+            if ($screen && 'dashboard_page_npcink_pay_refund_query' === $screen->id) { return; }
+
 			$counts = self::refund_operational_state_counts();
 			if (0 === array_sum($counts)) {
 				return;
 			}
 
-			/* translators: 1: Alipay uncertain count, 2: WeChat pending count, 3: local audit reconciliation count. */
-			$message_format = __('当前待处理分页提醒（每页最多 100 项）：支付宝结果待确认 %1$d 项，微信待查询或补记 %2$d 项，本地记录待补记 %3$d 项。状态项可能对应同一订单；为避免重复退款，请先查询核对。', 'npcink-pay-refund');
-			$message = sprintf(
-				$message_format,
-				$counts['uncertain'],
-				$counts['wechat_pending'],
-				$counts['reconciliation']
-			);
+            /* translators: %d: number of visible state entries in the first queue page, not a global order total. */
+            $message = sprintf(__('当前首批有 %d 项退款状态需要核对。', 'npcink-pay-refund'), array_sum($counts));
+            echo '<div class="notice notice-warning"><p><strong>' . esc_html__('Npcink Pay Refund', 'npcink-pay-refund') . '：</strong> ' . esc_html($message) . ' <a href="' . esc_url(admin_url('index.php?page=npcink_pay_refund_query#npcink-pay-refund-operational-state')) . '">' . esc_html__('查看详情', 'npcink-pay-refund') . '</a></p></div>';
 
-			echo '<div class="notice notice-warning"><p><strong>' . esc_html__('Npcink Pay Refund', 'npcink-pay-refund') . '：</strong> ' . esc_html($message) . ' <a href="' . esc_url(admin_url('index.php?page=npcink_pay_refund_query')) . '">' . esc_html__('打开订单退款查询', 'npcink-pay-refund') . '</a></p></div>';
 		}
 
 

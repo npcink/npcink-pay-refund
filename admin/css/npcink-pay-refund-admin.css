@@ -1,4 +1,38 @@
 /*配置样式*/
+.npc_style [hidden] {
+  display: none !important;
+}
+.npc_style .npcink-pay-refund-disclosure > summary {
+  color: #50575e;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 6px 0;
+}
+.npc_style .npcink-pay-refund-disclosure > summary:focus-visible {
+  outline: 2px solid #2271b1;
+  outline-offset: 2px;
+}
+.npc_style .npcink-pay-refund-disclosure[open] > summary {
+  margin-bottom: 10px;
+}
+.npc_style .npcink-pay-refund-operational-state {
+  border-left: 3px solid #dba617;
+  margin: 16px 0 24px;
+  max-width: 1200px;
+  padding: 4px 12px;
+}
+.npc_style .npcink-pay-refund-record-filters {
+  position: relative;
+}
+.npc_style .npcink-pay-refund-filter-fields {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.npc_style .npcink-pay-refund-key-editor textarea {
+  margin-top: 4px;
+}
 .npc_style svg {
   width: 26px;
   height: auto;

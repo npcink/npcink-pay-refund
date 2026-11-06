@@ -92,31 +92,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                     <div id="npcink-pay-refund-zfb-data"></div>
 
                 </div>
-                <!--展示数据-->
-                <h2>操作记录</h2>
-                <div class="npcink-pay-refund-record-toolbar">
-                    <label for="npcink-pay-refund-record-keyword" class="screen-reader-text"><?php echo esc_html__('搜索退款记录', 'npcink-pay-refund'); ?></label>
-                    <input type="search" id="npcink-pay-refund-record-keyword" class="regular-text" placeholder="<?php echo esc_attr__('搜索订单号、操作员或原因', 'npcink-pay-refund'); ?>">
-
-                    <label for="npcink-pay-refund-record-type" class="screen-reader-text"><?php echo esc_html__('支付类型', 'npcink-pay-refund'); ?></label>
-                    <select id="npcink-pay-refund-record-type">
-                        <option value=""><?php echo esc_html__('全部类型', 'npcink-pay-refund'); ?></option>
-                        <option value="微信"><?php echo esc_html__('微信', 'npcink-pay-refund'); ?></option>
-                        <option value="支付宝"><?php echo esc_html__('支付宝', 'npcink-pay-refund'); ?></option>
-                    </select>
-
-                    <label for="npcink-pay-refund-record-date-from"><?php echo esc_html__('起始日期', 'npcink-pay-refund'); ?></label>
-                    <input type="date" id="npcink-pay-refund-record-date-from">
-
-                    <label for="npcink-pay-refund-record-date-to"><?php echo esc_html__('结束日期', 'npcink-pay-refund'); ?></label>
-                    <input type="date" id="npcink-pay-refund-record-date-to">
-
-                    <button type="button" class="button" id="npcink-pay-refund-record-reset"><?php echo esc_html__('重置', 'npcink-pay-refund'); ?></button>
-                    <span class="description" id="npcink-pay-refund-record-summary"></span>
-                </div>
-                <p><button type="button" class="button" id="npcink-pay-refund-record-prev">上一页</button> <button type="button" class="button" id="npcink-pay-refund-record-next">下一页</button></p>
-                <section class="npcink-pay-refund-operational-state" aria-labelledby="npcink-pay-refund-operational-state-title">
-                    <h2 id="npcink-pay-refund-operational-state-title"><?php echo esc_html__('待处理退款状态', 'npcink-pay-refund'); ?></h2>
+                <details id="npcink-pay-refund-operational-state" class="npcink-pay-refund-disclosure npcink-pay-refund-operational-state" hidden>
+                    <summary id="npcink-pay-refund-operational-summary"><?php echo esc_html__('退款待核对 · 查看详情', 'npcink-pay-refund'); ?></summary>
                     <p class="description"><?php echo esc_html__('以下订单需要先查询核对；系统不会因为状态不明而自动再次提交退款。', 'npcink-pay-refund'); ?></p>
                     <table id="npcink-pay-refund-operational-records" class="wp-list-table widefat fixed striped">
                         <thead><tr>
@@ -129,8 +106,36 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                         </tr></thead>
                         <tbody></tbody>
                     </table>
-                    <p><button type="button" class="button" id="npcink-pay-refund-operational-reset">回到首批</button> <button type="button" class="button" id="npcink-pay-refund-operational-next">下一批</button></p>
-                </section>
+                    <p><button type="button" class="button" id="npcink-pay-refund-operational-reset">刷新首批</button> <button type="button" class="button" id="npcink-pay-refund-operational-next" hidden>下一批</button></p>
+                </details>
+                <!--展示数据-->
+                <h2>操作记录</h2>
+                <div class="npcink-pay-refund-record-toolbar">
+                    <label for="npcink-pay-refund-record-keyword" class="screen-reader-text"><?php echo esc_html__('搜索退款记录', 'npcink-pay-refund'); ?></label>
+                    <input type="search" id="npcink-pay-refund-record-keyword" class="regular-text" placeholder="<?php echo esc_attr__('搜索订单号、操作员或原因', 'npcink-pay-refund'); ?>">
+
+                    <details class="npcink-pay-refund-disclosure npcink-pay-refund-record-filters">
+                        <summary id="npcink-pay-refund-filter-summary"><?php echo esc_html__('更多筛选', 'npcink-pay-refund'); ?></summary>
+                        <div class="npcink-pay-refund-filter-fields">
+                            <label for="npcink-pay-refund-record-type" class="screen-reader-text"><?php echo esc_html__('支付类型', 'npcink-pay-refund'); ?></label>
+                            <select id="npcink-pay-refund-record-type">
+                                <option value=""><?php echo esc_html__('全部类型', 'npcink-pay-refund'); ?></option>
+                                <option value="微信"><?php echo esc_html__('微信', 'npcink-pay-refund'); ?></option>
+                                <option value="支付宝"><?php echo esc_html__('支付宝', 'npcink-pay-refund'); ?></option>
+                            </select>
+
+                            <label for="npcink-pay-refund-record-date-from"><?php echo esc_html__('起始日期', 'npcink-pay-refund'); ?></label>
+                            <input type="date" id="npcink-pay-refund-record-date-from">
+
+                            <label for="npcink-pay-refund-record-date-to"><?php echo esc_html__('结束日期', 'npcink-pay-refund'); ?></label>
+                            <input type="date" id="npcink-pay-refund-record-date-to">
+
+                            <button type="button" class="button" id="npcink-pay-refund-record-reset"><?php echo esc_html__('重置', 'npcink-pay-refund'); ?></button>
+                        </div>
+                    </details>
+                    <span class="description" id="npcink-pay-refund-record-summary"></span>
+                </div>
+                <p id="npcink-pay-refund-record-pagination" hidden><button type="button" class="button" id="npcink-pay-refund-record-prev">上一页</button> <button type="button" class="button" id="npcink-pay-refund-record-next">下一页</button></p>
                 <table id="npcink-pay-refund-records" class="wp-list-table widefat fixed striped">
                     <thead>
                         <tr>
