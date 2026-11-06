@@ -38,7 +38,6 @@ jobs:
           --health-cmd="mysqladmin ping -h localhost -pisolated-test-password"
           --health-interval=10s --health-timeout=5s --health-retries=10
     env:
-      WP_PATH: ${{ runner.temp }}/npcink-refund-wordpress
       WP_URL: http://npcink-refund.test
 
     steps:
@@ -57,6 +56,8 @@ jobs:
 
       - name: Install isolated WordPress
         run: |
+          export WP_PATH="$RUNNER_TEMP/npcink-refund-wordpress"
+          echo "WP_PATH=$WP_PATH" >> "$GITHUB_ENV"
           wp core download --path="$WP_PATH" --version="${{ matrix.wordpress }}"
           wp config create --path="$WP_PATH" --dbname=npcink_refund_test --dbuser=root --dbpass=isolated-test-password --dbhost=127.0.0.1:3306
           wp core install --path="$WP_PATH" --url="$WP_URL" --title=RefundTest --admin_user=test-admin --admin_password=isolated-test-only --admin_email=test@example.invalid --skip-email
