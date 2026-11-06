@@ -402,7 +402,9 @@ jQuery(document).ready(function ($) {
     $table.append($tbody);
     $container.empty().append($notice);
     if (items.length) {
-      $container.append($table);
+      var $details = $("<details>", { class: "npcink-pay-refund-disclosure" }).prop("open", !isOk);
+      $details.append($("<summary>", { text: isOk ? "查看检测明细" : "查看需处理项目" }), $table);
+      $container.append($details);
     }
   }
 

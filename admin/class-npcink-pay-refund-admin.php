@@ -106,7 +106,8 @@ class Npcink_Pay_Refund_Admin
 	public static function npcConfig($option)
 	{
 		$config = self::object_to_array(get_option('npcink_pay_refund_config', array()));
-		$secrets = self::object_to_array(get_option('npcink_pay_refund_secrets', array()));
+		require_once __DIR__ . '/partials/npcink-pay-refund-admin-config.php';
+		$secrets = Npcink_Pay_Refund_Admin_Config::get_secrets();
 		$value = self::object_to_array(self::get_options($config, $option, array()));
 		$secret_value = self::object_to_array(self::get_options($secrets, $option, array()));
 

@@ -11,6 +11,8 @@
     "scripts": {
         "test": "php tests/run.php",
         "build:zip": "bash bin/build-zip.sh",
-        "verify": "bash bin/verify.sh"
+        "verify": "bash bin/verify.sh",
+        "verify:local": "VERIFY_LOCAL_ONLY=1 bash bin/verify.sh",
+        "test:integration": "wp eval-file tests/integration.php"
     }
 }

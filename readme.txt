@@ -4,7 +4,7 @@ Tags: alipay, wechat pay, refund, payment, admin tools
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.3.7
+Stable tag: 1.3.9
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -91,6 +91,20 @@ Payment secrets are stored in a separate non-autoloaded WordPress option named `
 4. Refund record search and filtering.
 
 == Changelog ==
+
+= 1.3.9 =
+
+* Hide empty pending queues and collapse actionable state details by default; retain immediate refund errors.
+* Fold advanced record filters, saved-key editors, legacy links and uninstall settings; hide unused pagination.
+* Show compact configuration check results and avoid duplicate pending notices on the refund page.
+* Unpublished candidate; real merchant validation remains required for the exact ZIP.
+
+= 1.3.8 =
+
+* Hardened refund response matching, terminal transitions, concurrency, secret access, key validation, and audit timestamps.
+* Isolated operator queues and added server-side record search and pagination.
+* Added real WordPress/MySQL failure-path checks and made full verification require an isolated site.
+* Local candidate only; live merchant validation must be recorded for the exact ZIP and SHA-256.
 
 = 1.3.7 =
 

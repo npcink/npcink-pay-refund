@@ -10,7 +10,9 @@ function npcink_test_reset_state()
 {
     $GLOBALS['npcink_test_options'] = array();
     $GLOBALS['npcink_test_deleted_options'] = array();
-    Npcink_Pay_Refund_Admin::$configs = array();
+    $GLOBALS['npcink_test_user'] = (object) array('ID' => 7, 'display_name' => 'Operator', 'caps' => array());
+    $GLOBALS['npcink_test_nonce'] = false;
+    $GLOBALS['wpdb'] = new Npcink_Test_Wpdb();
 	if (class_exists('Npcink_Pay_Refund_Admin_Wx', false)) {
 		Npcink_Pay_Refund_Admin_Wx::$client = null;
 		Npcink_Pay_Refund_Admin_Wx::$merchant_config = array();
@@ -72,7 +74,7 @@ function current_time($type)
 
 function wp_date($format, $timestamp = null)
 {
-    return date($format, null === $timestamp ? time() : $timestamp);
+    return (new DateTimeImmutable('@' . ($timestamp ?? time())))->setTimezone(wp_timezone())->format($format);
 }
 
 function __($text, $domain = null)
@@ -110,46 +112,72 @@ function trailingslashit($value)
     return rtrim($value, '/\\') . '/';
 }
 
-class Npcink_Pay_Refund_Admin
-{
-    public static $configs = array();
-
-    public static function npcConfig($section)
-    {
-        return isset(self::$configs[$section]) ? self::$configs[$section] : array();
-    }
-
-    public static function get_options($config, $key, $default = '')
-    {
-        return is_array($config) && array_key_exists($key, $config) ? $config[$key] : $default;
-    }
-
-    public static function sanitize_textarea_value($value)
-    {
-        return trim(strip_tags((string) $value));
-    }
+function sanitize_textarea_field($value) { return trim(strip_tags((string) $value)); }
+function wp_unslash($value) { return $value; }
+function wp_get_current_user() { return $GLOBALS['npcink_test_user']; }
+function get_current_user_id() { return (int) wp_get_current_user()->ID; }
+function user_can($user, $cap) { return !empty($user->caps[$cap]); }
+function current_user_can($cap) { return user_can(wp_get_current_user(), $cap); }
+function check_ajax_referer($action, $field, $die) { return $GLOBALS['npcink_test_nonce']; }
+class Npcink_Test_Json extends RuntimeException {
+    public $status;
+    public function __construct($status) { parent::__construct('AJAX response'); $this->status = $status; }
 }
+function wp_send_json_error($data, $status = 200) { throw new Npcink_Test_Json($status); }
+function wp_timezone() { return new DateTimeZone($GLOBALS['npcink_test_timezone'] ?? 'UTC'); }
+function maybe_serialize($value) { return is_array($value) || is_object($value) ? serialize($value) : (string) $value; }
+function wp_cache_delete($key, $group) { return true; }
+require dirname(__DIR__) . '/admin/class-npcink-pay-refund-admin.php';
+require dirname(__DIR__) . '/admin/partials/npcink-pay-refund-admin-config.php';
+require dirname(__DIR__) . '/admin/partials/npcink-pay-refund-admin-authority.php';
 
 class Npcink_Test_Wpdb
 {
     public $prefix = 'wp_';
+    public $options = 'wp_options';
     public $existing_id = false;
     public $insert_result = 1;
     public $inserted_data = array();
 
     public function prepare($query, ...$args)
     {
-        return $query . '|' . implode('|', array_map('strval', $args));
+        return array($query, $args);
     }
 
     public function get_var($query)
     {
+        if (is_array($query) && (str_contains($query[0], 'GET_LOCK') || str_contains($query[0], 'IS_USED_LOCK'))) { return 1; }
         return $this->existing_id;
     }
+
+    public function query($prepared)
+    {
+        list($sql, $args) = $prepared;
+        if (str_starts_with($sql, 'UPDATE')) { list($new, $key, $old) = $args; }
+        else { list($key, $old) = $args; }
+        if (!array_key_exists($key, $GLOBALS['npcink_test_options']) || maybe_serialize($GLOBALS['npcink_test_options'][$key]) !== $old) { return 0; }
+        if (str_starts_with($sql, 'UPDATE')) { $GLOBALS['npcink_test_options'][$key] = is_serialized_test($new) ? unserialize($new) : $new; }
+        else { delete_option($key); }
+        return 1;
+    }
+
+    public function update($table, $data, $where, $format = null, $where_format = null) { return 1; }
 
     public function insert($table, $data)
     {
         $this->inserted_data = $data;
         return $this->insert_result;
     }
+}
+
+function is_serialized_test($v) { return preg_match('/^(a|O):/', $v); }
+
+function npcink_test_keys() {
+    static $keys;
+    if (!$keys) {
+        $key = openssl_pkey_new(array('private_key_bits' => 2048));
+        openssl_pkey_export($key, $private);
+        $keys = array('private' => $private, 'public' => openssl_pkey_get_details($key)['key']);
+    }
+    return $keys;
 }

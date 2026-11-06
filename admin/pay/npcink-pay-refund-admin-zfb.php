@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) {
 //支付宝支付相关
 use Alipay\EasySDK\Kernel\Factory;
 use Alipay\EasySDK\Kernel\Config;
+use Alipay\EasySDK\Kernel\Util\ResponseChecker;
 
 
 if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
@@ -29,9 +30,10 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
         public static function gateway_result_log_context($result)
         {
             $context = array();
-            foreach (array('code', 'msg', 'subCode', 'subMsg') as $field) {
+            foreach (array('code', 'subCode') as $field) {
                 if (isset($result->{$field}) && is_scalar($result->{$field})) {
-                    $context[$field] = sanitize_text_field((string) $result->{$field});
+                    $value = (string) $result->{$field};
+                    if (preg_match('/^[A-Z0-9_.-]{1,64}$/D', $value)) { $context[$field] = $value; }
                 }
             }
 
@@ -56,14 +58,60 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
             $options->appId = Npcink_Pay_Refund_Admin::get_options($config, 'appid');
 
             // 为避免私钥随源码泄露，推荐从文件中读取私钥字符串而不是写入源码中
-            $options->merchantPrivateKey = Npcink_Pay_Refund_Admin::get_options($config, 'private_key');
+            $options->merchantPrivateKey = self::normalize_rsa_key(Npcink_Pay_Refund_Admin::get_options($config, 'private_key'), true);
 
 
 
             //注：如果采用非证书模式，则无需赋值上面的三个证书路径，改为赋值如下的支付宝公钥字符串即可
-            $options->alipayPublicKey = Npcink_Pay_Refund_Admin::get_options($config, 'public_key');
+            $options->alipayPublicKey = self::normalize_rsa_key(Npcink_Pay_Refund_Admin::get_options($config, 'public_key'), false);
 
             return $options;
+        }
+
+        /** Normalize PEM or base64 key material for EasySDK's PEM wrapper. */
+        public static function normalize_rsa_key($value, $private)
+        {
+            if (!is_string($value) || '' === trim($value)) {
+                throw new InvalidArgumentException('Missing RSA key.');
+            }
+            $pem = trim($value);
+            if (false === strpos($pem, '-----BEGIN ')) {
+                $body = preg_replace('/\s+/', '', $pem);
+                if (false === base64_decode($body, true)) {
+                    throw new InvalidArgumentException('Invalid RSA encoding.');
+                }
+                $label = $private ? 'PRIVATE KEY' : 'PUBLIC KEY';
+                $pem = "-----BEGIN $label-----\n" . chunk_split($body, 64, "\n") . "-----END $label-----\n";
+                if ($private && false === @openssl_pkey_get_private($pem)) {
+                    $pem = str_replace('PRIVATE KEY', 'RSA PRIVATE KEY', $pem);
+                }
+            }
+            $key = $private ? @openssl_pkey_get_private($pem) : @openssl_pkey_get_public($pem);
+            $details = $key ? openssl_pkey_get_details($key) : false;
+            if (!$details || OPENSSL_KEYTYPE_RSA !== $details['type'] || $details['bits'] < 2048) {
+                throw new InvalidArgumentException('Expected an RSA key of at least 2048 bits.');
+            }
+            if ($private) {
+                if (!openssl_pkey_export($key, $canonical)) {
+                    throw new InvalidArgumentException('Cannot export RSA key.');
+                }
+            } else {
+                $canonical = $details['key'];
+            }
+            return preg_replace('/-----[^\r\n]+-----|\s+/', '', $canonical);
+        }
+
+        public static function refund_time($provider_time, $submitted_at = null)
+        {
+            if (is_string($provider_time) && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/D', $provider_time)) {
+                $date = DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $provider_time, new DateTimeZone('Asia/Shanghai'));
+                $errors = DateTimeImmutable::getLastErrors();
+                if ($date && (!is_array($errors) || (!$errors['warning_count'] && !$errors['error_count']))) {
+                    return wp_date('Y-m-d H:i:s', $date->getTimestamp());
+                }
+            }
+            // Old contexts may contain the payment time; never reuse that as a refund time.
+            return wp_date('Y-m-d H:i:s', is_int($submitted_at) && $submitted_at > 0 ? $submitted_at : null);
         }
 
         /**
@@ -75,6 +123,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Verified by require_refund_ajax_permission().
             $param = isset($_REQUEST['param']) ? sanitize_text_field(wp_unslash($_REQUEST['param'])) : ''; // 获取传递的参数
+            Npcink_Pay_Refund_Admin_Public::require_order_operation($param, '支付宝');
             if ('' === $param) {
                 wp_send_json_error(array('message' => __('请输入支付宝订单号。', 'npcink-pay-refund')), 400);
             }
@@ -119,7 +168,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                     $table_html .= "</td></tr>";
                     $table_html .= "</table>";
                     //订单支付成功
-                    if ($data->tradeStatus == "TRADE_SUCCESS" && Npcink_Pay_Refund_Admin_Public::contrast_time($data->sendPayDate)) {
+                    if ($data->tradeStatus == "TRADE_SUCCESS" && Npcink_Pay_Refund_Admin_Public::contrast_time($data->sendPayDate, 'Asia/Shanghai')) {
 						if ($retryable_uncertain) {
 							$table_html .= '<p class="notice notice-warning inline npcink-pay-refund-refund-notice"><strong>' . esc_html__('原退款请求尚未在支付宝查询到；再次提交时将复用原退款请求号和原参数。', 'npcink-pay-refund') . '</strong></p>';
 						}
@@ -127,7 +176,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                         $table_html .= " <button id='order-btn' class='button button-primary refund' data-order-id='" . esc_attr($data->outTradeNo) . "' data-order-amount='" . esc_attr($data->totalAmount) . "' data-order-time='" . esc_attr($data->sendPayDate) . "'>支付宝全额退款</button>";
                     } else {
 
-                        if ($data->tradeStatus == "TRADE_SUCCESS" && !Npcink_Pay_Refund_Admin_Public::contrast_time($data->sendPayDate)) {
+                        if ($data->tradeStatus == "TRADE_SUCCESS" && !Npcink_Pay_Refund_Admin_Public::contrast_time($data->sendPayDate, 'Asia/Shanghai')) {
                             /* translators: %d: configured refund window in days. */
                             $table_html .= '<h3>' . esc_html(sprintf(__('该订单时间超过 %d 天，无法使用本功能退款，请联系管理员操作', 'npcink-pay-refund'), Npcink_Pay_Refund_Admin_Public::refund_window_days())) . '</h3>';
                         }
@@ -141,7 +190,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                 }
 			} catch (Throwable $e) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
-                error_log('Npcink_Pay_Refund Alipay query failed: ' . $e->getMessage());
+                error_log('Npcink_Pay_Refund Alipay query failed: ' . get_class($e));
                 wp_send_json_error(array('message' => __('调用失败，请检查支付宝配置或稍后重试。', 'npcink-pay-refund')), 500);
             }
         }
@@ -159,6 +208,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 
             // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by require_refund_ajax_permission().
             $order_id = isset($_POST['order_id']) ? sanitize_text_field(wp_unslash($_POST['order_id'])) : ''; // 获取传递的订单号
+            Npcink_Pay_Refund_Admin_Public::require_order_operation($order_id, '支付宝');
             // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Verified by require_refund_ajax_permission(); sanitized by Npcink_Pay_Refund_Admin::sanitize_textarea_value().
             $order_reason = isset($_POST['order_reason']) ? Npcink_Pay_Refund_Admin::sanitize_textarea_value(wp_unslash($_POST['order_reason'])) : ''; // 获取传递的退款原因
 
@@ -201,13 +251,13 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                     wp_send_json_error(array('message' => __('该订单当前状态不可退款。', 'npcink-pay-refund')), 400);
                 }
 
-                if (!Npcink_Pay_Refund_Admin_Public::contrast_time($query_result->sendPayDate)) {
+                if (!Npcink_Pay_Refund_Admin_Public::contrast_time($query_result->sendPayDate, 'Asia/Shanghai')) {
                     /* translators: %d: configured refund window in days. */
                     wp_send_json_error(array('message' => sprintf(__('该订单时间超过 %d 天，未执行退款。', 'npcink-pay-refund'), Npcink_Pay_Refund_Admin_Public::refund_window_days())), 400);
                 }
 
                 $order_amount = $query_result->totalAmount;
-				$order_time = !empty($retry_context['n_time']) ? $retry_context['n_time'] : $query_result->sendPayDate;
+				$order_time = wp_date('Y-m-d H:i:s');
 				if (!empty($retry_context['n_amount']) && abs((float) $retry_context['n_amount'] - (float) $order_amount) >= 0.001) {
 					wp_send_json_error(array('message' => __('订单金额与原支付宝退款请求不一致，订单继续锁定。请在支付宝商家平台核对后再处理。', 'npcink-pay-refund')), 409);
 				}
@@ -240,6 +290,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 				$submit_state = self::classify_refund_submit_response($submission, $order_id, $order_amount);
                 //3. 处理响应或异常
 				if ('confirmed' === $submit_state) {
+                    $body = json_decode($result->httpBody, true);
+                    $provider_time = $body['alipay_trade_refund_response']['gmt_refund_pay'] ?? '';
+                    if ('' !== $provider_time) { $order_time = self::refund_time($provider_time); }
                     $table_html = "<table>";
                     $table_html .= "<tr><td>订单号：</td><td>" . esc_html($order_id) . "</td></tr>";
                     $table_html .= "<tr><td>时间：</td><td>" . esc_html($order_time) . "</td></tr>";
@@ -284,7 +337,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                     Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '支付宝');
                 }
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
-                error_log('Npcink_Pay_Refund Alipay refund failed: ' . $e->getMessage());
+                error_log('Npcink_Pay_Refund Alipay refund failed: ' . get_class($e));
 				if ($refund_uncertain_saved) {
 					wp_send_json_error(array(
 						'message' => __('支付宝退款调用中断，结果暂时无法确认。订单已锁定；再次操作时会先查询原退款请求号，请勿重复退款。', 'npcink-pay-refund'),
@@ -320,6 +373,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 
 		public static function submit_refund($order_id, $order_amount, $reason, $request_id)
 		{
+			if (!Npcink_Pay_Refund_Admin_Public::lock_operation($order_id, '支付宝')) {
+				throw new RuntimeException('Refund operation mutex lost before dispatch.');
+			}
 			$response = Factory::util()->generic()->execute(
 				'alipay.trade.refund',
 				array(),
@@ -387,7 +443,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 				$response_order = isset($result->outTradeNo) ? sanitize_text_field($result->outTradeNo) : '';
 				$response_request = isset($result->outRequestNo) ? sanitize_text_field($result->outRequestNo) : '';
 				$amount_matches = self::refund_amounts_match($result->refundAmount, $expected_amount);
-				if (sanitize_text_field($order_id) === $response_order && sanitize_text_field($request_id) === $response_request && $amount_matches) {
+				if (sanitize_text_field($order_id) === $response_order && sanitize_text_field($request_id) === $response_request && $amount_matches && isset($result->refundStatus) && 'REFUND_SUCCESS' === $result->refundStatus) {
 					return 'confirmed';
 				}
 
@@ -396,7 +452,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 
 			// Alipay documents code 10000 with no refund data as safe to retry,
 			// provided the original out_request_no and parameters are reused.
-			if ('10000' === $code && !$has_refund_data) {
+			if ('10000' === $code && !$has_refund_data && empty($result->refundStatus)) {
 				return 'not_found';
 			}
 
@@ -431,6 +487,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 					return array('state' => 'unknown');
 				}
 
+				$uncertain['n_time'] = self::refund_time(isset($result->gmtRefundPay) ? $result->gmtRefundPay : '', isset($uncertain['started_at']) ? (int) $uncertain['started_at'] : null);
 				$recorded = Npcink_Pay_Refund_Admin_Public::add_data(
 					$uncertain['n_time'],
 					$uncertain['n_user'],
@@ -447,7 +504,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 				return array('state' => 'confirmed', 'context' => $uncertain);
 			} catch (Throwable $e) {
 				// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
-				error_log('Npcink_Pay_Refund Alipay uncertain refund query failed: ' . $e->getMessage());
+				error_log('Npcink_Pay_Refund Alipay uncertain refund query failed: ' . get_class($e));
 				return array('state' => 'unknown');
 			}
 		}
@@ -546,11 +603,11 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                 return true;
             } catch (Exception $e) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep SDK diagnostics out of the AJAX response.
-                error_log('Npcink_Pay_Refund Alipay SDK init failed: ' . $e->getMessage());
+                error_log('Npcink_Pay_Refund Alipay SDK init failed: ' . get_class($e));
                 return false;
             } catch (Throwable $e) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep SDK diagnostics out of the AJAX response.
-                error_log('Npcink_Pay_Refund Alipay SDK init failed: ' . $e->getMessage());
+                error_log('Npcink_Pay_Refund Alipay SDK init failed: ' . get_class($e));
                 return false;
             }
         }

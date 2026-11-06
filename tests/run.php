@@ -109,10 +109,10 @@ npcink_test_case('WeChat full refund uses original total for coupon orders', fun
 });
 
 npcink_test_case('Alipay configuration leaves notify URL unset', function () {
-    Npcink_Pay_Refund_Admin::$configs['zfb'] = array(
+    $GLOBALS['npcink_test_options']['npcink_pay_refund_config']['zfb'] = array(
         'appid' => 'test-app-id',
-        'private_key' => 'test-private-key',
-        'public_key' => 'test-public-key',
+        'private_key' => npcink_test_keys()['private'],
+        'public_key' => npcink_test_keys()['public'],
     );
 
     $options = Npcink_Pay_Refund_Admin_Zfb::getOptions();
@@ -159,6 +159,7 @@ npcink_test_case('Alipay refund retries use one explicit request id and query fi
 		'outTradeNo' => $order,
 		'outRequestNo' => $request_id,
 		'refundAmount' => '7.00',
+        'refundStatus' => 'REFUND_SUCCESS',
 	);
 	npcink_test_assert_same('confirmed', Npcink_Pay_Refund_Admin_Zfb::classify_refund_query_response($confirmed, $order, $request_id, '7.00'), 'Matching refund query data must confirm the refund');
 
@@ -204,6 +205,7 @@ npcink_test_case('Alipay uncertain resolver queries once and preserves or clears
 		'outTradeNo' => $order,
 		'outRequestNo' => $request_id,
 		'refundAmount' => '7.00',
+        'refundStatus' => 'REFUND_SUCCESS',
 	);
 	$resolution = Npcink_Test_Alipay_Refund::resolve_uncertain_refund($order);
 	npcink_test_assert_same('confirmed', $resolution['state'], 'Matching provider query must complete local reconciliation');
@@ -293,7 +295,7 @@ npcink_test_case('audit write failure preserves lock and reconciliation state', 
     $lock_name = Npcink_Pay_Refund_Admin_Public::refund_lock_name($order, $type);
     $reconciliation_name = Npcink_Pay_Refund_Admin_Public::refund_reconciliation_name($order, $type);
 	$uncertain_name = Npcink_Pay_Refund_Admin_Public::refund_uncertain_name($order, $type);
-    $GLOBALS['npcink_test_options'][$lock_name] = time();
+    Npcink_Pay_Refund_Admin_Public::claim_refund($order, $type);
 	Npcink_Pay_Refund_Admin_Public::save_refund_uncertain(array(
 		'n_time' => '2026-07-18 20:00',
 		'n_user' => 'Operator',
@@ -328,7 +330,9 @@ npcink_test_case('WeChat success keeps pending state until audit write succeeds'
     $order = 'coupon-order-2';
     $data = (object) array(
         'status' => 'SUCCESS',
-        'amount' => (object) array('payer_refund' => 700),
+        'amount' => (object) array('total' => 1000, 'refund' => 1000, 'payer_refund' => 700, 'currency' => 'CNY'),
+        'out_trade_no' => $order,
+        'out_refund_no' => Npcink_Pay_Refund_Admin_Wx::refund_request_id($order),
     );
     $fallback = array(
         'user' => 'Operator',
@@ -337,6 +341,7 @@ npcink_test_case('WeChat success keeps pending state until audit write succeeds'
         'time' => '2026-07-18 20:10',
     );
 
+    Npcink_Pay_Refund_Admin_Wx::save_pending_refund($order, 'Operator', 7.0, 'Coupon refund', '2026-07-18 20:10', 1000);
     $recorded = Npcink_Pay_Refund_Admin_Wx::record_successful_refund($order, $data, $fallback);
     npcink_test_assert_same(false, $recorded, 'WeChat audit failure must propagate');
     $pending_name = Npcink_Pay_Refund_Admin_Wx::pending_refund_option_name($order);
@@ -347,6 +352,9 @@ npcink_test_case('WeChat success keeps pending state until audit write succeeds'
     npcink_test_assert_same(true, $retried, 'Pending audit record must be retryable');
     npcink_test_assert_true(!isset($GLOBALS['npcink_test_options'][$pending_name]), 'Pending state must clear after successful recording');
 });
+
+require __DIR__ . '/regressions.php';
+require __DIR__ . '/sdk-transport.php';
 
 echo "{$passed} test(s) passed, {$failed} failed.\n";
 exit($failed > 0 ? 1 : 0);

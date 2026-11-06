@@ -92,15 +92,21 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                             <tr>
                                 <th scope="row"><label for="npcink-pay-refund-zfb-private-key"><?php echo esc_html__('应用私钥', 'npcink-pay-refund'); ?></label></th>
                                 <td>
-                                    <textarea class="large-text code" id="npcink-pay-refund-zfb-private-key" name="npcink_pay_refund_config[zfb][private_key]" rows="7" placeholder="<?php echo esc_attr(self::secret_placeholder($secrets, array('zfb', 'private_key'))); ?>"></textarea>
-                                    <p class="description"><?php echo esc_html__('由支付宝开放平台密钥工具生成并由商户自行保存，请粘贴完整应用私钥；留空表示保留现有应用私钥。', 'npcink-pay-refund'); ?></p>
+                                    <details class="npcink-pay-refund-disclosure npcink-pay-refund-key-editor" <?php if ('' === self::value($secrets, array('zfb', 'private_key'), '')) : ?>open<?php endif; ?>>
+                                        <summary><?php echo esc_html('' === self::value($secrets, array('zfb', 'private_key'), '') ? __('未配置 · 填写密钥', 'npcink-pay-refund') : __('已配置 · 更换密钥', 'npcink-pay-refund')); ?></summary>
+                                        <textarea class="large-text code" id="npcink-pay-refund-zfb-private-key" name="npcink_pay_refund_config[zfb][private_key]" rows="7" placeholder="<?php echo esc_attr(self::secret_placeholder($secrets, array('zfb', 'private_key'))); ?>"></textarea>
+                                        <p class="description"><?php echo esc_html__('由支付宝开放平台密钥工具生成并由商户自行保存，请粘贴完整应用私钥；留空表示保留现有应用私钥。', 'npcink-pay-refund'); ?></p>
+                                    </details>
                                 </td>
                             </tr>
                             <tr>
                                 <th scope="row"><label for="npcink-pay-refund-zfb-public-key"><?php echo esc_html__('支付宝公钥', 'npcink-pay-refund'); ?></label></th>
                                 <td>
-                                    <textarea class="large-text code" id="npcink-pay-refund-zfb-public-key" name="npcink_pay_refund_config[zfb][public_key]" rows="7" placeholder="<?php echo esc_attr(self::secret_placeholder($secrets, array('zfb', 'public_key'))); ?>"></textarea>
-                                    <p class="description"><?php echo esc_html__('在支付宝开放平台对应应用的接口加签方式或密钥配置中查看支付宝公钥；注意不要填写本地生成的应用公钥。留空表示保留现有支付宝公钥。', 'npcink-pay-refund'); ?></p>
+                                    <details class="npcink-pay-refund-disclosure npcink-pay-refund-key-editor" <?php if ('' === self::value($secrets, array('zfb', 'public_key'), '')) : ?>open<?php endif; ?>>
+                                        <summary><?php echo esc_html('' === self::value($secrets, array('zfb', 'public_key'), '') ? __('未配置 · 填写密钥', 'npcink-pay-refund') : __('已配置 · 更换密钥', 'npcink-pay-refund')); ?></summary>
+                                        <textarea class="large-text code" id="npcink-pay-refund-zfb-public-key" name="npcink_pay_refund_config[zfb][public_key]" rows="7" placeholder="<?php echo esc_attr(self::secret_placeholder($secrets, array('zfb', 'public_key'))); ?>"></textarea>
+                                        <p class="description"><?php echo esc_html__('在支付宝开放平台对应应用的接口加签方式或密钥配置中查看支付宝公钥；注意不要填写本地生成的应用公钥。留空表示保留现有支付宝公钥。', 'npcink-pay-refund'); ?></p>
+                                    </details>
                                 </td>
                             </tr>
                         </table>
@@ -127,8 +133,11 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                             <tr>
                                 <th scope="row"><label for="npcink-pay-refund-wx-cert-key"><?php echo esc_html__('商户私钥', 'npcink-pay-refund'); ?></label></th>
                                 <td>
-                                    <textarea class="large-text code" id="npcink-pay-refund-wx-cert-key" name="npcink_pay_refund_config[wx][cert_key]" rows="7" placeholder="<?php echo esc_attr(self::secret_placeholder($secrets, array('wx', 'cert_key'))); ?>"></textarea>
-                                    <p class="description"><?php echo esc_html__('填写申请商户 API 证书时生成的 apiclient_key.pem 私钥内容；可在微信支付商户平台 → 账户中心 → API 安全 中管理商户 API 证书。（先生成了私钥证书，才有证书序列号，是对应的）。留空表示保留现有商户私钥。', 'npcink-pay-refund'); ?></p>
+                                    <details class="npcink-pay-refund-disclosure npcink-pay-refund-key-editor" <?php if ('' === self::value($secrets, array('wx', 'cert_key'), '')) : ?>open<?php endif; ?>>
+                                        <summary><?php echo esc_html('' === self::value($secrets, array('wx', 'cert_key'), '') ? __('未配置 · 填写密钥', 'npcink-pay-refund') : __('已配置 · 更换密钥', 'npcink-pay-refund')); ?></summary>
+                                        <textarea class="large-text code" id="npcink-pay-refund-wx-cert-key" name="npcink_pay_refund_config[wx][cert_key]" rows="7" placeholder="<?php echo esc_attr(self::secret_placeholder($secrets, array('wx', 'cert_key'))); ?>"></textarea>
+                                        <p class="description"><?php echo esc_html__('填写申请商户 API 证书时生成的 apiclient_key.pem 私钥内容；可在微信支付商户平台 → 账户中心 → API 安全 中管理商户 API 证书。（先生成了私钥证书，才有证书序列号，是对应的）。留空表示保留现有商户私钥。', 'npcink-pay-refund'); ?></p>
+                                    </details>
                                 </td>
                             </tr>
                             <tr>
@@ -141,8 +150,11 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                             <tr>
                                 <th scope="row"><label for="npcink-pay-refund-wx-platform-public-key"><?php echo esc_html__('微信支付公钥 / 平台证书', 'npcink-pay-refund'); ?></label></th>
                                 <td>
-                                    <textarea class="large-text code" id="npcink-pay-refund-wx-platform-public-key" name="npcink_pay_refund_config[wx][platform_public_key]" rows="7" placeholder="<?php echo esc_attr(self::secret_placeholder($secrets, array('wx', 'platform_public_key'))); ?>"></textarea>
-                                    <p class="description"><?php echo esc_html__('使用微信支付公钥模式时填写微信支付公钥 PEM；使用平台证书模式时填写平台证书 PEM。可在微信支付商户平台 → 账户中心 → API 安全 → 微信支付公钥 查看或下载；留空表示保留现有值。', 'npcink-pay-refund'); ?></p>
+                                    <details class="npcink-pay-refund-disclosure npcink-pay-refund-key-editor" <?php if ('' === self::value($secrets, array('wx', 'platform_public_key'), '')) : ?>open<?php endif; ?>>
+                                        <summary><?php echo esc_html('' === self::value($secrets, array('wx', 'platform_public_key'), '') ? __('未配置 · 填写密钥', 'npcink-pay-refund') : __('已配置 · 更换密钥', 'npcink-pay-refund')); ?></summary>
+                                        <textarea class="large-text code" id="npcink-pay-refund-wx-platform-public-key" name="npcink_pay_refund_config[wx][platform_public_key]" rows="7" placeholder="<?php echo esc_attr(self::secret_placeholder($secrets, array('wx', 'platform_public_key'))); ?>"></textarea>
+                                        <p class="description"><?php echo esc_html__('使用微信支付公钥模式时填写微信支付公钥 PEM；使用平台证书模式时填写平台证书 PEM。可在微信支付商户平台 → 账户中心 → API 安全 → 微信支付公钥 查看或下载；留空表示保留现有值。', 'npcink-pay-refund'); ?></p>
+                                    </details>
                                 </td>
                             </tr>
                         </table>
@@ -159,7 +171,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                             <?php self::render_user_picker($selected_refund_users); ?>
                         </div>
 
-                        <div class="npcink-pay-refund-settings-section">
+                        <details class="npcink-pay-refund-settings-section npcink-pay-refund-disclosure">
+                            <summary><?php echo esc_html__('旧版链接记录', 'npcink-pay-refund'); ?></summary>
                             <div class="npcink-pay-refund-settings-section-header npcink-pay-refund-settings-section-header-inline">
                                 <div>
                                     <h3><?php echo esc_html__('旧版页面链接（仅作记录）', 'npcink-pay-refund'); ?></h3>
@@ -184,15 +197,13 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                             <script type="text/html" id="npcink-pay-refund-link-row-template">
                                 <?php self::render_link_row('__INDEX__', array('title' => '', 'url' => '')); ?>
                             </script>
-                        </div>
+                        </details>
                     </section>
 
                     <section id="npcink-pay-refund-tab-data" class="npcink-pay-refund-tab-panel">
                         <h2><?php echo esc_html__('数据与卸载', 'npcink-pay-refund'); ?></h2>
-                        <div class="npcink-pay-refund-settings-section">
-                            <div class="npcink-pay-refund-settings-section-header">
-                                <h3><?php echo esc_html__('运行说明', 'npcink-pay-refund'); ?></h3>
-                            </div>
+                        <details class="npcink-pay-refund-settings-section npcink-pay-refund-disclosure">
+                            <summary><?php echo esc_html__('运行说明', 'npcink-pay-refund'); ?></summary>
                             <table class="widefat striped npcink-pay-refund-info-table">
                                 <tbody>
                                     <tr>
@@ -213,7 +224,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
+                        </details>
 
                         <div class="npcink-pay-refund-settings-section">
                             <div class="npcink-pay-refund-settings-section-header">
@@ -243,26 +254,30 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                             </table>
                         </div>
 
-                        <table class="form-table" role="presentation">
-                            <tr>
-                                <th scope="row"><?php echo esc_html__('删除数据库表', 'npcink-pay-refund'); ?></th>
-                                <td>
-                                    <label>
-                                        <input name="npcink_pay_refund_config[config][mysql]" type="checkbox" value="1" <?php checked((int) self::value($config, array('config', 'mysql'), 1), 1); ?>>
-                                        <?php echo esc_html__('卸载插件时删除退款记录表。', 'npcink-pay-refund'); ?>
-                                    </label>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row"><?php echo esc_html__('清空设置选项', 'npcink-pay-refund'); ?></th>
-                                <td>
-                                    <label>
-                                        <input name="npcink_pay_refund_config[config][config]" type="checkbox" value="1" <?php checked((int) self::value($config, array('config', 'config'), 1), 1); ?>>
-                                        <?php echo esc_html__('卸载插件时删除退款配置和密钥配置。', 'npcink-pay-refund'); ?>
-                                    </label>
-                                </td>
-                            </tr>
-                        </table>
+                        <details class="npcink-pay-refund-settings-section npcink-pay-refund-disclosure">
+                            <summary><?php echo esc_html__('卸载时的数据处理', 'npcink-pay-refund'); ?></summary>
+                            <p class="description"><?php echo esc_html__('以下选项仅在删除插件时生效；停用或覆盖升级不会执行清理。', 'npcink-pay-refund'); ?></p>
+                            <table class="form-table" role="presentation">
+                                <tr>
+                                    <th scope="row"><?php echo esc_html__('删除数据库表', 'npcink-pay-refund'); ?></th>
+                                    <td>
+                                        <label>
+                                            <input name="npcink_pay_refund_config[config][mysql]" type="checkbox" value="1" <?php checked((int) self::value($config, array('config', 'mysql'), 1), 1); ?>>
+                                            <?php echo esc_html__('卸载插件时删除退款记录表。', 'npcink-pay-refund'); ?>
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th scope="row"><?php echo esc_html__('清空设置选项', 'npcink-pay-refund'); ?></th>
+                                    <td>
+                                        <label>
+                                            <input name="npcink_pay_refund_config[config][config]" type="checkbox" value="1" <?php checked((int) self::value($config, array('config', 'config'), 1), 1); ?>>
+                                            <?php echo esc_html__('卸载插件时删除退款配置和密钥配置。', 'npcink-pay-refund'); ?>
+                                        </label>
+                                    </td>
+                                </tr>
+                            </table>
+                        </details>
                     </section>
 
                     <?php submit_button(); ?>

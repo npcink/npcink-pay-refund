@@ -10,10 +10,13 @@ if (!defined('ABSPATH')) {
 	exit(1);
 }
 
+if (!is_file(ABSPATH . '.npcink-refund-test-site')) {
+	throw new RuntimeException('Admin smoke requires an isolated .npcink-refund-test-site.');
+}
+
 function npcink_pay_refund_smoke_fail($message)
 {
-	fwrite(STDERR, 'Smoke check failed: ' . $message . PHP_EOL);
-	exit(1);
+	throw new RuntimeException('Smoke check failed: ' . $message);
 }
 
 function npcink_pay_refund_smoke_assert($condition, $message)
@@ -36,11 +39,7 @@ function npcink_pay_refund_smoke_first_user_with_cap($capability)
 
 function npcink_pay_refund_smoke_user($login, $role)
 {
-	$user = get_user_by('login', $login);
-	if ($user) {
-		$user->set_role($role);
-		return array((int) $user->ID, false);
-	}
+	$login .= '_' . bin2hex(random_bytes(6));
 
 	$user_id = wp_insert_user(array(
 		'user_login' => $login,
@@ -60,6 +59,8 @@ function npcink_pay_refund_smoke_user($login, $role)
 $original_config = get_option('npcink_pay_refund_config', null);
 $original_secrets = get_option('npcink_pay_refund_secrets', null);
 $created_users = array();
+$original_user_id = get_current_user_id();
+$original_buffer_level = ob_get_level();
 
 try {
 	$plugin_dir_override = getenv('NPCINK_PAY_REFUND_SMOKE_PLUGIN_DIR');
@@ -95,10 +96,10 @@ try {
 	npcink_pay_refund_smoke_assert($admin_id > 0, 'no administrator user found');
 
 	list($author_id, $author_created) = npcink_pay_refund_smoke_user('npcink_refund_smoke_author', 'author');
-	list($subscriber_id, $subscriber_created) = npcink_pay_refund_smoke_user('npcink_refund_smoke_subscriber', 'subscriber');
 	if ($author_created) {
 		$created_users[] = $author_id;
 	}
+	list($subscriber_id, $subscriber_created) = npcink_pay_refund_smoke_user('npcink_refund_smoke_subscriber', 'subscriber');
 	if ($subscriber_created) {
 		$created_users[] = $subscriber_id;
 	}
@@ -127,6 +128,7 @@ try {
 		),
 	), false);
 	delete_option('npcink_pay_refund_secrets');
+	if ('after-config' === getenv('NPCINK_PAY_REFUND_SMOKE_FAIL')) { npcink_pay_refund_smoke_fail('injected failure'); }
 
 	wp_set_current_user($admin_id);
 
@@ -181,7 +183,10 @@ try {
 	Npcink_Pay_Refund_Admin_Wx::$merchant_config = array();
 	npcink_pay_refund_smoke_assert(!Npcink_Pay_Refund_Admin_Wx::ensure_client_ready(), 'empty WeChat config should not initialize client');
 } finally {
-	wp_set_current_user(0);
+	while (ob_get_level() > $original_buffer_level) { ob_end_clean(); }
+	wp_set_current_user($original_user_id);
+	remove_filter('sanitize_option_npcink_pay_refund_config', array('Npcink_Pay_Refund_Admin_Config', 'sanitize_config'));
+	remove_filter('sanitize_option_npcink_pay_refund_secrets', array('Npcink_Pay_Refund_Admin_Config', 'save_secrets'));
 
 	if (null === $original_config) {
 		delete_option('npcink_pay_refund_config');
