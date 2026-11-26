@@ -355,34 +355,24 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
                     // echo "failed,resp code = " . $e->getResponse()->getStatusCode() . " return body = " . $e->getResponse()->getBody() . "\n";
                     //根据当前订单状态进行对应操作
 
-                    //准备订单成功数据
-                    $table_html = "<table>";
-                    $table_html .= "<tr><td>订单号：</td><td>" . esc_html($order) . "</td></tr>";
-                    $table_html .= "<tr><td>时间：</td><td>" .  esc_html($time)  . "</td></tr>";
-                    $table_html .= "<tr><td>订单总额：</td><td>" . esc_html($order_amount / 100) . "元</td></tr>";
-                    if ($payer_amount !== $order_amount) {
-                        $table_html .= "<tr><td>用户实付：</td><td>" . esc_html($payer_amount / 100) . "元</td></tr>";
-                    }
-                    $table_html .= "<tr><td>状态：</td><td><span class='green'>支付成功</span></td></tr>";
-                    $table_html .= "</table>";
-
-
-                    switch ($data->trade_state) {
-                        case "SUCCESS": //支付成功
-                            $response_html = $table_html;
-                            break;
-                        case "REFUND": //转入退款
-                            //进行退款查询
-                            $response_html = self::query_refunds($order);
-                            break;
-                        case "NOTPAY":
-                            $response_html = esc_html__('未支付', 'npcink-pay-refund');
-                            break;
-                        case "CLOSED":
-                            $response_html = esc_html__('已关闭', 'npcink-pay-refund');
-                            break;
-                        default:
-                            $response_html = esc_html__('若您输入的是微信订单号，且重复看到这句话，请联系管理员', 'npcink-pay-refund');
+                    if ('REFUND' === $data->trade_state) {
+                        $response_html = self::query_refunds($order);
+                    } else {
+                        $details = array(__('商户订单号', 'npcink-pay-refund') => $order);
+                        if ('SUCCESS' === $data->trade_state) {
+                            $details[__('支付时间', 'npcink-pay-refund')] = $time;
+                            $details[__('订单总额', 'npcink-pay-refund')] = Npcink_Pay_Refund_Admin_Public::display_amount($order_amount / 100);
+                            if ($payer_amount !== $order_amount) {
+                                $details[__('用户实付', 'npcink-pay-refund')] = Npcink_Pay_Refund_Admin_Public::display_amount($payer_amount / 100);
+                            }
+                        }
+                        [$tone, $title] = match ($data->trade_state) {
+                            'SUCCESS' => array('success', __('支付成功', 'npcink-pay-refund')),
+                            'NOTPAY' => array('neutral', __('未支付', 'npcink-pay-refund')),
+                            'CLOSED' => array('closed', __('交易已关闭', 'npcink-pay-refund')),
+                            default => array('neutral', __('状态未确认，请联系管理员', 'npcink-pay-refund')),
+                        };
+                        $response_html = Npcink_Pay_Refund_Admin_Public::render_result_card($tone, __('微信订单查询', 'npcink-pay-refund'), $title, $details, $window_error);
                     }
 
 
@@ -391,11 +381,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 						if ($pending_not_found) {
 							$response_html .= '<p class="notice notice-warning inline npcink-pay-refund-refund-notice"><strong>' . esc_html__('上次退款单尚未在微信查询到；再次提交时将复用原商户退款单号和原参数。', 'npcink-pay-refund') . '</strong></p>';
 						}
-                        $response_html .= '<p>退款原因：<input type="text" id="npcink-pay-refund-wx-reason" placeholder="请输入退款原因"></p>';
-                        $response_html .= '<p>点击退款按钮后请稍等进行退款处理</p>';
+                        $response_html .= '<p><label for="npcink-pay-refund-wx-reason">' . esc_html__('退款原因：', 'npcink-pay-refund') . '</label><input type="text" id="npcink-pay-refund-wx-reason"></p>';
                         $response_html .= "<button id='wx-order-btn' class='button button-primary refund ' data-order-id='" . esc_attr($order) . "' data-order-amount='" . esc_attr($order_amount) . "'>微信全额退款</button>";
-                    } elseif ('' !== $window_error) {
-                        $response_html .= '<h3>' . esc_html($window_error) . '</h3>';
                     }
             Npcink_Pay_Refund_Admin_Audit::payment_success(array('html' => $response_html));
         }
@@ -910,37 +897,18 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
         public static function render_refund_query_html($data)
         {
             $refund_time = isset($data->success_time) ? self::handle_time($data->success_time) : '';
-            $refund_amount = isset($data->amount->payer_refund) ? $data->amount->payer_refund / 100 : 0;
+            $refund_amount = isset($data->amount->payer_refund) ? $data->amount->payer_refund / 100 : null;
             $status = isset($data->status) ? $data->status : '';
             $status_view = self::refund_status_view($status);
             $refund_id = isset($data->out_refund_no) ? $data->out_refund_no : '';
             $order_id = isset($data->out_trade_no) ? $data->out_trade_no : '';
 
-            $html = '<div class="npcink-pay-refund-result-card npcink-pay-refund-result-' . esc_attr($status_view['class']) . '">';
-            $html .= '<div class="npcink-pay-refund-result-header">';
-            $html .= '<div>';
-            $html .= '<span class="npcink-pay-refund-result-badge">' . esc_html($status_view['label']) . '</span>';
-            $html .= '<h3>' . esc_html($status_view['title']) . '</h3>';
-            $html .= '<p>' . esc_html($status_view['description']) . '</p>';
-            $html .= '</div>';
-            $html .= '</div>';
-            $html .= '<dl class="npcink-pay-refund-result-details">';
-            $html .= self::render_refund_detail(__('商户订单号', 'npcink-pay-refund'), $order_id);
-            $html .= self::render_refund_detail(__('商户退款单号', 'npcink-pay-refund'), $refund_id);
-            $html .= self::render_refund_detail(__('退款金额', 'npcink-pay-refund'), '' !== (string) $refund_amount ? $refund_amount . __('元', 'npcink-pay-refund') : '');
-            $html .= self::render_refund_detail(__('退款时间', 'npcink-pay-refund'), $refund_time);
-            $html .= self::render_refund_detail(__('通道状态', 'npcink-pay-refund'), $status_view['title']);
-            $html .= '</dl>';
-            $html .= '</div>';
-
-            return $html;
-        }
-
-        public static function render_refund_detail($label, $value)
-        {
-            $display_value = '' === (string) $value ? __('暂无', 'npcink-pay-refund') : (string) $value;
-
-            return '<div class="npcink-pay-refund-result-detail"><dt>' . esc_html($label) . '</dt><dd>' . esc_html($display_value) . '</dd></div>';
+            return Npcink_Pay_Refund_Admin_Public::render_result_card($status_view['class'], $status_view['label'], $status_view['title'], array(
+                __('商户订单号', 'npcink-pay-refund') => $order_id,
+                __('商户退款单号', 'npcink-pay-refund') => $refund_id,
+                __('退款金额', 'npcink-pay-refund') => Npcink_Pay_Refund_Admin_Public::display_amount($refund_amount),
+                __('退款时间', 'npcink-pay-refund') => $refund_time,
+            ), $status_view['description']);
         }
 
 		public static function render_pending_refund_html($order_id, $pending)

@@ -87,8 +87,9 @@ npcink_test_case('order numbers are passed to providers without legacy suffix re
 	$root = dirname(__DIR__);
 	$script = file_get_contents($root . '/admin/js/npcink-pay-refund-admin.js');
 	npcink_test_assert_true(false === strpos($script, 'function trimHyphen'), 'Provider order inputs must not use the legacy suffix normalizer');
-	npcink_test_assert_true(false !== strpos($script, 'param: $.trim($("#npcink-pay-refund-zfb-input").val())'), 'Alipay query must pass the entered order number');
-	npcink_test_assert_true(false !== strpos($script, 'order_id: $.trim($("#npcink-pay-refund-wx-input").val())'), 'WeChat query must pass the entered order number');
+	npcink_test_assert_true(false !== strpos($script, 'wireOrderQuery("zfb", "param",'), 'Alipay uses the param field');
+	npcink_test_assert_true(false !== strpos($script, 'wireOrderQuery("wx", "order_id",'), 'WeChat uses the order_id field');
+	npcink_test_assert_true(false !== strpos($script, 'var order = $.trim(channel.$input.val());') && false !== strpos($script, 'data[param] = order;'), 'The query sends the trimmed input without rewriting the order number');
 });
 
 npcink_test_case('WeChat full refund uses original total for coupon orders', function () {

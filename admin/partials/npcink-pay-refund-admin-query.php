@@ -66,7 +66,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
             <div class="wrap npc_style">
 
                 <!--标题-->
-                <h2><?php echo esc_html(get_admin_page_title()); ?></h2>
+                <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
                 <ul class="ul_meat">
                     <li>退款前请确认商户账户有足够可用余额；不足时按支付平台提示处理</li>
                     <li>
@@ -79,37 +79,40 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                 </ul>
 
                 <h2><?php echo self::svg_icon($wx_icon); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- self::svg_icon() returns wp_kses()-sanitized SVG. ?>微信订单查询</h2>
-                <input type="text" id="npcink-pay-refund-wx-input" placeholder="请输入微信商户订单号（out_trade_no）">
-                <button id="npcink-pay-refund-wx-button" class="button button-primary">查询</button>
-                <div class="table_style">
-                    <div id="npcink-pay-refund-wx-data"></div>
-                </div>
+                <form id="npcink-pay-refund-wx-query" class="npcink-pay-refund-order-query">
+                    <label for="npcink-pay-refund-wx-input"><?php echo esc_html__('微信商户订单号（out_trade_no）', 'npcink-pay-refund'); ?></label>
+                    <input type="text" id="npcink-pay-refund-wx-input">
+                    <button type="submit" id="npcink-pay-refund-wx-button" class="button button-primary"><?php echo esc_html__('查询', 'npcink-pay-refund'); ?></button>
+                    <span id="npcink-pay-refund-wx-status" class="screen-reader-text" role="status"></span>
+                </form>
+                <div id="npcink-pay-refund-wx-data" aria-live="polite"></div>
 
                 <h2><?php echo self::svg_icon($zfb_icon); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- self::svg_icon() returns wp_kses()-sanitized SVG. ?>支付宝订单查询</h2>
-                <input type="text" id="npcink-pay-refund-zfb-input" placeholder="请输入支付宝商户订单号（out_trade_no）">
-                <button id="npcink-pay-refund-zfb-button" class="button button-primary">查询</button>
-                <div class="table_style">
-                    <div id="npcink-pay-refund-zfb-data"></div>
-
-                </div>
+                <form id="npcink-pay-refund-zfb-query" class="npcink-pay-refund-order-query">
+                    <label for="npcink-pay-refund-zfb-input"><?php echo esc_html__('支付宝商户订单号（out_trade_no）', 'npcink-pay-refund'); ?></label>
+                    <input type="text" id="npcink-pay-refund-zfb-input">
+                    <button type="submit" id="npcink-pay-refund-zfb-button" class="button button-primary"><?php echo esc_html__('查询', 'npcink-pay-refund'); ?></button>
+                    <span id="npcink-pay-refund-zfb-status" class="screen-reader-text" role="status"></span>
+                </form>
+                <div id="npcink-pay-refund-zfb-data" aria-live="polite"></div>
                 <details id="npcink-pay-refund-operational-state" class="npcink-pay-refund-disclosure npcink-pay-refund-operational-state" hidden>
                     <summary id="npcink-pay-refund-operational-summary"><?php echo esc_html__('退款待核对 · 查看详情', 'npcink-pay-refund'); ?></summary>
                     <p class="description"><?php echo esc_html__('以下订单需要先查询核对；系统不会因为状态不明而自动再次提交退款。', 'npcink-pay-refund'); ?></p>
-                    <table id="npcink-pay-refund-operational-records" class="wp-list-table widefat fixed striped">
-                        <thead><tr>
-                            <th><?php echo esc_html__('状态', 'npcink-pay-refund'); ?></th>
-                            <th><?php echo esc_html__('渠道', 'npcink-pay-refund'); ?></th>
-                            <th><?php echo esc_html__('订单号', 'npcink-pay-refund'); ?></th>
-                            <th><?php echo esc_html__('退款请求号', 'npcink-pay-refund'); ?></th>
-                            <th><?php echo esc_html__('金额', 'npcink-pay-refund'); ?></th>
-                            <th><?php echo esc_html__('操作', 'npcink-pay-refund'); ?></th>
+                    <table id="npcink-pay-refund-operational-records" class="wp-list-table widefat fixed striped npcink-pay-refund-responsive-table" role="table" aria-labelledby="npcink-pay-refund-operational-summary">
+                        <thead role="rowgroup"><tr role="row">
+                            <th scope="col" role="columnheader"><?php echo esc_html__('订单号', 'npcink-pay-refund'); ?></th>
+                            <th scope="col" role="columnheader" class="npcink-pay-refund-amount"><?php echo esc_html__('金额', 'npcink-pay-refund'); ?></th>
+                            <th scope="col" role="columnheader"><?php echo esc_html__('渠道', 'npcink-pay-refund'); ?></th>
+                            <th scope="col" role="columnheader"><?php echo esc_html__('状态', 'npcink-pay-refund'); ?></th>
+                            <th scope="col" role="columnheader"><?php echo esc_html__('退款请求号', 'npcink-pay-refund'); ?></th>
+                            <th scope="col" role="columnheader"><?php echo esc_html__('操作', 'npcink-pay-refund'); ?></th>
                         </tr></thead>
-                        <tbody></tbody>
+                        <tbody role="rowgroup"></tbody>
                     </table>
                     <p><button type="button" class="button" id="npcink-pay-refund-operational-reset">刷新首批</button> <button type="button" class="button" id="npcink-pay-refund-operational-next" hidden>下一批</button></p>
                 </details>
                 <!--展示数据-->
-                <h2>操作记录</h2>
+                <h2 id="npcink-pay-refund-record-heading"><?php echo esc_html__('操作记录', 'npcink-pay-refund'); ?></h2>
                 <div class="npcink-pay-refund-record-toolbar">
                     <label for="npcink-pay-refund-record-keyword" class="screen-reader-text"><?php echo esc_html__('搜索退款记录', 'npcink-pay-refund'); ?></label>
                     <input type="search" id="npcink-pay-refund-record-keyword" class="regular-text" placeholder="<?php echo esc_attr__('搜索订单号、操作员或原因', 'npcink-pay-refund'); ?>">
@@ -133,22 +136,24 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                             <button type="button" class="button" id="npcink-pay-refund-record-reset"><?php echo esc_html__('重置', 'npcink-pay-refund'); ?></button>
                         </div>
                     </details>
-                    <span class="description" id="npcink-pay-refund-record-summary"></span>
                 </div>
-                <p id="npcink-pay-refund-record-pagination" hidden><button type="button" class="button" id="npcink-pay-refund-record-prev">上一页</button> <button type="button" class="button" id="npcink-pay-refund-record-next">下一页</button></p>
-                <table id="npcink-pay-refund-records" class="wp-list-table widefat fixed striped">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>金额</th>
-                            <th>时间</th>
-                            <th>订单号</th>
-                            <th>操作员</th>
-                            <th>类型</th>
-                            <th>原因</th>
+                <div class="npcink-pay-refund-record-page-controls">
+                    <span class="description" id="npcink-pay-refund-record-summary" role="status"></span>
+                    <span id="npcink-pay-refund-record-pagination" hidden><button type="button" class="button" id="npcink-pay-refund-record-prev"><?php echo esc_html__('上一页', 'npcink-pay-refund'); ?></button> <button type="button" class="button" id="npcink-pay-refund-record-next"><?php echo esc_html__('下一页', 'npcink-pay-refund'); ?></button></span>
+                </div>
+                <table id="npcink-pay-refund-records" class="wp-list-table widefat fixed striped npcink-pay-refund-responsive-table" role="table" aria-labelledby="npcink-pay-refund-record-heading">
+                    <thead role="rowgroup">
+                        <tr role="row">
+                            <th scope="col" role="columnheader"><?php echo esc_html__('订单号', 'npcink-pay-refund'); ?></th>
+                            <th scope="col" role="columnheader" class="npcink-pay-refund-amount"><?php echo esc_html__('金额', 'npcink-pay-refund'); ?></th>
+                            <th scope="col" role="columnheader"><?php echo esc_html__('渠道', 'npcink-pay-refund'); ?></th>
+                            <th scope="col" role="columnheader"><?php echo esc_html__('退款时间', 'npcink-pay-refund'); ?></th>
+                            <th scope="col" role="columnheader"><?php echo esc_html__('操作员', 'npcink-pay-refund'); ?></th>
+                            <th scope="col" role="columnheader">ID</th>
+                            <th scope="col" role="columnheader"><?php echo esc_html__('原因', 'npcink-pay-refund'); ?></th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody role="rowgroup">
                         <!-- 这里将在 JavaScript 文件中插入数据 -->
                     </tbody>
                 </table>
@@ -185,6 +190,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
             wp_localize_script($name, 'npcinkPayRefundQuery', array(
                 'ajaxurl' => admin_url('admin-ajax.php'),
                 'nonce' => wp_create_nonce('npcink_pay_refund_action'),
+                'querying' => __('查询中…', 'npcink-pay-refund'),
+                'emptyOrder' => __('请输入商户订单号。', 'npcink-pay-refund'),
+                'yuan' => __('元', 'npcink-pay-refund'),
                 //20条退款记录
                 'records' => self::records_page(),
 				'operational' => Npcink_Pay_Refund_Admin_Public::refund_operational_state_page(),

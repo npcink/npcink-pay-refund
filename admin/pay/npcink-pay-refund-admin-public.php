@@ -459,6 +459,28 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 		}
 
 
+        public static function display_amount($amount): string
+        {
+            return is_numeric($amount) ? number_format((float) $amount, 2, '.', '') . ' ' . __('元', 'npcink-pay-refund') : __('暂无', 'npcink-pay-refund');
+        }
+
+        public static function render_result_card(string $tone, string $badge, string $title, array $details, string $description = ''): string
+        {
+            $html = '<div class="npcink-pay-refund-result-card npcink-pay-refund-result-' . esc_attr($tone) . '">';
+            $html .= '<div class="npcink-pay-refund-result-header"><div>';
+            $html .= '<span class="npcink-pay-refund-result-badge">' . esc_html($badge) . '</span>';
+            $html .= '<h3>' . esc_html($title) . '</h3>';
+            if ('' !== $description) {
+                $html .= '<p>' . esc_html($description) . '</p>';
+            }
+            $html .= '</div></div><dl class="npcink-pay-refund-result-details">';
+            foreach ($details as $label => $value) {
+                $html .= '<div class="npcink-pay-refund-result-detail"><dt>' . esc_html($label) . '</dt><dd>';
+                $html .= esc_html('' === (string) $value ? __('暂无', 'npcink-pay-refund') : (string) $value) . '</dd></div>';
+            }
+            return $html . '</dl></div>';
+        }
+
 		public static function parse_local_payment_time($time, $source_timezone): ?int
 		{
 			if (!is_string($time) || !preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/D', $time)) {
