@@ -7,6 +7,7 @@ Use this checklist for the first real merchant run. Do not test refunds against 
 - Build package: `composer build:zip`
 - Verify package: `composer verify`
 - To reproduce the original 1.3.10 candidate validation, use the existing `build/npcink-pay-refund-1.3.10.zip` and verify it against the [recorded candidate SHA-256](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md#验证与制品). Do not rebuild it from a later checkout or substitute a source archive. The released 1.3.9 artifact remains unchanged.
+- For the follow-up 1.3.11 candidate, use `build/npcink-pay-refund-1.3.11.zip` with its own manifest and SHA-256. This is an unpublished candidate. Do not carry the original 1.3.10 sign-off forward.
 - `composer verify` and `composer verify:local` both build a ZIP and can overwrite a same-version artifact. Run package checks in a separate checkout when the current build directory holds a frozen candidate.
 - Record live results only for the exact versioned ZIP and merchant configuration being tested.
 - For a later release, install the exact versioned ZIP printed by `composer build:zip`; record its version and SHA-256 before testing.
@@ -60,6 +61,13 @@ Evidence location / reviewer / unresolved discrepancies:
 - Confirm a refund record is written with amount, time, order number, operator, type, and reason.
 - In a controlled non-production test, interrupt the refund response after submission. Confirm the next operation queries the original `out_request_no` before any retry and reuses the original amount and reason.
 - Confirm the admin reconciliation notice remains visible while the Alipay result is uncertain and disappears after provider confirmation plus a successful local audit write.
+
+### H2: Alipay request-number conflict evidence
+
+1. Prefer an existing incident. Otherwise, only the authorized merchant operator may use a dedicated test order in a controlled environment. Never reproduce against a customer order, create a replacement request number, or retry to force a conflict when the first outcome is uncertain.
+2. Record the candidate SHA-256, UTC timestamps, masked merchant/order/request references, refund amount, whether the first response was signature-verified, its business code/subcode, `fund_change`, and whether the first request was rejected or its outcome is unknown. For an existing retry, record which fields changed (in particular whether only the reason changed), not the actual reason.
+3. Check the original `out_request_no` using the provider's refund query. Record whether the response was verified, its code/status, whether order/request/amount matched, and whether local reconciliation completed. Do not paste keys, buyer details, raw gateway bodies or full identifiers into the repository.
+4. Classify as confirmed conflict, no conflict observed in the tested case, or inconclusive. A timeout, an unverified response, or an example using a different request number does not answer H2. Do not change retry rules without reviewing the merchant evidence separately.
 
 ## WeChat Pay
 

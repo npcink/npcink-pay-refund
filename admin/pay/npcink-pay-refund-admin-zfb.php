@@ -170,7 +170,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 							$table_html .= '<p class="notice notice-warning inline npcink-pay-refund-refund-notice"><strong>' . esc_html__('原退款请求尚未在支付宝查询到；再次提交时将复用原退款请求号和原参数。', 'npcink-pay-refund') . '</strong></p>';
 						}
                         $table_html .= '<p><label for="npcink-pay-refund-zfb-reason">' . esc_html__('退款原因：', 'npcink-pay-refund') . '</label><input type="text" id="npcink-pay-refund-zfb-reason"></p>';
-                        $table_html .= " <button id='order-btn' class='button button-primary refund' data-order-id='" . esc_attr($data->outTradeNo) . "' data-order-amount='" . esc_attr($data->totalAmount) . "'>支付宝全额退款</button>";
+                        $table_html .= " <button id='order-btn' class='button button-primary refund' data-order-id='" . esc_attr($data->outTradeNo) . "' data-order-amount='" . esc_attr($data->totalAmount) . "'>" . esc_html__('支付宝全额退款', 'npcink-pay-refund') . '</button>';
                     }
                     Npcink_Pay_Refund_Admin_Audit::payment_success(array('html' => $table_html));
                 } else {

@@ -134,6 +134,21 @@ try {
     npcink_integration_assert(false === $recorded && Npcink_Pay_Refund_Admin_Wx::get_pending_refund($refund_order)
         && Npcink_Pay_Refund_Admin_Public::get_refund_reconciliation($refund_order, '微信'), 'real audit insert failure preserves recovery context');
     npcink_integration_assert(false !== Npcink_Pay_Refund_Admin_Public::retry_refund_reconciliation($refund_order, '微信'), 'local reconciliation recovers without any gateway client');
+    $break_cleanup = static function ($sql) use ($wpdb, $refund_order) {
+        return str_starts_with($sql, "DELETE FROM {$wpdb->options}") && str_contains($sql, Npcink_Pay_Refund_Admin_Wx::pending_refund_option_name($refund_order))
+            ? 'NPCINK_INJECTED_CLEANUP_FAILURE' : $sql;
+    };
+    add_filter('query', $break_cleanup);
+    $previous_suppression = $wpdb->suppress_errors(true);
+    try {
+        npcink_integration_assert(false === Npcink_Pay_Refund_Admin_Wx::record_successful_refund($refund_order, $response)
+            && Npcink_Pay_Refund_Admin_Wx::get_pending_refund($refund_order)
+            && str_contains(Npcink_Pay_Refund_Admin_Wx::local_recording_error_message($refund_order), '已在本地记账'),
+            'pending cleanup failure keeps the same request and reports that the record exists');
+    } finally {
+        remove_filter('query', $break_cleanup);
+        $wpdb->suppress_errors($previous_suppression);
+    }
     npcink_integration_assert(Npcink_Pay_Refund_Admin_Wx::record_successful_refund($refund_order, $response)
         && !Npcink_Pay_Refund_Admin_Wx::get_pending_refund($refund_order), 'provider re-query clears pending after recovered audit');
 
