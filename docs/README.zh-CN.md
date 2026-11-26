@@ -29,10 +29,11 @@
 
 ![插件配置与权限](../assets/screenshot-4.png)
 
-1.3.9 已正式发布至 GitHub 与 WordPress.org，微信、支付宝真实退款均由使用者确认通过；精确制品、验收范围及远端回读见 [1.3.9 发布记录](RELEASE-1.3.9.zh-CN.md)。1.3.10 的本地维护候选不改写 1.3.9 原包，需按各自制品重新验证。此前整改见 [22 项整改记录](AUDIT-REMEDIATION-1.3.8.zh-CN.md)。
+1.3.9 已正式发布至 GitHub 与 WordPress.org，微信、支付宝真实退款均由使用者确认通过；精确制品、验收范围及远端回读见 [1.3.9 发布记录](RELEASE-1.3.9.zh-CN.md)。1.3.10 开发候选已进入 `main`，但真实商户验收与发布仍待确认，不改写 1.3.9 原包。此前整改见 [22 项整改记录](AUDIT-REMEDIATION-1.3.8.zh-CN.md)。
 
 ## 维护文档
 
+- [1.3.10 审查处置、开发复盘与待验收事项](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md)
 - [1.3.9 收尾、剩余边界与开发复盘](CLOSEOUT-AND-RETROSPECTIVE-1.3.9.zh-CN.md)
 - [1.3.9 正式发布与制品核对记录](RELEASE-1.3.9.zh-CN.md)
 - [项目改造历史与当前状态](PROJECT-HISTORY.zh-CN.md)

@@ -1,6 +1,6 @@
 # 项目改造历史与当前状态
 
-本文记录 `Npcink Pay Refund` 在 2026-07-08 至 2026-11-06 期间的主要改造决策、验证方式和发布状态，便于后续维护者或 AI 继续接手。当前收尾结论见 [1.3.9 收尾与复盘](CLOSEOUT-AND-RETROSPECTIVE-1.3.9.zh-CN.md)。
+本文记录 `Npcink Pay Refund` 在 2026-07-08 至 2026-11-26 期间的主要改造决策、验证方式和发布状态，便于后续维护者或 AI 继续接手。当前结论见 [1.3.10 审查收尾与复盘](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md)。
 
 ## 当前状态
 
@@ -242,6 +242,10 @@ composer verify
 - WordPress.org 已发布 1.3.9；GitHub Release 与 WordPress.org SVN 修订分别记录，不能相互代替
 
 历史 tag `v1.0.8`、`v1.1.1`、`v1.1.2` 也已随 tags 推送到 GitHub。旧提交历史中仍可能出现旧项目名，这是正常 Git 历史，不建议 rewrite。
+
+## 1.3.10 维护候选
+
+2026-11-26 复核 1.3.9 独立审查，修复支付宝退款确认、交易状态、查询时区和无效时间提示，更新 HTTP 依赖并改为缺省保留卸载数据。代码及 CI 已进入 GitHub `main`；暂不发布，原候选 ZIP 等待两渠道独立商户确认。逐项结论、已验证范围与制品映射见 [1.3.10 收尾记录](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md)。
 
 ## 后续建议
 
