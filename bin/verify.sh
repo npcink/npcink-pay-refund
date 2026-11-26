@@ -35,6 +35,7 @@ find . \
 
 if command -v node >/dev/null 2>&1; then
 	find admin/js -name '*.js' -print0 | xargs -0 -n1 node --check
+	node tests/csv-export.cjs
 else
 	echo "Skipping JavaScript syntax checks: node command is unavailable." >&2
 fi
@@ -50,6 +51,10 @@ if ! grep -Fx "${PACKAGE_SLUG}/vendor/autoload.php" <<< "$ZIP_LIST" >/dev/null; 
 fi
 if grep -E "^${PACKAGE_SLUG}/(vite/|bin/|build/|tests/|admin/sdk/)" <<< "$ZIP_LIST" >/dev/null; then
 	echo "Release zip contains excluded development or legacy SDK paths." >&2
+	exit 1
+fi
+if grep -E '(^|/)\.git(/|$)' <<< "$ZIP_LIST" >/dev/null; then
+	echo "Release zip contains a Git directory or worktree pointer." >&2
 	exit 1
 fi
 if grep -E "^${PACKAGE_SLUG}/(docs/|README\.md$|vendor/alipaysdk/easysdk/tea/)" <<< "$ZIP_LIST" >/dev/null; then

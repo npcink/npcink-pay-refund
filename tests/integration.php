@@ -7,7 +7,7 @@ if (!defined('ABSPATH') || !is_file(ABSPATH . '.npcink-refund-test-site')) {
 global $wpdb;
 $root = dirname(__DIR__);
 require_once $root . '/vendor/autoload.php';
-foreach (array('admin/class-npcink-pay-refund-admin.php', 'admin/partials/npcink-pay-refund-admin-config.php',
+foreach (array('admin/class-npcink-pay-refund-admin.php', 'admin/partials/npcink-pay-refund-admin-config.php', 'admin/partials/npcink-pay-refund-admin-audit.php',
     'admin/partials/npcink-pay-refund-admin-authority.php', 'admin/partials/npcink-pay-refund-admin-query.php',
     'admin/pay/npcink-pay-refund-admin-public.php', 'admin/pay/npcink-pay-refund-admin-wx.php',
     'admin/pay/npcink-pay-refund-admin-zfb.php', 'includes/class-npcink-pay-refund-activator.php',
@@ -137,24 +137,25 @@ try {
     npcink_integration_assert(Npcink_Pay_Refund_Admin_Wx::record_successful_refund($refund_order, $response)
         && !Npcink_Pay_Refund_Admin_Wx::get_pending_refund($refund_order), 'provider re-query clears pending after recovered audit');
 
-    // Exercise the actual five callbacks with real WP nonces/capabilities, without network.
+    // Exercise the actual callbacks with real WP nonces/capabilities, without network.
+    require_once __DIR__ . '/permission-cases.php';
     class Npcink_Integration_Ajax_Exit extends RuntimeException {}
     add_filter('wp_doing_ajax', '__return_true');
     $die_handler = static function () { return static function () { throw new Npcink_Integration_Ajax_Exit(); }; };
     add_filter('wp_die_ajax_handler', $die_handler);
-    foreach (array('Zfb' => array('npcink_pay_refund_zfb_order_query', 'npcink_pay_refund_zfb_order_refund'),
-        'Wx' => array('npcink_pay_refund_wx_order_query', 'npcink_pay_refund_wx_order_refund', 'npcink_pay_refund_wx_refund_status')) as $channel => $handlers) {
-        foreach ($handlers as $handler) {
-            foreach (array(false, true) as $valid_nonce) {
-                wp_set_current_user($users[2]);
-                $_REQUEST['nonce'] = $valid_nonce ? wp_create_nonce('npcink_pay_refund_action') : 'invalid';
-                ob_start();
-                try { call_user_func(array('Npcink_Pay_Refund_Admin_' . $channel, $handler)); }
-                catch (Npcink_Integration_Ajax_Exit $exit) {}
-                $response = json_decode(ob_get_clean(), true);
-                $message = $valid_nonce ? '您没有退款操作权限。' : '请求校验失败，请刷新页面后重试。';
-                npcink_integration_assert(false === ($response['success'] ?? null) && $message === ($response['data']['message'] ?? null), $handler . ' denies ' . ($valid_nonce ? 'unauthorized user' : 'invalid nonce'));
-            }
+    foreach (npcink_permission_cases() as $case) {
+        [$class, $handler] = $case;
+        $admin_only = isset($case[2]);
+        foreach (array(false, true) as $valid_nonce) {
+            wp_set_current_user($valid_nonce ? $users[$admin_only ? 0 : 2] : ($admin_only ? $admin->ID : $users[0]));
+            $_REQUEST['nonce'] = $valid_nonce ? wp_create_nonce('npcink_pay_refund_action') : 'invalid';
+            ob_start();
+            try { call_user_func(array('Npcink_Pay_Refund_Admin_' . $class, $handler)); }
+            catch (Npcink_Integration_Ajax_Exit $exit) {}
+            $response = json_decode(ob_get_clean(), true);
+            $message = $valid_nonce ? ($case[2] ?? '您没有退款操作权限。')
+                : ($admin_only ? '请求校验失败。' : '请求校验失败，请刷新页面后重试。');
+            npcink_integration_assert(false === ($response['success'] ?? null) && $message === ($response['data']['message'] ?? null), $handler . ' denies ' . ($valid_nonce ? 'unauthorized user' : 'invalid nonce'));
         }
     }
     wp_set_current_user($users[0]);

@@ -214,12 +214,18 @@ msgstr ""
 msgid "退款记录"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:211
-msgid "统计数据保存在数据库表 npcink_pay_refund_order 中。"
+#. translators: %s: Refund records database table name.
+#: admin/partials/npcink-pay-refund-admin-config.php:214
+#, php-format
+msgid "统计数据保存在数据库表 %s 中。"
 msgstr ""
 
-#: admin/partials/npcink-pay-refund-admin-config.php:214
-msgid "退款原因"
+#: admin/partials/npcink-pay-refund-admin-config.php:218
+msgid "记录可见范围"
+msgstr ""
+
+#: admin/partials/npcink-pay-refund-admin-config.php:484
+msgid "退款记录下载失败，请稍后重试。"
 msgstr ""
 
 #: admin/partials/npcink-pay-refund-admin-config.php:215

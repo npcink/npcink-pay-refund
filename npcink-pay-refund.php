@@ -102,9 +102,6 @@ npcink_pay_refund_run();
 
 
 
-require_once plugin_dir_path(__FILE__) . 'index.php';
-
-
 /**加载微信支付 */
 if (is_admin()) {
 	require_once plugin_dir_path(__FILE__) . 'admin/pay/npcink-pay-refund-admin-wx.php';

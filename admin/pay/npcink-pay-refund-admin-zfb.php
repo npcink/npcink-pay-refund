@@ -54,7 +54,6 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
             $options->gatewayHost = 'openapi.alipay.com';
             $options->signType = 'RSA2';
 
-            //$options->appId = '2021002134609167';
             $options->appId = Npcink_Pay_Refund_Admin::get_options($config, 'appid');
 
             // 为避免私钥随源码泄露，推荐从文件中读取私钥字符串而不是写入源码中
@@ -128,9 +127,10 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 
             // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Verified by require_refund_ajax_permission().
             $param = isset($_REQUEST['param']) ? sanitize_text_field(wp_unslash($_REQUEST['param'])) : ''; // 获取传递的参数
+            Npcink_Pay_Refund_Admin_Audit::start_payment('alipay_order_query', $param);
             Npcink_Pay_Refund_Admin_Public::require_order_operation($param, '支付宝');
             if ('' === $param) {
-                wp_send_json_error(array('message' => __('请输入支付宝订单号。', 'npcink-pay-refund')), 400);
+                Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('请输入支付宝订单号。', 'npcink-pay-refund')), 400);
             }
 
             if (!empty(Npcink_Pay_Refund_Admin_Public::get_refund_reconciliation($param, '支付宝'))) {
@@ -138,7 +138,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
             }
 
             if (!self::ensure_sdk_ready()) {
-                wp_send_json_error(array('message' => __('支付宝配置不可用，请检查 APP ID、应用私钥和支付宝公钥。', 'npcink-pay-refund')), 400);
+                Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('支付宝配置不可用，请检查 APP ID、应用私钥和支付宝公钥。', 'npcink-pay-refund')), 400);
             }
 
 			$uncertain_resolution = self::maybe_send_uncertain_refund_result($param);
@@ -170,17 +170,17 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                     } elseif ('' !== $window_error) {
                         $table_html .= '<h3>' . esc_html($window_error) . '</h3>';
                     }
-                    wp_send_json_success(array('html' => $table_html));
+                    Npcink_Pay_Refund_Admin_Audit::payment_success(array('html' => $table_html));
                 } else {
                     //$error_msg = "调用失败，原因：" . $result->msg . "，" . $result->subMsg . PHP_EOL;
                     // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
                     error_log('Npcink_Pay_Refund Alipay query rejected: ' . self::gateway_result_log_context($result));
-                    wp_send_json_error(array('message' => __('支付宝订单查询失败，请检查订单号或稍后重试。', 'npcink-pay-refund')), 400);
+                    Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('支付宝订单查询失败，请检查订单号或稍后重试。', 'npcink-pay-refund')), 400);
                 }
 			} catch (Throwable $e) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
                 error_log('Npcink_Pay_Refund Alipay query failed: ' . get_class($e));
-                wp_send_json_error(array('message' => __('调用失败，请检查支付宝配置或稍后重试。', 'npcink-pay-refund')), 500);
+                Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('调用失败，请检查支付宝配置或稍后重试。', 'npcink-pay-refund')), 500);
             }
         }
 
@@ -197,12 +197,13 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 
             // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Verified by require_refund_ajax_permission().
             $order_id = isset($_POST['order_id']) ? sanitize_text_field(wp_unslash($_POST['order_id'])) : ''; // 获取传递的订单号
+            Npcink_Pay_Refund_Admin_Audit::start_payment('alipay_refund', $order_id);
             Npcink_Pay_Refund_Admin_Public::require_order_operation($order_id, '支付宝');
             // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Verified by require_refund_ajax_permission(); sanitized by Npcink_Pay_Refund_Admin::sanitize_textarea_value().
             $order_reason = isset($_POST['order_reason']) ? Npcink_Pay_Refund_Admin::sanitize_textarea_value(wp_unslash($_POST['order_reason'])) : ''; // 获取传递的退款原因
 
             if ('' === $order_id) {
-                wp_send_json_error(array('message' => __('订单号不能为空。', 'npcink-pay-refund')), 400);
+                Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('订单号不能为空。', 'npcink-pay-refund')), 400);
             }
 
             if (!empty(Npcink_Pay_Refund_Admin_Public::get_refund_reconciliation($order_id, '支付宝'))) {
@@ -210,7 +211,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
             }
 
             if (!self::ensure_sdk_ready()) {
-                wp_send_json_error(array('message' => __('支付宝配置不可用，请检查 APP ID、应用私钥和支付宝公钥。', 'npcink-pay-refund')), 400);
+                Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('支付宝配置不可用，请检查 APP ID、应用私钥和支付宝公钥。', 'npcink-pay-refund')), 400);
             }
 
 			$uncertain_resolution = self::maybe_send_uncertain_refund_result($order_id);
@@ -220,7 +221,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 			}
 
             if ('' === $order_reason) {
-                wp_send_json_error(array('message' => __('订单号和退款原因不能为空。', 'npcink-pay-refund')), 400);
+                Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('订单号和退款原因不能为空。', 'npcink-pay-refund')), 400);
             }
 
             //获取登录用户名
@@ -233,26 +234,26 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
             try {
                 $query_result = Factory::payment()->common()->query($order_id);
 				if (!$query_result || !isset($query_result->code) || '10000' !== (string) $query_result->code) {
-                    wp_send_json_error(array('message' => __('订单查询失败，未执行退款。', 'npcink-pay-refund')), 400);
+                    Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('订单查询失败，未执行退款。', 'npcink-pay-refund')), 400);
                 }
 
                 if ('TRADE_SUCCESS' !== ($query_result->tradeStatus ?? '')) {
-                    wp_send_json_error(array('message' => __('该订单当前状态不可退款。', 'npcink-pay-refund')), 400);
+                    Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('该订单当前状态不可退款。', 'npcink-pay-refund')), 400);
                 }
 
                 $paid_at = Npcink_Pay_Refund_Admin_Public::parse_local_payment_time($query_result->sendPayDate ?? null, 'Asia/Shanghai');
                 $window_error = Npcink_Pay_Refund_Admin_Public::refund_window_error($paid_at);
                 if ('' !== $window_error) {
-                    wp_send_json_error(array('message' => $window_error), 400);
+                    Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => $window_error), 400);
                 }
 
                 $order_amount = $query_result->totalAmount;
 				$order_time = wp_date('Y-m-d H:i:s');
 				if (!empty($retry_context['n_amount']) && abs((float) $retry_context['n_amount'] - (float) $order_amount) >= 0.001) {
-					wp_send_json_error(array('message' => __('订单金额与原支付宝退款请求不一致，订单继续锁定。请在支付宝商家平台核对后再处理。', 'npcink-pay-refund')), 409);
+					Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('订单金额与原支付宝退款请求不一致，订单继续锁定。请在支付宝商家平台核对后再处理。', 'npcink-pay-refund')), 409);
 				}
 				if (empty($retry_context) && !Npcink_Pay_Refund_Admin_Public::claim_refund($order_id, '支付宝')) {
-                    wp_send_json_error(array('message' => __('该订单已提交退款或正在处理中，请勿重复操作。', 'npcink-pay-refund')), 409);
+                    Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('该订单已提交退款或正在处理中，请勿重复操作。', 'npcink-pay-refund')), 409);
                 }
                 $refund_claimed = true;
 
@@ -270,7 +271,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 				if (empty($retry_context) && !Npcink_Pay_Refund_Admin_Public::save_refund_uncertain($refund_context)) {
                     Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '支付宝');
                     $refund_claimed = false;
-                    wp_send_json_error(array('message' => __('无法保存退款请求状态，未向支付宝提交退款。请检查数据库后重试。', 'npcink-pay-refund')), 500);
+                    Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('无法保存退款请求状态，未向支付宝提交退款。请检查数据库后重试。', 'npcink-pay-refund')), 500);
                 }
                 $refund_uncertain_saved = true;
 
@@ -294,7 +295,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 						$recorded = Npcink_Pay_Refund_Admin_Public::add_data($order_time, $user, $order_amount, $order_id, $order_reason, '支付宝', $user_id);
                     if (false === $recorded) {
                         $refund_claimed = false;
-                        wp_send_json_error(array(
+                        Npcink_Pay_Refund_Admin_Audit::payment_error(array(
                             'message' => __('支付宝退款已成功，但本地退款记录保存失败。订单已锁定等待管理员对账，请勿重复退款。', 'npcink-pay-refund'),
                             'provider_status' => 'SUCCESS',
                             'reconciliation_required' => true,
@@ -303,13 +304,13 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                     $refund_claimed = false;
 					$refund_uncertain_saved = false;
 
-                    wp_send_json_success(array('html' => $table_html));
+                    Npcink_Pay_Refund_Admin_Audit::payment_success(array('html' => $table_html));
                 } else {
                     // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
                     error_log('Npcink_Pay_Refund Alipay refund rejected: ' . self::gateway_result_log_context($result));
 					if ('unknown' === $submit_state || self::refund_failure_is_uncertain($result)) {
 						$refund_claimed = false;
-						wp_send_json_error(array(
+						Npcink_Pay_Refund_Admin_Audit::payment_error(array(
 							'message' => __('支付宝退款结果暂时无法确认。订单已锁定；再次查询或退款时会先用原退款请求号核对状态，请勿另行重复退款。', 'npcink-pay-refund'),
 							'provider_status' => 'UNKNOWN',
 							'reconciliation_required' => true,
@@ -320,7 +321,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 					Npcink_Pay_Refund_Admin_Public::release_refund_claim($order_id, '支付宝');
 					$refund_claimed = false;
 					$refund_uncertain_saved = false;
-                    wp_send_json_error(array('message' => __('支付宝退款失败，请稍后重试或联系管理员检查日志。', 'npcink-pay-refund')), 400);
+                    Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('支付宝退款失败，请稍后重试或联系管理员检查日志。', 'npcink-pay-refund')), 400);
                 }
 			} catch (Throwable $e) {
 				if ($refund_claimed && !$refund_uncertain_saved) {
@@ -329,13 +330,13 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                 // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
                 error_log('Npcink_Pay_Refund Alipay refund failed: ' . get_class($e));
 				if ($refund_uncertain_saved) {
-					wp_send_json_error(array(
+					Npcink_Pay_Refund_Admin_Audit::payment_error(array(
 						'message' => __('支付宝退款调用中断，结果暂时无法确认。订单已锁定；再次操作时会先查询原退款请求号，请勿重复退款。', 'npcink-pay-refund'),
 						'provider_status' => 'UNKNOWN',
 						'reconciliation_required' => true,
 					), 502);
 				}
-				wp_send_json_error(array('message' => __('退款失败，请检查支付宝配置或稍后重试。', 'npcink-pay-refund')), 500);
+				Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('退款失败，请检查支付宝配置或稍后重试。', 'npcink-pay-refund')), 500);
             }
         }
 
@@ -516,7 +517,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 			}
 
 			if ('recording_failed' === $resolution['state']) {
-				wp_send_json_error(array(
+				Npcink_Pay_Refund_Admin_Audit::payment_error(array(
 					'message' => __('支付宝已确认退款成功，但本地退款记录保存失败。订单继续锁定，请修复数据库后再次查询。', 'npcink-pay-refund'),
 					'provider_status' => 'SUCCESS',
 					'reconciliation_required' => true,
@@ -524,14 +525,14 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 			}
 
 			if ('confirmed' === $resolution['state']) {
-				wp_send_json_success(array(
+				Npcink_Pay_Refund_Admin_Audit::payment_success(array(
 					'html' => self::render_confirmed_refund_html($resolution['context'], __('已退款，状态已通过支付宝查询确认', 'npcink-pay-refund')),
 					'provider_status' => 'SUCCESS',
 					'reconciled' => true,
 				));
 			}
 
-			wp_send_json_error(array(
+			Npcink_Pay_Refund_Admin_Audit::payment_error(array(
 				'message' => __('支付宝退款结果仍无法确认。订单保持锁定，请稍后再次查询，并在支付宝商家平台核对；请勿创建新的退款。', 'npcink-pay-refund'),
 				'provider_status' => 'UNKNOWN',
 				'reconciliation_required' => true,
@@ -561,7 +562,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
             }
 
             if (false === Npcink_Pay_Refund_Admin_Public::retry_refund_reconciliation($order_id, '支付宝')) {
-                wp_send_json_error(array(
+                Npcink_Pay_Refund_Admin_Audit::payment_error(array(
                     'message' => __('支付宝退款已经成功，但本地退款记录仍无法保存。订单继续锁定，请修复数据库后再次查询该订单。', 'npcink-pay-refund'),
                     'provider_status' => 'SUCCESS',
                     'reconciliation_required' => true,
@@ -575,7 +576,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
             $table_html .= '<tr><td>状态：</td><td><b class="green">已退款，本地记录已补记</b></td></tr>';
             $table_html .= '</table>';
 
-            wp_send_json_success(array(
+            Npcink_Pay_Refund_Admin_Audit::payment_success(array(
                 'html' => $table_html,
                 'provider_status' => 'SUCCESS',
                 'reconciled' => true,

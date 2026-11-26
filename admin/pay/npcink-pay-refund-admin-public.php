@@ -150,10 +150,10 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
         public static function require_order_operation($order, $type)
         {
             if ('' === $order) {
-                wp_send_json_error(array('message' => __('订单号不能为空。', 'npcink-pay-refund')), 400);
+                Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('订单号不能为空。', 'npcink-pay-refund')), 400);
             }
             if (!self::lock_operation($order, $type)) {
-                wp_send_json_error(array('message' => __('该订单正在处理，请稍后重试。', 'npcink-pay-refund')), 409);
+                Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('该订单正在处理，请稍后重试。', 'npcink-pay-refund')), 409);
             }
             // Historical rows without an owner stay visible only to administrators.
             if (!current_user_can('manage_options')) {
@@ -163,7 +163,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
                 }
                 foreach ($contexts as $context) {
                     if ($context && (int) ($context['n_user_id'] ?? 0) !== get_current_user_id()) {
-                        wp_send_json_error(array('message' => __('该订单的待处理退款属于其他操作者，请联系管理员。', 'npcink-pay-refund')), 403);
+                        Npcink_Pay_Refund_Admin_Audit::payment_error(array('message' => __('该订单的待处理退款属于其他操作者，请联系管理员。', 'npcink-pay-refund')), 403);
                     }
                 }
             }

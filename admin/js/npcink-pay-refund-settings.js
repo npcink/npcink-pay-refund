@@ -55,7 +55,7 @@ jQuery(document).ready(function ($) {
         const csvData = convertToCSV(data, columnMapping);
         const csvFileName = "退款订单记录表.csv";
 
-        const blob = new Blob([csvData], { type: "text/csv;charset=utf-8" });
+        const blob = new Blob(["\uFEFF", csvData], { type: "text/csv;charset=utf-8" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
@@ -408,23 +408,15 @@ jQuery(document).ready(function ($) {
     }
   }
 
-  // 将数据转换为 CSV 格式
   // 将数据转换为 CSV 格式，并应用自定义列名
   function convertToCSV(data, columnMapping) {
-    var csv = "";
-
-    // 添加表头
-    var headers = Object.keys(data[0]);
-    var mappedHeaders = headers.map(function (header) {
-      return columnMapping[header] || header;
-    });
-
-    csv += mappedHeaders.join(",") + "\n";
-
-    // 添加数据行
+    var headers = Object.keys(columnMapping);
+    var csv = headers.map(function (header) {
+      return escapeCsvValue(columnMapping[header]);
+    }).join(",") + "\r\n";
     for (var i = 0; i < data.length; i++) {
-        var row = Object.values(data[i]).map(escapeCsvValue);
-        csv += row.join(",") + "\n";
+      var row = headers.map(function (header) { return escapeCsvValue(data[i][header]); });
+      csv += row.join(",") + "\r\n";
     }
 
     return csv;
@@ -432,7 +424,7 @@ jQuery(document).ready(function ($) {
 
   function escapeCsvValue(value) {
     var text = value === null || value === undefined ? "" : String(value);
-    if (/^[=+\-@]/.test(text)) {
+    if (/^[\t\r\n]|^\s*[=+\-@\uFF1D\uFF0B\uFF0D\uFF20]/.test(text)) {
       text = "'" + text;
     }
     return '"' + text.replace(/"/g, '""') + '"';

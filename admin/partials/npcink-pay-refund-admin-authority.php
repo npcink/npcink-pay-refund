@@ -26,7 +26,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Authority')) {
 			foreach ((array) Npcink_Pay_Refund_Admin::get_options($config, 'user', array()) as $user_id) {
 				$user = get_userdata(absint($user_id));
 				if ($user && Npcink_Pay_Refund_Admin_Config::is_refund_user_assignable($user)) {
-					$user->add_cap('npcink_refund_orders');
+					Npcink_Pay_Refund_Admin_Audit::change_operator_capability($user, true);
 				}
 			}
 			update_option('npcink_pay_refund_capability_version', '1', false);

@@ -71,6 +71,7 @@ try {
 	}
 	foreach (array(
 		'admin/class-npcink-pay-refund-admin.php',
+		'admin/partials/npcink-pay-refund-admin-audit.php',
 		'admin/partials/npcink-pay-refund-admin-authority.php',
 		'admin/partials/npcink-pay-refund-admin-config.php',
 		'admin/partials/npcink-pay-refund-admin-query.php',
@@ -135,6 +136,7 @@ try {
 	ob_start();
 	Npcink_Pay_Refund_Admin_Config::menu_displays();
 	$settings_html = ob_get_clean();
+	global $wpdb;
 	foreach (array(
 		'npcink-pay-refund-tab-zfb',
 		'npcink-pay-refund-tab-wx',
@@ -143,6 +145,7 @@ try {
 		'npcink-pay-refund-refund-user-search',
 		'npcink-pay-refund-selected-refund-users',
 		'npcink-pay-refund-download',
+		'<code>' . esc_html($wpdb->prefix . 'npcink_pay_refund_order') . '</code>',
 	) as $needle) {
 		npcink_pay_refund_smoke_assert(false !== strpos($settings_html, $needle), 'settings page missing ' . $needle);
 	}

@@ -7,24 +7,99 @@ npcink_test_case('payment config shares constant precedence with settings', func
     npcink_test_assert_same('constant-private-key', Npcink_Pay_Refund_Admin::npcConfig('wx')['cert_key'], 'Payment calls must honor wp-config secrets');
 });
 
-npcink_test_case('all five real payment AJAX entrypoints deny invalid nonce and capability', function () {
-    $handlers = array(
-        array('Npcink_Pay_Refund_Admin_Zfb', 'npcink_pay_refund_zfb_order_query'),
-        array('Npcink_Pay_Refund_Admin_Zfb', 'npcink_pay_refund_zfb_order_refund'),
-        array('Npcink_Pay_Refund_Admin_Wx', 'npcink_pay_refund_wx_order_query'),
-        array('Npcink_Pay_Refund_Admin_Wx', 'npcink_pay_refund_wx_order_refund'),
-        array('Npcink_Pay_Refund_Admin_Wx', 'npcink_pay_refund_wx_refund_status'),
-    );
-    foreach ($handlers as $handler) {
+require_once __DIR__ . '/permission-cases.php';
+foreach (npcink_permission_cases() as $case) {
+    [$class, $method] = $case;
+    $admin_only = isset($case[2]);
+    $capability_message = $case[2] ?? '您没有退款操作权限。';
+    npcink_test_case('AJAX permission ' . $method, function () use ($class, $method, $admin_only, $capability_message) {
+        $nonce_message = $admin_only ? '请求校验失败。' : '请求校验失败，请刷新页面后重试。';
         foreach (array(false, true) as $valid_nonce) {
             $GLOBALS['npcink_test_nonce'] = $valid_nonce;
-            try { call_user_func($handler); }
-            catch (Npcink_Test_Json $response) {
-                npcink_test_assert_same(403, $response->status, implode('::', $handler) . ' must reject before gateway work');
+            // Bad nonce with the required capability; good nonce with only a lesser capability.
+            $GLOBALS['npcink_test_user']->caps = $valid_nonce
+                ? ($admin_only ? array('npcink_refund_orders' => true) : array('read' => true))
+                : array(($admin_only ? 'manage_options' : 'npcink_refund_orders') => true);
+            try {
+                call_user_func(array('Npcink_Pay_Refund_Admin_' . $class, $method));
+            } catch (Npcink_Test_Json $response) {
+                npcink_test_assert_same(403, $response->status, 'Must reject before business work');
+                npcink_test_assert_same($valid_nonce ? $capability_message : $nonce_message, $response->data['message'] ?? null, 'Denial must come from the expected guard');
                 continue;
             }
             throw new RuntimeException('Unauthorized handler returned');
         }
+    });
+}
+
+npcink_test_case('operation audit records bounded payment and export outcomes without payloads', function () {
+    $log = tempnam(sys_get_temp_dir(), 'npcink-operations-');
+    $old_log = ini_get('error_log');
+    $old_request = $_REQUEST;
+    ini_set('error_log', $log);
+    try {
+        $_REQUEST['order_id'] = 'synthetic-raw-order-7';
+        $GLOBALS['npcink_test_user']->caps = array('manage_options' => true);
+        try { Npcink_Pay_Refund_Admin_Wx::npcink_pay_refund_wx_order_query(); }
+        catch (Npcink_Test_Json $response) { npcink_test_assert_same(403, $response->status, 'Bad nonce is denied'); }
+        npcink_test_assert_same('', file_get_contents($log), 'Unauthorized requests do not write payment operation events');
+
+        $GLOBALS['npcink_test_nonce'] = true;
+        try { Npcink_Pay_Refund_Admin_Wx::npcink_pay_refund_wx_order_query(); }
+        catch (Npcink_Test_Json $response) { npcink_test_assert_same(400, $response->status, 'Missing synthetic configuration fails before the gateway'); }
+        $GLOBALS['wpdb']->results = array(array('n_reason' => 'sensitive-reason-marker'));
+        try { Npcink_Pay_Refund_Admin_Config::npcink_pay_refund_download_data(); }
+        catch (Npcink_Test_Json $response) { npcink_test_assert_same(200, $response->status, 'Authorized export retains its response'); }
+        $GLOBALS['wpdb']->last_error = 'private SQL error marker';
+        try { Npcink_Pay_Refund_Admin_Config::npcink_pay_refund_download_data(); }
+        catch (Npcink_Test_Json $response) { npcink_test_assert_same(500, $response->status, 'Export SQL failure is not reported as successful'); }
+
+        $entries = array();
+        foreach (file($log, FILE_IGNORE_NEW_LINES) as $line) {
+            $parts = explode('Npcink_Pay_Refund operation ', $line, 2);
+            if (isset($parts[1])) { $entries[] = json_decode($parts[1], true, 512, JSON_THROW_ON_ERROR); }
+        }
+        npcink_test_assert_same(3, count($entries), 'One event per authorized response');
+        npcink_test_assert_same('wechat_order_query', $entries[0]['action'], 'Tag the action');
+        npcink_test_assert_same('error', $entries[0]['result'], 'Outcome describes the AJAX response');
+        npcink_test_assert_same(400, $entries[0]['http_status'], 'Log the effective response status');
+        npcink_test_assert_same(7, $entries[0]['actor_id'], 'Keep the operator ID');
+        npcink_test_assert_same(hash_hmac('sha256', $_REQUEST['order_id'], wp_salt('auth')), $entries[0]['order_ref'], 'Use a keyed reference for correlation');
+        npcink_test_assert_same('records_export', $entries[1]['action'], 'Log export');
+        npcink_test_assert_same(1, $entries[1]['row_count'], 'Log only aggregate size');
+        npcink_test_assert_same('error', $entries[2]['result'], 'Log a failed export separately');
+        foreach (array($_REQUEST['order_id'], 'sensitive-reason-marker', 'private SQL error marker', wp_salt('auth')) as $private) {
+            npcink_test_assert_same(false, strpos(wp_json_encode($entries), $private), 'Do not write private input into operation events');
+        }
+    } finally {
+        $_REQUEST = $old_request;
+        ini_set('error_log', $old_log);
+        unlink($log);
+    }
+});
+
+npcink_test_case('operator audit records grants and revocations only when the direct capability changes', function () {
+    $log = tempnam(sys_get_temp_dir(), 'npcink-capability-');
+    $old_log = ini_get('error_log');
+    ini_set('error_log', $log);
+    $user = new class {
+        public $ID = 12;
+        public $caps = array();
+        public function add_cap($cap) { $this->caps[$cap] = true; }
+        public function remove_cap($cap) { unset($this->caps[$cap]); }
+    };
+    try {
+        foreach (array(true, true, false, false) as $enabled) {
+            Npcink_Pay_Refund_Admin_Audit::change_operator_capability($user, $enabled);
+        }
+        $events = array_map(static function ($line) {
+            return json_decode(explode('Npcink_Pay_Refund operation ', $line, 2)[1], true, 512, JSON_THROW_ON_ERROR);
+        }, file($log, FILE_IGNORE_NEW_LINES));
+        npcink_test_assert_same(array('capability_grant', 'capability_revoke'), array_column($events, 'action'), 'Do not duplicate unchanged grants');
+        npcink_test_assert_same(array(12, 12), array_column($events, 'target_user_id'), 'Record the target separately from the actor');
+    } finally {
+        ini_set('error_log', $old_log);
+        unlink($log);
     }
 });
 

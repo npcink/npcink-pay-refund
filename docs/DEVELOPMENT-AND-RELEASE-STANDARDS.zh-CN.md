@@ -37,6 +37,8 @@ Npcink Pay Refund 是 WordPress 后台的退款操作工具：查询已有支付
 ## 4. WordPress 代码约定
 
 - 所有 AJAX 入口同时检查 nonce 和 capability；配置检测和设置保存继续限制为 `manage_options`。
+- 新增或调整 AJAX 入口时，分别测试「有权但 nonce 无效」和「nonce 有效但权限不足」；对仅管理员入口用退款专员验证不能越界。将回调加入共享测试清单并验证每个守卫都能被测试单独捕获。
+- 操作日志与已确认退款记录分离。只记录结构化事件、必要操作者 ID 和脱敏引用，不写完整订单、退款原因、导出内容或网关原文。限流须分别验证新退款与对账恢复路径，见 [退款审查后续维护](AUDIT-FOLLOWUP.zh-CN.md)。
 - 输入使用 `wp_unslash()` 后按字段类型清理，输出统一晚转义。
 - SQL 使用 `$wpdb->prepare()`；schema 通过激活函数中的 `dbDelta()` 升级。
 - 新增 option 生命周期时同时考虑 `add_option_*` 与 `update_option_*`，不能假设设置一定已有旧值。

@@ -2,6 +2,7 @@
 
 define('ABSPATH', __DIR__ . '/');
 define('MINUTE_IN_SECONDS', 60);
+define('ARRAY_A', 'ARRAY_A');
 
 $GLOBALS['npcink_test_options'] = array();
 $GLOBALS['npcink_test_deleted_options'] = array();
@@ -116,26 +117,34 @@ function sanitize_textarea_field($value) { return trim(strip_tags((string) $valu
 function wp_unslash($value) { return $value; }
 function wp_get_current_user() { return $GLOBALS['npcink_test_user']; }
 function get_current_user_id() { return (int) wp_get_current_user()->ID; }
+function get_current_blog_id() { return 1; }
+function wp_salt($scheme) { return 'test-only-salt-' . $scheme; }
 function user_can($user, $cap) { return !empty($user->caps[$cap]); }
 function current_user_can($cap) { return user_can(wp_get_current_user(), $cap); }
 function check_ajax_referer($action, $field, $die) { return $GLOBALS['npcink_test_nonce']; }
 class Npcink_Test_Json extends RuntimeException {
     public $status;
-    public function __construct($status) { parent::__construct('AJAX response'); $this->status = $status; }
+    public $data;
+    public function __construct($status, $data) { parent::__construct('AJAX response'); $this->status = $status; $this->data = $data; }
 }
-function wp_send_json_error($data, $status = 200) { throw new Npcink_Test_Json($status); }
+function wp_send_json_error($data, $status = 200) { throw new Npcink_Test_Json($status, $data); }
+function wp_send_json_success($data, $status = 200) { throw new Npcink_Test_Json($status, $data); }
 function wp_timezone() { return new DateTimeZone($GLOBALS['npcink_test_timezone'] ?? 'UTC'); }
 function maybe_serialize($value) { return is_array($value) || is_object($value) ? serialize($value) : (string) $value; }
 function wp_cache_delete($key, $group) { return true; }
 require dirname(__DIR__) . '/admin/class-npcink-pay-refund-admin.php';
 require dirname(__DIR__) . '/admin/partials/npcink-pay-refund-admin-config.php';
 require dirname(__DIR__) . '/admin/partials/npcink-pay-refund-admin-authority.php';
+require dirname(__DIR__) . '/admin/partials/npcink-pay-refund-admin-query.php';
+require dirname(__DIR__) . '/admin/partials/npcink-pay-refund-admin-audit.php';
 
 class Npcink_Test_Wpdb
 {
     public $prefix = 'wp_';
     public $options = 'wp_options';
     public $existing_id = false;
+    public $last_error = '';
+    public $results = array();
     public $insert_result = 1;
     public $inserted_data = array();
 
@@ -149,6 +158,8 @@ class Npcink_Test_Wpdb
         if (is_array($query) && (str_contains($query[0], 'GET_LOCK') || str_contains($query[0], 'IS_USED_LOCK'))) { return 1; }
         return $this->existing_id;
     }
+
+    public function get_results($query, $format) { return $this->results; }
 
     public function query($prepared)
     {

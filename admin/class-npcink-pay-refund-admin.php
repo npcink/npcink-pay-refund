@@ -64,6 +64,7 @@ class Npcink_Pay_Refund_Admin
 	 */
 	public function load()
 	{
+		require_once plugin_dir_path(__FILE__) . 'partials/npcink-pay-refund-admin-audit.php';
 		//查询菜单用文件
 		require_once plugin_dir_path(__FILE__) . 'partials/npcink-pay-refund-admin-query.php';
 		//选项配置用文件

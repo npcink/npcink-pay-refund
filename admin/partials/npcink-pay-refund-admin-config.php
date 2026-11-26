@@ -52,6 +52,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
 
         public static function menu_displays()
         {
+            global $wpdb;
             if (!current_user_can('manage_options')) {
                 wp_die(esc_html__('您没有权限访问此页面。', 'npcink-pay-refund'));
             }
@@ -210,10 +211,13 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                                 <tbody>
                                     <tr>
                                         <th scope="row"><?php echo esc_html__('退款记录', 'npcink-pay-refund'); ?></th>
-                                        <td><?php echo esc_html__('统计数据保存在数据库表 npcink_pay_refund_order 中。', 'npcink-pay-refund'); ?></td>
+                                        <td><?php
+                                        /* translators: %s: Refund records database table name. */
+                                        printf(esc_html__('统计数据保存在数据库表 %s 中。', 'npcink-pay-refund'), '<code>' . esc_html($wpdb->prefix . 'npcink_pay_refund_order') . '</code>');
+                                        ?></td>
                                     </tr>
                                     <tr>
-                                        <th scope="row"><?php echo esc_html__('退款原因', 'npcink-pay-refund'); ?></th>
+                                        <th scope="row"><?php echo esc_html__('记录可见范围', 'npcink-pay-refund'); ?></th>
                                         <td><?php echo esc_html__('退款专员只能看到自己提交的记录；管理员可以查看全部记录。', 'npcink-pay-refund'); ?></td>
                                     </tr>
                                     <tr>
@@ -476,11 +480,16 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
             );
             // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 
+            if ('' !== $wpdb->last_error || !is_array($data)) {
+                Npcink_Pay_Refund_Admin_Audit::export_result();
+                wp_send_json_error(array('message' => __('退款记录下载失败，请稍后重试。', 'npcink-pay-refund')), 500);
+            }
             $truncated = count($data) > $limit;
             if ($truncated) {
                 $data = array_slice($data, 0, $limit);
             }
 
+            Npcink_Pay_Refund_Admin_Audit::export_result(count($data), $truncated);
             wp_send_json_success(array(
                 'rows' => $data,
                 'truncated' => $truncated,
@@ -613,13 +622,13 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
 			foreach (array_diff($old_ids, $new_ids) as $user_id) {
 				$user = get_userdata($user_id);
 				if ($user) {
-					$user->remove_cap('npcink_refund_orders');
+					Npcink_Pay_Refund_Admin_Audit::change_operator_capability($user, false);
 				}
 			}
 			foreach ($new_ids as $user_id) {
 				$user = get_userdata($user_id);
 				if ($user && self::is_refund_user_assignable($user)) {
-					$user->add_cap('npcink_refund_orders');
+					Npcink_Pay_Refund_Admin_Audit::change_operator_capability($user, true);
 				}
 			}
 		}
