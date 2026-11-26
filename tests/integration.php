@@ -168,9 +168,14 @@ try {
     unset($_REQUEST['nonce']);
 
     // Uninstall-preserve/reinstall must regrant configured users even when the marker existed.
-    update_option('npcink_pay_refund_config', array('user' => array('user' => array($users[0])), 'config' => array('mysql' => 0, 'config' => 0)), false);
+    $retained_config = array('user' => array('user' => array($users[0])));
+    $retained_secrets = array('zfb' => array('private_key' => 'synthetic-uninstall-marker'));
+    update_option('npcink_pay_refund_config', $retained_config, false);
+    update_option('npcink_pay_refund_secrets', $retained_secrets, false);
     update_option('npcink_pay_refund_capability_version', '1', false);
     Npcink_Pay_Refund_Admin_Uninstall::run();
+    npcink_integration_assert($retained_config === get_option('npcink_pay_refund_config') && $retained_secrets === get_option('npcink_pay_refund_secrets'), 'uninstall without a saved cleanup choice preserves settings and credentials');
+    npcink_integration_assert($prefix . '-own' === $wpdb->get_var($wpdb->prepare("SELECT n_order FROM {$table} WHERE n_order = %s", $prefix . '-own')), 'uninstall without a saved cleanup choice preserves existing records');
     npcink_integration_assert(false === get_option('npcink_pay_refund_capability_version', false), 'preserve-settings uninstall resets grant migration marker');
     Npcink_Pay_Refund_Activator::activate();
     Npcink_Pay_Refund_Admin_Authority::maybe_sync_refund_capabilities();

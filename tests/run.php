@@ -138,6 +138,7 @@ npcink_test_case('Alipay refund retries use one explicit request id and query fi
 					'code' => '10000',
 					'out_trade_no' => $order,
 					'refund_fee' => '7.00',
+					'fund_change' => 'Y',
 				),
 			)),
 	);
@@ -153,6 +154,21 @@ npcink_test_case('Alipay refund retries use one explicit request id and query fi
 	npcink_test_assert_same('unknown', Npcink_Pay_Refund_Admin_Zfb::classify_refund_submit_response($wrong_submit, $order, '7.00'), 'Mismatched submit response must remain uncertain');
 	npcink_test_assert_same('unknown', Npcink_Pay_Refund_Admin_Zfb::classify_refund_submit_response(array('verified_by_easysdk' => true, 'response' => (object) array('code' => '10000')), $order, '7.00'), 'Code-only submit response must not clear the lock');
 	npcink_test_assert_same('rejected', Npcink_Pay_Refund_Admin_Zfb::classify_refund_submit_response(array('verified_by_easysdk' => true, 'response' => (object) array('code' => '40004', 'subCode' => 'ACQ.INVALID_PARAMETER')), $order, '7.00'), 'Definitive validation rejection may release the claim');
+	npcink_test_assert_same('unknown', Npcink_Pay_Refund_Admin_Zfb::classify_refund_submit_response(array('verified_by_easysdk' => true, 'response' => (object) array('code' => '40004', 'subCode' => 'ACQ.DISCORDANT_REPEAT_REQUEST')), $order, '7.00'), 'A conflicting replay must still query the original request');
+
+	foreach (array('unsettled' => array('fund_change' => 'N'), 'missing' => array('fund_change' => null), 'unexpected' => array('fund_change' => 'yes'), 'wrong request' => array('out_request_no' => 'other-request'), 'wrong amount' => array('refund_fee' => '6.99')) as $case => $overrides) {
+		$body = json_decode($submit_response->httpBody, true);
+		foreach ($overrides as $field => $value) {
+			if (null === $value) {
+				unset($body['alipay_trade_refund_response'][$field]);
+			} else {
+				$body['alipay_trade_refund_response'][$field] = $value;
+			}
+		}
+		$variant = clone $submit_response;
+		$variant->httpBody = wp_json_encode($body);
+		npcink_test_assert_same('unknown', Npcink_Pay_Refund_Admin_Zfb::classify_refund_submit_response(array('verified_by_easysdk' => true, 'response' => $variant), $order, '7.00'), 'Submit must await query confirmation: ' . $case);
+	}
 
 	$confirmed = (object) array(
 		'code' => '10000',

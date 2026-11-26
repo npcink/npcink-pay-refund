@@ -26,6 +26,54 @@ function npcink_test_signed_response($status, $data, $tamper = false)
     ), $tamper ? $body . ' ' : $body);
 }
 
+function npcink_test_alipay_signed_response($method, $data)
+{
+    $body = json_encode($data, JSON_THROW_ON_ERROR);
+    openssl_sign($body, $signature, npcink_test_keys()['private'], OPENSSL_ALGO_SHA256);
+    $envelope = sprintf('{"%s_response":%s,"sign":"%s"}', str_replace('.', '_', $method), $body, base64_encode($signature));
+    return new GuzzleHttp\Psr7\Response(200, array('Content-Type' => 'application/json'), $envelope);
+}
+
+npcink_test_case('real Alipay SDK only records an unsettled submit after querying the original request', function () {
+    $order = 'sdk-alipay-unsettled';
+    $request_id = Npcink_Pay_Refund_Admin_Zfb::refund_request_id($order);
+    $keys = npcink_test_keys();
+    update_option('npcink_pay_refund_config', array('zfb' => array('appid' => 'test', 'private_key' => $keys['private'], 'public_key' => $keys['public'])));
+    npcink_test_assert_true(Npcink_Pay_Refund_Admin_Zfb::ensure_sdk_ready(), 'Use the actual configured EasySDK client');
+    npcink_test_assert_true(Npcink_Pay_Refund_Admin_Public::claim_refund($order, '支付宝'), 'Hold the refund claim before submission');
+    npcink_test_assert_true(Npcink_Pay_Refund_Admin_Public::save_refund_uncertain(array(
+        'n_order' => $order, 'request_id' => $request_id, 'n_amount' => '7.00', 'n_reason' => 'synthetic reason',
+        'n_user' => 'Operator', 'n_type' => '支付宝', 'n_time' => wp_date('Y-m-d H:i:s'),
+    )), 'Store the exact refund context before sending');
+
+    $history = array();
+    $stack = GuzzleHttp\HandlerStack::create(new GuzzleHttp\Handler\MockHandler(array(
+        npcink_test_alipay_signed_response('alipay.trade.refund', array('code' => '10000', 'out_trade_no' => $order, 'refund_fee' => '7.00', 'fund_change' => 'N')),
+        npcink_test_alipay_signed_response('alipay.trade.fastpay.refund.query', array('code' => '10000', 'out_trade_no' => $order, 'out_request_no' => $request_id, 'refund_amount' => '7.00', 'refund_status' => 'REFUND_SUCCESS')),
+    )));
+    $stack->push(GuzzleHttp\Middleware::history($history));
+    AlibabaCloud\Tea\Tea::config(array('handler' => $stack));
+    try {
+        $result = Npcink_Pay_Refund_Admin_Zfb::submit_refund($order, '7.00', 'synthetic reason', $request_id);
+        npcink_test_assert_same('unknown', Npcink_Pay_Refund_Admin_Zfb::classify_refund_submit_response($result, $order, '7.00'), 'Signed fund_change=N is not a confirmed refund');
+        npcink_test_assert_same(array(), $GLOBALS['wpdb']->inserted_data, 'Unsettled submit must not produce a successful record');
+        npcink_test_assert_same($request_id, Npcink_Pay_Refund_Admin_Public::get_refund_uncertain($order, '支付宝')['request_id'], 'Keep the original id for follow-up');
+        $resolution = Npcink_Pay_Refund_Admin_Zfb::resolve_uncertain_refund($order);
+        npcink_test_assert_same('confirmed', $resolution['state'], 'Verified matching query confirms the refund');
+        npcink_test_assert_same($order, $GLOBALS['wpdb']->inserted_data['n_order'], 'Matching query writes the successful record');
+        npcink_test_assert_same(2, count($history), 'Reconciliation must not submit another refund');
+        foreach (array('alipay.trade.refund', 'alipay.trade.fastpay.refund.query') as $i => $method) {
+            $request = $history[$i]['request'];
+            parse_str($request->getUri()->getQuery(), $query);
+            parse_str((string) $request->getBody(), $form);
+            npcink_test_assert_same($method, $query['method'], 'Use the expected Alipay endpoint');
+            npcink_test_assert_same($request_id, json_decode($form['biz_content'], true)['out_request_no'], 'Submit and query must use the same request number');
+        }
+    } finally {
+        AlibabaCloud\Tea\Tea::config(array());
+    }
+});
+
 npcink_test_case('real WeChat SDK queries persisted request id and verifies successful response', function () {
     $order = 'sdk-persisted-query';
     Npcink_Pay_Refund_Admin_Wx::save_pending_refund($order, 'Operator', 7, 'reason', wp_date('Y-m-d H:i:s'), 1000);

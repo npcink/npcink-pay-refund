@@ -459,23 +459,32 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
 		}
 
 
-		//时间对比
-		//若输入的时间与当前时间对比超过配置的退款时间窗口，则输出false
-		public static function contrast_time($time, $source_timezone = null)
+		public static function parse_local_payment_time($time, $source_timezone): ?int
 		{
-			$timezone = null !== $source_timezone ? new DateTimeZone($source_timezone) : (function_exists('wp_timezone') ? wp_timezone() : new DateTimeZone('UTC'));
 			if (!is_string($time) || !preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/D', $time)) {
-				return false;
+				return null;
 			}
-			$timeObj = DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', (string) $time, $timezone);
+			$timeObj = DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $time, new DateTimeZone($source_timezone));
 			$errors = DateTimeImmutable::getLastErrors();
 			if (!$timeObj || (is_array($errors) && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
-				return false;
+				return null;
 			}
+			return $timeObj->getTimestamp();
+		}
 
-			$age = time() - $timeObj->getTimestamp();
+		public static function refund_window_error(?int $paid_at): string
+		{
+			$now = time();
+			if (null === $paid_at || $paid_at > $now) {
+				return __('无法确认有效的支付时间，未执行退款。', 'npcink-pay-refund');
+			}
 			$day_seconds = defined('DAY_IN_SECONDS') ? DAY_IN_SECONDS : 86400;
-			return $age >= 0 && $age <= self::refund_window_days() * $day_seconds;
+			$days = self::refund_window_days();
+			if ($now - $paid_at > $days * $day_seconds) {
+				/* translators: %d: configured refund window in days. */
+				return sprintf(__('支付时间已超过 %d 天的退款窗口，未执行退款。', 'npcink-pay-refund'), $days);
+			}
+			return '';
 		}
 
 		public static function refund_window_days()

@@ -5,6 +5,8 @@
     "license": "GPL-2.0-or-later",
     "require": {
         "php": ">=8.1",
+        "guzzlehttp/guzzle": "^7.17",
+        "guzzlehttp/psr7": "^2.13.6",
         "wechatpay/wechatpay": "^1.4",
         "alipaysdk/easysdk": "^2.2.3"
     },

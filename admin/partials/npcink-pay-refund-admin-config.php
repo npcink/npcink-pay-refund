@@ -57,6 +57,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
             }
 
             $config = self::get_config();
+            $delete_refund_table = 1 === (int) self::value($config, array('config', 'mysql'), 0);
+            $delete_refund_settings = 1 === (int) self::value($config, array('config', 'config'), 0);
             $secrets = self::get_secrets();
             $selected_users = array_map('intval', (array) self::value($config, array('user', 'user'), array()));
             $selected_refund_users = self::get_refund_users_by_ids($selected_users);
@@ -255,14 +257,19 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                         </div>
 
                         <details class="npcink-pay-refund-settings-section npcink-pay-refund-disclosure">
-                            <summary><?php echo esc_html__('卸载时的数据处理', 'npcink-pay-refund'); ?></summary>
+                            <summary><?php echo esc_html(sprintf(
+                                /* translators: 1: refund records retention, 2: settings and credential retention. */
+                                __('卸载时：退款记录%1$s，设置和密钥%2$s（已保存）', 'npcink-pay-refund'),
+                                $delete_refund_table ? __('删除', 'npcink-pay-refund') : __('保留', 'npcink-pay-refund'),
+                                $delete_refund_settings ? __('删除', 'npcink-pay-refund') : __('保留', 'npcink-pay-refund')
+                            )); ?></summary>
                             <p class="description"><?php echo esc_html__('以下选项仅在删除插件时生效；停用或覆盖升级不会执行清理。', 'npcink-pay-refund'); ?></p>
                             <table class="form-table" role="presentation">
                                 <tr>
                                     <th scope="row"><?php echo esc_html__('删除数据库表', 'npcink-pay-refund'); ?></th>
                                     <td>
                                         <label>
-                                            <input name="npcink_pay_refund_config[config][mysql]" type="checkbox" value="1" <?php checked((int) self::value($config, array('config', 'mysql'), 1), 1); ?>>
+                                            <input name="npcink_pay_refund_config[config][mysql]" type="checkbox" value="1" <?php checked($delete_refund_table); ?>>
                                             <?php echo esc_html__('卸载插件时删除退款记录表。', 'npcink-pay-refund'); ?>
                                         </label>
                                     </td>
@@ -271,7 +278,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                                     <th scope="row"><?php echo esc_html__('清空设置选项', 'npcink-pay-refund'); ?></th>
                                     <td>
                                         <label>
-                                            <input name="npcink_pay_refund_config[config][config]" type="checkbox" value="1" <?php checked((int) self::value($config, array('config', 'config'), 1), 1); ?>>
+                                            <input name="npcink_pay_refund_config[config][config]" type="checkbox" value="1" <?php checked($delete_refund_settings); ?>>
                                             <?php echo esc_html__('卸载插件时删除退款配置和密钥配置。', 'npcink-pay-refund'); ?>
                                         </label>
                                     </td>
@@ -770,8 +777,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Config')) {
                     'window_days' => 7,
                 ),
                 'config' => array(
-                    'mysql' => 1,
-                    'config' => 1,
+                    'mysql' => 0,
+                    'config' => 0,
                 ),
             );
         }

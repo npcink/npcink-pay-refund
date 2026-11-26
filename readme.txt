@@ -4,7 +4,7 @@ Tags: alipay, wechat pay, refund, payment, admin tools
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.3.9
+Stable tag: 1.3.10
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -92,12 +92,19 @@ Payment secrets are stored in a separate non-autoloaded WordPress option named `
 
 == Changelog ==
 
+= 1.3.10 =
+
+* Confirm synchronous Alipay refunds only when the signed response confirms funds changed and the order and amount match. Otherwise, check the original refund request before retrying.
+* Update bundled Guzzle and PSR-7 dependencies.
+* Keep refund records, settings and credentials on deletion by default; respect existing saved cleanup choices.
+* Distinguish closed from refunded Alipay orders and invalid payment times from expired refund windows.
+
 = 1.3.9 =
 
 * Hide empty pending queues and collapse actionable state details by default; retain immediate refund errors.
 * Fold advanced record filters, saved-key editors, legacy links and uninstall settings; hide unused pagination.
 * Show compact configuration check results and avoid duplicate pending notices on the refund page.
-* Unpublished candidate; real merchant validation remains required for the exact ZIP.
+* Released on November 6, 2026, after merchant confirmation for both payment channels.
 
 = 1.3.8 =
 

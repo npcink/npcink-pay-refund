@@ -32,14 +32,14 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Uninstall')) {
 				$administrator->remove_cap('npcink_refund_orders');
 			}
             //数据库状态
-            // Preserve an explicit unchecked value; get_options() treats 0 as empty.
-            $mySql = is_array($config) && array_key_exists('mysql', $config) ? (int) $config['mysql'] : 1;
+            // Cleanup requires a saved opt-in; missing settings must preserve data.
+            $mySql = (int) ($config['mysql'] ?? 0);
             if (1 === $mySql) {
                 self::delete_sql();
             }
 
             //选项状态
-            $myConfig = is_array($config) && array_key_exists('config', $config) ? (int) $config['config'] : 1;
+            $myConfig = (int) ($config['config'] ?? 0);
             if (1 === $myConfig) {
                 self::delete_option();
             }

@@ -6,7 +6,7 @@ Use this checklist for the first real merchant run. Do not test refunds against 
 
 - Build package: `composer build:zip`
 - Verify package: `composer verify`
-- For the released 1.3.9 package, install `build/npcink-pay-refund-1.3.9.zip`, not a raw source archive.
+- For the 1.3.10 candidate, install `build/npcink-pay-refund-1.3.10.zip`, not a raw source archive. The released 1.3.9 artifact remains unchanged.
 - Historical release records identify 1.3.7; the live directory version was not rechecked in this remediation. Record live results only for the exact versioned ZIP and merchant credentials being tested.
 - For a later release, install the exact versioned ZIP printed by `composer build:zip`; record its version and SHA-256 before testing.
 - Confirm `vendor/autoload.php` exists in the installed plugin.
@@ -51,6 +51,7 @@ Evidence location / reviewer / unresolved discrepancies:
 - Query using the merchant order number (`out_trade_no`), not the platform transaction ID, within the allowed refund window.
 - Submit one full refund with a unique reason.
 - Confirm the response shows success or a clear gateway error.
+- For a signed response with `fund_change=N` or no `fund_change`, verify that no successful refund record is written. Check the original request number before any retry; never create a replacement number to bypass a conflict.
 - Query the successful refund again by its original `out_request_no`; confirm the returned order number, refund request number, amount and `refundStatus=REFUND_SUCCESS` all match. Missing or unknown status must remain uncertain.
 - Repeat the same refund request and confirm the duplicate-refund lock blocks it.
 - Confirm a refund record is written with amount, time, order number, operator, type, and reason.

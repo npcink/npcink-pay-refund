@@ -103,15 +103,20 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 
         public static function refund_time($provider_time, $submitted_at = null)
         {
-            if (is_string($provider_time) && preg_match('/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/D', $provider_time)) {
-                $date = DateTimeImmutable::createFromFormat('!Y-m-d H:i:s', $provider_time, new DateTimeZone('Asia/Shanghai'));
-                $errors = DateTimeImmutable::getLastErrors();
-                if ($date && (!is_array($errors) || (!$errors['warning_count'] && !$errors['error_count']))) {
-                    return wp_date('Y-m-d H:i:s', $date->getTimestamp());
-                }
-            }
+            $timestamp = Npcink_Pay_Refund_Admin_Public::parse_local_payment_time($provider_time, 'Asia/Shanghai');
             // Old contexts may contain the payment time; never reuse that as a refund time.
-            return wp_date('Y-m-d H:i:s', is_int($submitted_at) && $submitted_at > 0 ? $submitted_at : null);
+            return wp_date('Y-m-d H:i:s', $timestamp ?? (is_int($submitted_at) && $submitted_at > 0 ? $submitted_at : null));
+        }
+
+        public static function trade_status_label($status): string
+        {
+            return match ($status) {
+                'WAIT_BUYER_PAY' => __('等待付款', 'npcink-pay-refund'),
+                'TRADE_CLOSED' => __('交易已关闭', 'npcink-pay-refund'),
+                'TRADE_SUCCESS' => __('交易支付成功', 'npcink-pay-refund'),
+                'TRADE_FINISHED' => __('交易已结束，不可退款', 'npcink-pay-refund'),
+                default => __('未知状态，请联系管理员', 'npcink-pay-refund'),
+            };
         }
 
         /**
@@ -145,41 +150,25 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                 // 3. 处理响应或异常
 				if ($result && isset($result->code) && '10000' === (string) $result->code) {
                     $data = $result;
+                    $status = $data->tradeStatus ?? '';
+                    $paid_at = Npcink_Pay_Refund_Admin_Public::parse_local_payment_time($data->sendPayDate ?? null, 'Asia/Shanghai');
+                    $payment_time = null === $paid_at ? __('未获取到有效支付时间', 'npcink-pay-refund') : wp_date('Y-m-d H:i:s', $paid_at);
+                    $window_error = 'TRADE_SUCCESS' === $status ? Npcink_Pay_Refund_Admin_Public::refund_window_error($paid_at) : '';
                     $table_html = "<table>";
                     $table_html .= "<tr><td>订单号：</td><td>" . esc_html($data->outTradeNo) . "</td></tr>";
-                    $table_html .= "<tr><td>时间：</td><td>" . esc_html($data->sendPayDate) . "</td></tr>";
+                    $table_html .= "<tr><td>时间：</td><td>" . esc_html($payment_time) . "</td></tr>";
                     $table_html .= "<tr><td>金额：</td><td>" . esc_html($data->totalAmount) . "</td></tr>";
-                    $table_html .= "<tr><td>状态：</td><td>";
-                    switch ($data->tradeStatus) {
-                        case "WAIT_BUYER_PAY":
-                            $table_html .= "等待付款";
-                            break;
-                        case "TRADE_CLOSED":
-                            $table_html .= "<b class='green'>已退款</b>";
-                            break;
-                        case "TRADE_SUCCESS":
-                            $table_html .= "交易支付成功";
-
-
-                            break;
-                        default:
-                            $table_html .= "未知状态，请联系管理员";
-                    }
-                    $table_html .= "</td></tr>";
+                    $table_html .= "<tr><td>状态：</td><td>" . esc_html(self::trade_status_label($status)) . "</td></tr>";
                     $table_html .= "</table>";
                     //订单支付成功
-                    if ($data->tradeStatus == "TRADE_SUCCESS" && Npcink_Pay_Refund_Admin_Public::contrast_time($data->sendPayDate, 'Asia/Shanghai')) {
+                    if ('TRADE_SUCCESS' === $status && '' === $window_error) {
 						if ($retryable_uncertain) {
 							$table_html .= '<p class="notice notice-warning inline npcink-pay-refund-refund-notice"><strong>' . esc_html__('原退款请求尚未在支付宝查询到；再次提交时将复用原退款请求号和原参数。', 'npcink-pay-refund') . '</strong></p>';
 						}
                         $table_html .= '<p>退款原因：<input type="text" id="npcink-pay-refund-zfb-reason" placeholder="请输入退款原因"></p>';
-                        $table_html .= " <button id='order-btn' class='button button-primary refund' data-order-id='" . esc_attr($data->outTradeNo) . "' data-order-amount='" . esc_attr($data->totalAmount) . "' data-order-time='" . esc_attr($data->sendPayDate) . "'>支付宝全额退款</button>";
-                    } else {
-
-                        if ($data->tradeStatus == "TRADE_SUCCESS" && !Npcink_Pay_Refund_Admin_Public::contrast_time($data->sendPayDate, 'Asia/Shanghai')) {
-                            /* translators: %d: configured refund window in days. */
-                            $table_html .= '<h3>' . esc_html(sprintf(__('该订单时间超过 %d 天，无法使用本功能退款，请联系管理员操作', 'npcink-pay-refund'), Npcink_Pay_Refund_Admin_Public::refund_window_days())) . '</h3>';
-                        }
+                        $table_html .= " <button id='order-btn' class='button button-primary refund' data-order-id='" . esc_attr($data->outTradeNo) . "' data-order-amount='" . esc_attr($data->totalAmount) . "'>支付宝全额退款</button>";
+                    } elseif ('' !== $window_error) {
+                        $table_html .= '<h3>' . esc_html($window_error) . '</h3>';
                     }
                     wp_send_json_success(array('html' => $table_html));
                 } else {
@@ -247,13 +236,14 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                     wp_send_json_error(array('message' => __('订单查询失败，未执行退款。', 'npcink-pay-refund')), 400);
                 }
 
-                if ('TRADE_SUCCESS' !== $query_result->tradeStatus) {
+                if ('TRADE_SUCCESS' !== ($query_result->tradeStatus ?? '')) {
                     wp_send_json_error(array('message' => __('该订单当前状态不可退款。', 'npcink-pay-refund')), 400);
                 }
 
-                if (!Npcink_Pay_Refund_Admin_Public::contrast_time($query_result->sendPayDate, 'Asia/Shanghai')) {
-                    /* translators: %d: configured refund window in days. */
-                    wp_send_json_error(array('message' => sprintf(__('该订单时间超过 %d 天，未执行退款。', 'npcink-pay-refund'), Npcink_Pay_Refund_Admin_Public::refund_window_days())), 400);
+                $paid_at = Npcink_Pay_Refund_Admin_Public::parse_local_payment_time($query_result->sendPayDate ?? null, 'Asia/Shanghai');
+                $window_error = Npcink_Pay_Refund_Admin_Public::refund_window_error($paid_at);
+                if ('' !== $window_error) {
+                    wp_send_json_error(array('message' => $window_error), 400);
                 }
 
                 $order_amount = $query_result->totalAmount;
@@ -416,8 +406,13 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 			$response_code = isset($response['code']) ? (string) $response['code'] : '';
 			$response_order = isset($response['out_trade_no']) ? sanitize_text_field($response['out_trade_no']) : '';
 			$response_amount = isset($response['refund_fee']) ? $response['refund_fee'] : null;
+			// The synchronous API need not echo the request number; a conflicting echo cannot confirm it.
+			$request_matches = !array_key_exists('out_request_no', $response)
+				|| self::refund_request_id($order_id) === $response['out_request_no'];
 
 			if ('10000' === $response_code
+				&& 'Y' === ($response['fund_change'] ?? null)
+				&& $request_matches
 				&& sanitize_text_field($order_id) === $response_order
 				&& self::refund_amounts_match($response_amount, $expected_amount)) {
 				return 'confirmed';

@@ -29,15 +29,39 @@ npcink_test_case('all five real payment AJAX entrypoints deny invalid nonce and 
 });
 
 npcink_test_case('empty and malformed WeChat timestamps fail closed', function () {
-    foreach (array('', 'now', 'tomorrow', '2026-02-30T12:00:00+08:00', array(), '2026-11-05') as $input) {
+    foreach (array('', 'now', 'tomorrow', '2026-02-30T12:00:00+08:00', array(), '2026-11-05', '2026-11-05T12:00:00+0800') as $input) {
         npcink_test_assert_same('', Npcink_Pay_Refund_Admin_Wx::handle_time($input), 'Reject malformed payment time');
     }
-    npcink_test_assert_same('2026-11-05 04:00:00', Npcink_Pay_Refund_Admin_Wx::handle_time('2026-11-05T12:00:00+08:00'), 'Convert RFC3339 instant to site time');
+    foreach (array('2026-11-05T12:00:00+08:00', '2026-11-05T12:00:00.123+08:00', '2026-11-05T04:00:00Z') as $input) {
+        npcink_test_assert_same('2026-11-05 04:00:00', Npcink_Pay_Refund_Admin_Wx::handle_time($input), 'Convert RFC3339 instant to site time');
+    }
 });
 
 npcink_test_case('Alipay payment window uses the provider timezone', function () {
     $now = (new DateTimeImmutable())->setTimezone(new DateTimeZone('Asia/Shanghai'))->format('Y-m-d H:i:s');
-    npcink_test_assert_true(Npcink_Pay_Refund_Admin_Public::contrast_time($now, 'Asia/Shanghai'), 'UTC site must accept a current Shanghai payment');
+    $timestamp = Npcink_Pay_Refund_Admin_Public::parse_local_payment_time($now, 'Asia/Shanghai');
+    npcink_test_assert_same('', Npcink_Pay_Refund_Admin_Public::refund_window_error($timestamp), 'UTC site must accept a current Shanghai payment');
+    $timestamp = Npcink_Pay_Refund_Admin_Public::parse_local_payment_time('2026-11-05 12:00:00', 'Asia/Shanghai');
+    npcink_test_assert_same('2026-11-05 04:00:00', wp_date('Y-m-d H:i:s', $timestamp), 'UTC site must display Shanghai source time as UTC');
+    npcink_test_assert_same(null, Npcink_Pay_Refund_Admin_Public::parse_local_payment_time('2026-02-30 12:00:00', 'Asia/Shanghai'), 'Reject impossible calendar dates');
+});
+
+npcink_test_case('refund windows distinguish invalid or future times from expired payments', function () {
+    foreach (array(null, time() + 3600) as $paid_at) {
+        npcink_test_assert_same('无法确认有效的支付时间，未执行退款。', Npcink_Pay_Refund_Admin_Public::refund_window_error($paid_at), 'Invalid timestamps must not be presented as expired');
+    }
+    npcink_test_assert_same('支付时间已超过 7 天的退款窗口，未执行退款。', Npcink_Pay_Refund_Admin_Public::refund_window_error(time() - 8 * 86400), 'Report only expired payments as expired');
+});
+
+npcink_test_case('Alipay closed and finished trades do not claim a refund', function () {
+    npcink_test_assert_same('交易已关闭', Npcink_Pay_Refund_Admin_Zfb::trade_status_label('TRADE_CLOSED'), 'Closed trades are not proof of a refund');
+    npcink_test_assert_same('交易已结束，不可退款', Npcink_Pay_Refund_Admin_Zfb::trade_status_label('TRADE_FINISHED'), 'Finished trades are known and not refundable');
+});
+
+npcink_test_case('absent uninstall preferences preserve records and settings', function () {
+    npcink_test_assert_same(array('mysql' => 0, 'config' => 0), Npcink_Pay_Refund_Admin_Config::get_config()['config'], 'Default to no destructive uninstall actions');
+    update_option('npcink_pay_refund_config', array('config' => array('mysql' => 1)));
+    npcink_test_assert_same(array('mysql' => 1, 'config' => 0), Npcink_Pay_Refund_Admin_Config::get_config()['config'], 'Honor a saved choice without enabling the other cleanup action');
 });
 
 npcink_test_case('unknown pending card does not claim provider acceptance', function () {

@@ -138,7 +138,6 @@ jQuery(document).ready(function ($) {
       action: "npcink_pay_refund_zfb_order_refund",
       nonce: refundQuery.nonce,
       order_id: orderId, //订单号
-      order_time: $button.data("order-time"), // 获取订单时间
       order_amount: $button.data("order-amount"), // 获取订单总金额
       order_reason: reason, // 获取订单退款原因
     };

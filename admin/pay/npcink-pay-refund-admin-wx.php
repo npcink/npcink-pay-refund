@@ -346,7 +346,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
                 wp_send_json_error(array('message' => __('微信订单查询失败，请检查订单号和鉴权配置。', 'npcink-pay-refund')), 400);
             }
 
-                    $time = self::handle_time(isset($data->success_time) ? $data->success_time : '');
+                    $paid_at = self::parse_payment_time($data->success_time ?? null);
+                    $time = null === $paid_at ? __('未获取到有效支付时间', 'npcink-pay-refund') : wp_date('Y-m-d H:i:s', $paid_at);
+                    $window_error = 'SUCCESS' === $data->trade_state ? Npcink_Pay_Refund_Admin_Public::refund_window_error($paid_at) : '';
                     $order_amount = self::full_refund_amount($data);
                     $payer_amount = isset($data->amount->payer_total) ? (int) $data->amount->payer_total : $order_amount;
                     $order = isset($data->out_trade_no) ? $data->out_trade_no : $order_id;
@@ -384,9 +386,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
                     }
 
 
-                    //正常成功状态且订单时间在配置的退款窗口内，则添加退款按钮
-                    //if (true) {
-                    if ($data->trade_state === "SUCCESS" && $order_amount > 0 && Npcink_Pay_Refund_Admin_Public::contrast_time($time)) {
+                    if ('SUCCESS' === $data->trade_state && $order_amount > 0 && '' === $window_error) {
 
 						if ($pending_not_found) {
 							$response_html .= '<p class="notice notice-warning inline npcink-pay-refund-refund-notice"><strong>' . esc_html__('上次退款单尚未在微信查询到；再次提交时将复用原商户退款单号和原参数。', 'npcink-pay-refund') . '</strong></p>';
@@ -394,11 +394,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
                         $response_html .= '<p>退款原因：<input type="text" id="npcink-pay-refund-wx-reason" placeholder="请输入退款原因"></p>';
                         $response_html .= '<p>点击退款按钮后请稍等进行退款处理</p>';
                         $response_html .= "<button id='wx-order-btn' class='button button-primary refund ' data-order-id='" . esc_attr($order) . "' data-order-amount='" . esc_attr($order_amount) . "'>微信全额退款</button>";
-                    } else {
-                        if ($data->trade_state === "SUCCESS" && !Npcink_Pay_Refund_Admin_Public::contrast_time($time)) {
-                            /* translators: %d: configured refund window in days. */
-                            $response_html .= '<h3>' . esc_html(sprintf(__('订单时间超过 %d 天，无法使用本功能退款，请联系管理员操作', 'npcink-pay-refund'), Npcink_Pay_Refund_Admin_Public::refund_window_days())) . '</h3>';
-                        }
+                    } elseif ('' !== $window_error) {
+                        $response_html .= '<h3>' . esc_html($window_error) . '</h3>';
                     }
             wp_send_json_success(array('html' => $response_html));
         }
@@ -474,9 +471,12 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
                 wp_send_json_error(array('message' => __('订单查询失败，未执行退款。', 'npcink-pay-refund')), 400);
             }
 
-            $order_time = self::handle_time(isset($order_data->success_time) ? $order_data->success_time : '');
-            if ('SUCCESS' !== $order_data->trade_state || !Npcink_Pay_Refund_Admin_Public::contrast_time($order_time)) {
-                wp_send_json_error(array('message' => __('该订单当前状态或时间窗口不可退款。', 'npcink-pay-refund')), 400);
+            if ('SUCCESS' !== $order_data->trade_state) {
+                wp_send_json_error(array('message' => __('该订单当前状态不可退款。', 'npcink-pay-refund')), 400);
+            }
+            $window_error = Npcink_Pay_Refund_Admin_Public::refund_window_error(self::parse_payment_time($order_data->success_time ?? null));
+            if ('' !== $window_error) {
+                wp_send_json_error(array('message' => $window_error), 400);
             }
 
             $order_amount = self::full_refund_amount($order_data);
@@ -1155,16 +1155,21 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
          */
         public static function handle_time($data)
         {
-            if (!is_string($data) || !preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:Z|[+-](?:0\d|1[0-3]):[0-5]\d|[+-]14:00)$/D', $data)) {
-                return '';
+            $timestamp = self::parse_payment_time($data);
+            return null === $timestamp ? '' : wp_date('Y-m-d H:i:s', $timestamp);
+        }
+
+        public static function parse_payment_time($data): ?int
+        {
+            if (!is_string($data) || !preg_match('/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.\d+)?(Z|[+-](?:0\d|1[0-3]):[0-5]\d|[+-]14:00)$/D', $data, $parts)) {
+                return null;
             }
-            $datetime = DateTimeImmutable::createFromFormat('!Y-m-d\TH:i:sP', $data);
+            $datetime = DateTimeImmutable::createFromFormat('!Y-m-d\TH:i:sP', $parts[1] . $parts[2]);
             $errors = DateTimeImmutable::getLastErrors();
             if (!$datetime || (is_array($errors) && ($errors['warning_count'] || $errors['error_count']))) {
-                return '';
+                return null;
             }
-            $timezone = function_exists('wp_timezone') ? wp_timezone() : new DateTimeZone('UTC');
-            return $datetime->setTimezone($timezone)->format('Y-m-d H:i:s');
+            return $datetime->getTimestamp();
         }
     } //end
 }
