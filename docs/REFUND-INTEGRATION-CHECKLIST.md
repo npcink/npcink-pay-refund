@@ -6,8 +6,9 @@ Use this checklist for the first real merchant run. Do not test refunds against 
 
 - Build package: `composer build:zip`
 - Verify package: `composer verify`
-- For the 1.3.10 candidate, install `build/npcink-pay-refund-1.3.10.zip`, not a raw source archive. The released 1.3.9 artifact remains unchanged.
-- Historical release records identify 1.3.7; the live directory version was not rechecked in this remediation. Record live results only for the exact versioned ZIP and merchant credentials being tested.
+- To reproduce the original 1.3.10 candidate validation, use the existing `build/npcink-pay-refund-1.3.10.zip` and verify it against the [recorded candidate SHA-256](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md#验证与制品). Do not rebuild it from a later checkout or substitute a source archive. The released 1.3.9 artifact remains unchanged.
+- `composer verify` and `composer verify:local` both build a ZIP and can overwrite a same-version artifact. Run package checks in a separate checkout when the current build directory holds a frozen candidate.
+- Record live results only for the exact versioned ZIP and merchant configuration being tested.
 - For a later release, install the exact versioned ZIP printed by `composer build:zip`; record its version and SHA-256 before testing.
 - Confirm `vendor/autoload.php` exists in the installed plugin.
 - Record the package SHA-256 before installing it.
@@ -25,6 +26,8 @@ Use this checklist for the first real merchant run. Do not test refunds against 
 ## Candidate evidence record (required before release sign-off)
 
 1.3.9 was published on 2026-11-06 after the user separately confirmed WeChat and Alipay merchant validation for the original package. See RELEASE-1.3.9.zh-CN.md for the exact SHA-256, confirmation scope and remote publication evidence. No order references or amounts were supplied; do not invent them. The historical 1.3.7 manual confirmation remains historical evidence only.
+
+On 2026-11-26, the user confirmed both channels passed merchant validation for the original 1.3.10 candidate. See its [acceptance record](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md#商户验收补记) for the evidence scope. This does not authorize release or sign off on any subsequent code change.
 
 Record one entry per channel, without secrets or full buyer identifiers:
 
