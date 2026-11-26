@@ -1,6 +1,6 @@
 # 退款审查后续维护
 
-日期：2026-11-26。本文记录 [1.3.10 审查收尾](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md) 之后的独立维护变更，不改写原候选 ZIP、清单或商户验收记录。
+日期：2026-11-26。本文记录 [1.3.10 审查收尾](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md) 之后的独立维护变更。提交 `433ad1b` 已进入 GitHub `main`，包含权限回归、CSV 与小项清理；它不是此前验收的原候选，不改写原 ZIP 或清单。
 
 | 编号 | 本轮处置 |
 |---|---|
@@ -20,6 +20,8 @@
 ## 工程验证
 
 - PHP 8.4 本地通过 46 项回归、15 项权限变异和 CSV 下载测试；隔离 MySQL 8.4 上，WordPress 6.0 和 7.0.4 各通过 65 项集成断言及后台烟测。7.0.4 上的完整验证另通过包内容清单核对和 Plugin Check。未调用真实支付接口。
+- 使用者确认原候选验收后，对本地 `433ad1b` 再跑 `composer test`、`python3 tests/mutation-permissions.py` 和 `node tests/csv-export.cjs`，分别为 46 项、15/15 项和 CSV 下载通过。此次未重跑隔离 WordPress/MySQL、Plugin Check 或桌面 Excel；未重建原候选，原 ZIP 校验通过。
+- 收尾回读：[GitHub CI 45772271216](https://github.com/npcink/npcink-pay-refund/actions/runs/45772271216) 的 `headSha` 对应 `433ad1b`，PHP 8.1 / WordPress 6.0 和 PHP 8.4 / WordPress 两组都通过。这是工程验证，不是该提交的商户验收。
 - 验证发现独立 worktree 的 `.git` 是文件而非目录，原排除规则会把这个指针打进测试包。现在排除两种形态，并直接对 ZIP 条目执行断言。工作树中的临时验证包不作为商户候选。
 
 ## 后续仍需验证或处理

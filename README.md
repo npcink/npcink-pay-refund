@@ -26,21 +26,23 @@ The plugin is an admin-side order query, refund, and refund-log tool. It is not 
 
 == Screenshots ==
 
-=== Order query and refund ===
+The screenshots below show an earlier interface. Current settings and query controls may differ.
 
-![Order query and refund](assets/screenshot-1.png)
+=== Alipay configuration and connection check ===
 
-=== Refund result ===
+![Alipay configuration and connection check](assets/screenshot-1.png)
 
-![Refund result](assets/screenshot-2.png)
+=== Refund operator permissions and record visibility ===
 
-=== Refund records ===
+![Refund operator permissions and record visibility](assets/screenshot-2.png)
 
-![Refund records](assets/screenshot-3.png)
+=== Order refund console and recent records ===
 
-=== Plugin configuration and permissions ===
+![Order refund console and recent records](assets/screenshot-3.png)
 
-![Plugin configuration and permissions](assets/screenshot-4.png)
+=== Refund record search and filtering ===
+
+![Refund record search and filtering](assets/screenshot-4.png)
 
 == Third-party services ==
 

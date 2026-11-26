@@ -49,14 +49,40 @@
   list-style-type: auto;
   padding: 0 1em;
 }
-.npc_style .table_style {
-  padding: 1em 0;
-  font-size: 18px;
-  line-height: 2em;
+.npc_style .npcink-pay-refund-order-query {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 8px;
+  max-width: 32rem;
+  margin-bottom: 16px;
 }
-.npc_style .table_style table {
-  font-size: 26px;
-  line-height: 2em;
+.npc_style .npcink-pay-refund-order-query label {
+  grid-column: 1 / -1;
+  font-weight: 600;
+}
+.npc_style .npcink-pay-refund-order-query input {
+  min-width: 0;
+  margin: 0;
+}
+.npc_style .npcink-pay-refund-order-query .button {
+  min-width: 7em;
+}
+.npc_style .npcink-pay-refund-record-page-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 8px;
+}
+.npc_style .npcink-pay-refund-responsive-table .npcink-pay-refund-amount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.npc_style .npcink-pay-refund-cell-value {
+  overflow-wrap: anywhere;
+}
+.npc_style .npcink-pay-refund-cell-label {
+  display: none;
 }
 .npc_style #npcink-pay-refund-records {
   max-width: 1200px;
@@ -295,6 +321,62 @@
   color: #50575e;
 }
 @media (max-width: 782px) {
+  .npc_style .npcink-pay-refund-order-query {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: start;
+  }
+  .npc_style .npcink-pay-refund-order-query input {
+    width: 100%;
+  }
+  .npc_style .npcink-pay-refund-responsive-table,
+  .npc_style .npcink-pay-refund-responsive-table tbody {
+    display: block;
+  }
+  .npc_style .npcink-pay-refund-responsive-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .npc_style .npcink-pay-refund-responsive-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 6px 4px;
+  }
+  .npc_style .npcink-pay-refund-responsive-table tbody tr + tr {
+    border-top: 1px solid #dcdcde;
+  }
+  .npc_style .npcink-pay-refund-responsive-table tbody td {
+    display: block;
+    padding: 4px 8px;
+    min-width: 0;
+    text-align: start;
+  }
+  .npc_style .npcink-pay-refund-responsive-table tbody td::before {
+    content: none;
+  }
+  .npc_style .npcink-pay-refund-responsive-table .npcink-pay-refund-amount {
+    text-align: start;
+  }
+  .npc_style .npcink-pay-refund-responsive-table td[colspan],
+  .npc_style .npcink-pay-refund-cell-order,
+  .npc_style .npcink-pay-refund-cell-wide,
+  .npc_style .npcink-pay-refund-cell-action {
+    grid-column: 1 / -1;
+  }
+  .npc_style .npcink-pay-refund-cell-order .npcink-pay-refund-cell-value {
+    font-weight: 600;
+  }
+  .npc_style .npcink-pay-refund-cell-label {
+    display: block;
+    font-size: 12px;
+    color: #50575e;
+  }
+  .npc_style .npcink-pay-refund-cell-action .npcink-pay-refund-cell-label {
+    display: none;
+  }
   .npc_style .npcink-pay-refund-result-details {
     grid-template-columns: 1fr;
   }
@@ -307,5 +389,6 @@
   .npc_style .npcink-pay-refund-record-toolbar input[type="date"],
   .npc_style .npcink-pay-refund-record-toolbar .button {
     width: 100%;
+    min-width: 0;
   }
 }

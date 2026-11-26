@@ -154,21 +154,23 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                     $paid_at = Npcink_Pay_Refund_Admin_Public::parse_local_payment_time($data->sendPayDate ?? null, 'Asia/Shanghai');
                     $payment_time = null === $paid_at ? __('未获取到有效支付时间', 'npcink-pay-refund') : wp_date('Y-m-d H:i:s', $paid_at);
                     $window_error = 'TRADE_SUCCESS' === $status ? Npcink_Pay_Refund_Admin_Public::refund_window_error($paid_at) : '';
-                    $table_html = "<table>";
-                    $table_html .= "<tr><td>订单号：</td><td>" . esc_html($data->outTradeNo) . "</td></tr>";
-                    $table_html .= "<tr><td>时间：</td><td>" . esc_html($payment_time) . "</td></tr>";
-                    $table_html .= "<tr><td>金额：</td><td>" . esc_html($data->totalAmount) . "</td></tr>";
-                    $table_html .= "<tr><td>状态：</td><td>" . esc_html(self::trade_status_label($status)) . "</td></tr>";
-                    $table_html .= "</table>";
+                    $tone = match ($status) {
+                        'TRADE_SUCCESS' => 'success',
+                        'TRADE_CLOSED', 'TRADE_FINISHED' => 'closed',
+                        default => 'neutral',
+                    };
+                    $table_html = Npcink_Pay_Refund_Admin_Public::render_result_card($tone, __('支付宝订单查询', 'npcink-pay-refund'), self::trade_status_label($status), array(
+                        __('商户订单号', 'npcink-pay-refund') => $data->outTradeNo ?? $param,
+                        __('支付时间', 'npcink-pay-refund') => $payment_time,
+                        __('订单总额', 'npcink-pay-refund') => Npcink_Pay_Refund_Admin_Public::display_amount($data->totalAmount ?? null),
+                    ), $window_error);
                     //订单支付成功
                     if ('TRADE_SUCCESS' === $status && '' === $window_error) {
 						if ($retryable_uncertain) {
 							$table_html .= '<p class="notice notice-warning inline npcink-pay-refund-refund-notice"><strong>' . esc_html__('原退款请求尚未在支付宝查询到；再次提交时将复用原退款请求号和原参数。', 'npcink-pay-refund') . '</strong></p>';
 						}
-                        $table_html .= '<p>退款原因：<input type="text" id="npcink-pay-refund-zfb-reason" placeholder="请输入退款原因"></p>';
+                        $table_html .= '<p><label for="npcink-pay-refund-zfb-reason">' . esc_html__('退款原因：', 'npcink-pay-refund') . '</label><input type="text" id="npcink-pay-refund-zfb-reason"></p>';
                         $table_html .= " <button id='order-btn' class='button button-primary refund' data-order-id='" . esc_attr($data->outTradeNo) . "' data-order-amount='" . esc_attr($data->totalAmount) . "'>支付宝全额退款</button>";
-                    } elseif ('' !== $window_error) {
-                        $table_html .= '<h3>' . esc_html($window_error) . '</h3>';
                     }
                     Npcink_Pay_Refund_Admin_Audit::payment_success(array('html' => $table_html));
                 } else {
@@ -284,14 +286,6 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                     $body = json_decode($result->httpBody, true);
                     $provider_time = $body['alipay_trade_refund_response']['gmt_refund_pay'] ?? '';
                     if ('' !== $provider_time) { $order_time = self::refund_time($provider_time); }
-                    $table_html = "<table>";
-                    $table_html .= "<tr><td>订单号：</td><td>" . esc_html($order_id) . "</td></tr>";
-                    $table_html .= "<tr><td>时间：</td><td>" . esc_html($order_time) . "</td></tr>";
-                    $table_html .= "<tr><td>金额：</td><td>" . esc_html($order_amount) . "</td></tr>";
-                    $table_html .= "<tr><td>状态：</td><td><b class='green'>已退款</b></td></tr>";
-                    $table_html .= "</td></tr>";
-                    $table_html .= "</table>";
-
 						$recorded = Npcink_Pay_Refund_Admin_Public::add_data($order_time, $user, $order_amount, $order_id, $order_reason, '支付宝', $user_id);
                     if (false === $recorded) {
                         $refund_claimed = false;
@@ -304,7 +298,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                     $refund_claimed = false;
 					$refund_uncertain_saved = false;
 
-                    Npcink_Pay_Refund_Admin_Audit::payment_success(array('html' => $table_html));
+                    Npcink_Pay_Refund_Admin_Audit::payment_success(array('html' => self::render_confirmed_refund_html(array(
+                        'n_order' => $order_id, 'n_time' => $order_time, 'n_amount' => $order_amount,
+                    ), __('退款成功', 'npcink-pay-refund'))));
                 } else {
                     // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log -- Keep gateway diagnostics out of the AJAX response.
                     error_log('Npcink_Pay_Refund Alipay refund rejected: ' . self::gateway_result_log_context($result));
@@ -541,14 +537,11 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
 
 		public static function render_confirmed_refund_html($context, $status)
 		{
-			$table_html = '<table>';
-			$table_html .= '<tr><td>订单号：</td><td>' . esc_html($context['n_order']) . '</td></tr>';
-			$table_html .= '<tr><td>时间：</td><td>' . esc_html($context['n_time']) . '</td></tr>';
-			$table_html .= '<tr><td>金额：</td><td>' . esc_html($context['n_amount']) . '</td></tr>';
-			$table_html .= '<tr><td>状态：</td><td><b class="green">' . esc_html($status) . '</b></td></tr>';
-			$table_html .= '</table>';
-
-			return $table_html;
+            return Npcink_Pay_Refund_Admin_Public::render_result_card('success', __('支付宝退款', 'npcink-pay-refund'), $status, array(
+                __('商户订单号', 'npcink-pay-refund') => $context['n_order'],
+                __('退款时间', 'npcink-pay-refund') => $context['n_time'],
+                __('退款金额', 'npcink-pay-refund') => Npcink_Pay_Refund_Admin_Public::display_amount($context['n_amount']),
+            ));
 		}
 
         /**
@@ -569,15 +562,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Zfb')) {
                 ), 500);
             }
 
-            $table_html = '<table>';
-            $table_html .= '<tr><td>订单号：</td><td>' . esc_html($reconciliation['n_order']) . '</td></tr>';
-            $table_html .= '<tr><td>时间：</td><td>' . esc_html($reconciliation['n_time']) . '</td></tr>';
-            $table_html .= '<tr><td>金额：</td><td>' . esc_html($reconciliation['n_amount']) . '</td></tr>';
-            $table_html .= '<tr><td>状态：</td><td><b class="green">已退款，本地记录已补记</b></td></tr>';
-            $table_html .= '</table>';
-
             Npcink_Pay_Refund_Admin_Audit::payment_success(array(
-                'html' => $table_html,
+                'html' => self::render_confirmed_refund_html($reconciliation, __('已退款，本地记录已补记', 'npcink-pay-refund')),
                 'provider_status' => 'SUCCESS',
                 'reconciled' => true,
             ));

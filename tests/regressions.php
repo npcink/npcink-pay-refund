@@ -1,5 +1,16 @@
 <?php
 
+npcink_test_case('result cards escape fields and distinguish zero from missing amounts', function () {
+    $card = Npcink_Pay_Refund_Admin_Public::render_result_card('closed', '支付宝订单查询', '交易已关闭', array(
+        '商户订单号' => 'fixture-<example>',
+        '订单总额' => Npcink_Pay_Refund_Admin_Public::display_amount('0'),
+    ));
+    npcink_test_assert_true(str_contains($card, 'npcink-pay-refund-result-closed'), 'Closed trades have a neutral closed tone');
+    npcink_test_assert_true(str_contains($card, 'fixture-&lt;example&gt;'), 'Order numbers are escaped');
+    npcink_test_assert_true(str_contains($card, '0.00 元'), 'Zero is displayed as an amount');
+    npcink_test_assert_same('暂无', Npcink_Pay_Refund_Admin_Public::display_amount(null), 'A missing amount must not be presented as zero');
+});
+
 npcink_test_case('payment config shares constant precedence with settings', function () {
     define('NPCINK_PAY_REFUND_WX_CERT_KEY', 'constant-private-key');
     update_option('npcink_pay_refund_config', array('wx' => array('cert_key' => 'legacy-key')));
