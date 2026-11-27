@@ -39,8 +39,8 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
             // 添加一个菜单到 WordPress 后台的“设置”菜单下
             add_submenu_page(
                 'index.php',
-                '订单退款',
-                '订单退款',
+                __('订单退款', 'npcink-pay-refund'),
+                __('订单退款', 'npcink-pay-refund'),
                 'read',
                 'npcink_pay_refund_query',
                 array(__CLASS__, 'menu_displays'),
@@ -68,17 +68,17 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                 <!--标题-->
                 <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
                 <ul class="ul_meat">
-                    <li>退款前请确认商户账户有足够可用余额；不足时按支付平台提示处理</li>
+                    <li><?php echo esc_html__('退款前请确认商户账户有足够可用余额；不足时按支付平台提示处理', 'npcink-pay-refund'); ?></li>
                     <li>
                         <?php
                         /* translators: %d: configured refund window in days. */
                         echo esc_html(sprintf(__('支付时间超过 %d 天的订单无法使用本功能进行退款', 'npcink-pay-refund'), Npcink_Pay_Refund_Admin_Public::refund_window_days()));
                         ?>
                     </li>
-                    <li>若发生异常请联系管理员</li>
+                    <li><?php echo esc_html__('若发生异常请联系管理员', 'npcink-pay-refund'); ?></li>
                 </ul>
 
-                <h2><?php echo self::svg_icon($wx_icon); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- self::svg_icon() returns wp_kses()-sanitized SVG. ?>微信订单查询</h2>
+                <h2><?php echo self::svg_icon($wx_icon); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- self::svg_icon() returns wp_kses()-sanitized SVG. ?><?php echo esc_html__('微信订单查询', 'npcink-pay-refund'); ?></h2>
                 <form id="npcink-pay-refund-wx-query" class="npcink-pay-refund-order-query">
                     <label for="npcink-pay-refund-wx-input"><?php echo esc_html__('微信商户订单号（out_trade_no）', 'npcink-pay-refund'); ?></label>
                     <input type="text" id="npcink-pay-refund-wx-input">
@@ -87,7 +87,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                 </form>
                 <div id="npcink-pay-refund-wx-data" aria-live="polite"></div>
 
-                <h2><?php echo self::svg_icon($zfb_icon); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- self::svg_icon() returns wp_kses()-sanitized SVG. ?>支付宝订单查询</h2>
+                <h2><?php echo self::svg_icon($zfb_icon); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- self::svg_icon() returns wp_kses()-sanitized SVG. ?><?php echo esc_html__('支付宝订单查询', 'npcink-pay-refund'); ?></h2>
                 <form id="npcink-pay-refund-zfb-query" class="npcink-pay-refund-order-query">
                     <label for="npcink-pay-refund-zfb-input"><?php echo esc_html__('支付宝商户订单号（out_trade_no）', 'npcink-pay-refund'); ?></label>
                     <input type="text" id="npcink-pay-refund-zfb-input">
@@ -109,7 +109,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                         </tr></thead>
                         <tbody role="rowgroup"></tbody>
                     </table>
-                    <p><button type="button" class="button" id="npcink-pay-refund-operational-reset">刷新首批</button> <button type="button" class="button" id="npcink-pay-refund-operational-next" hidden>下一批</button></p>
+                    <p><button type="button" class="button" id="npcink-pay-refund-operational-reset"><?php echo esc_html__('刷新首批', 'npcink-pay-refund'); ?></button> <button type="button" class="button" id="npcink-pay-refund-operational-next" hidden><?php echo esc_html__('下一批', 'npcink-pay-refund'); ?></button></p>
                 </details>
                 <!--展示数据-->
                 <h2 id="npcink-pay-refund-record-heading"><?php echo esc_html__('操作记录', 'npcink-pay-refund'); ?></h2>
@@ -193,6 +193,48 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Query')) {
                 'querying' => __('查询中…', 'npcink-pay-refund'),
                 'emptyOrder' => __('请输入商户订单号。', 'npcink-pay-refund'),
                 'yuan' => __('元', 'npcink-pay-refund'),
+                'strings' => array(
+                    /* translators: 1: current attempt, 2: maximum attempts. */
+                    'polling' => __('正在同步微信退款状态（%1$s/%2$s）...', 'npcink-pay-refund'),
+                    'pollFailed' => __('微信退款状态查询失败，请稍后手动查询。', 'npcink-pay-refund'),
+                    'pollPending' => __('微信仍在处理退款，请稍后再次点击查询刷新结果。', 'npcink-pay-refund'),
+                    'pollError' => __('微信退款状态暂时无法同步，请稍后手动查询。', 'npcink-pay-refund'),
+                    'alipayQueryFailed' => __('支付宝订单查询失败，请稍后重试。', 'npcink-pay-refund'),
+                    'wechatQueryFailed' => __('微信订单查询失败，请检查微信鉴权信息或稍后重试。', 'npcink-pay-refund'),
+                    'emptyReason' => __('请输入退款原因。', 'npcink-pay-refund'),
+                    /* translators: 1: order ID, 2: formatted amount, 3: reason. */
+                    'alipayConfirm' => __("确认向支付宝提交全额退款？\n订单号：%1\$s\n金额：%2\$s\n原因：%3\$s", 'npcink-pay-refund'),
+                    /* translators: 1: order ID, 2: formatted amount, 3: reason. */
+                    'wechatConfirm' => __("确认向微信支付提交全额退款？\n订单号：%1\$s\n金额：%2\$s\n原因：%3\$s", 'npcink-pay-refund'),
+                    'processing' => __('处理中...', 'npcink-pay-refund'),
+                    'alipayRefundFailed' => __('支付宝退款失败，请稍后重试。', 'npcink-pay-refund'),
+                    'alipayRequestFailed' => __('支付宝退款请求失败，请稍后重试或联系管理员检查配置。', 'npcink-pay-refund'),
+                    'alipayRefund' => __('支付宝全额退款', 'npcink-pay-refund'),
+                    'wechatRefundFailed' => __('微信退款失败，请稍后重试。', 'npcink-pay-refund'),
+                    'wechatRequestFailed' => __('微信退款请求失败，请稍后重试或联系管理员检查配置。', 'npcink-pay-refund'),
+                    'wechatRefund' => __('微信全额退款', 'npcink-pay-refund'),
+                    'recordsFailed' => __('记录查询失败，请重试。', 'npcink-pay-refund'),
+                    'operationalFailed' => __('退款状态未能刷新 · 请重试', 'npcink-pay-refund'),
+                    'operationalRetry' => __('待处理状态查询失败，不能确认是否仍有待处理项。请刷新首批重试。', 'npcink-pay-refund'),
+                    /* translators: %1$s: number of refunds on this page. */
+                    'operationalCountMore' => __('本批 %1$s 项退款待核对（还有更多） · 查看详情', 'npcink-pay-refund'),
+                    /* translators: %1$s: number of refunds on this page. */
+                    'operationalCount' => __('本批 %1$s 项退款待核对 · 查看详情', 'npcink-pay-refund'),
+                    'operationalMore' => __('还有退款状态待检查 · 查看详情', 'npcink-pay-refund'),
+                    'operationalNone' => __('本批无待处理项 · 返回首批核对', 'npcink-pay-refund'),
+                    'operationalNext' => __('本批无可显示状态，请继续下一批。', 'npcink-pay-refund'),
+                    'operationalEmpty' => __('本批无待处理退款状态。', 'npcink-pay-refund'),
+                    'reconcile' => __('查询核对', 'npcink-pay-refund'),
+                    'noFilteredRecords' => __('没有符合筛选条件的退款记录。', 'npcink-pay-refund'),
+                    'noRecords' => __('暂无退款记录。', 'npcink-pay-refund'),
+                    /* translators: %1$s: number of enabled filters. */
+                    'filterCount' => __('更多筛选（%1$s 项已启用）', 'npcink-pay-refund'),
+                    'moreFilters' => __('更多筛选', 'npcink-pay-refund'),
+                    /* translators: 1: page number, 2: visible rows, 3: total rows. */
+                    'recordPage' => __('第 %1$s 页，显示 %2$s 条，共 %3$s 条。', 'npcink-pay-refund'),
+                    'wechat' => __('微信', 'npcink-pay-refund'),
+                    'alipay' => __('支付宝', 'npcink-pay-refund'),
+                ),
                 //20条退款记录
                 'records' => self::records_page(),
 				'operational' => Npcink_Pay_Refund_Admin_Public::refund_operational_state_page(),

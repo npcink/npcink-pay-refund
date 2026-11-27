@@ -311,7 +311,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 					$recorded = self::sync_refund_status($order_id, $pending_result['data']);
 					if (false === $recorded) {
 						Npcink_Pay_Refund_Admin_Audit::payment_error(array(
-							'message' => self::local_recording_error_message(),
+							'message' => self::local_recording_error_message($order_id),
 							'provider_status' => 'SUCCESS',
 							'reconciliation_required' => true,
 						), 500);
@@ -382,7 +382,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 							$response_html .= '<p class="notice notice-warning inline npcink-pay-refund-refund-notice"><strong>' . esc_html__('上次退款单尚未在微信查询到；再次提交时将复用原商户退款单号和原参数。', 'npcink-pay-refund') . '</strong></p>';
 						}
                         $response_html .= '<p><label for="npcink-pay-refund-wx-reason">' . esc_html__('退款原因：', 'npcink-pay-refund') . '</label><input type="text" id="npcink-pay-refund-wx-reason"></p>';
-                        $response_html .= "<button id='wx-order-btn' class='button button-primary refund ' data-order-id='" . esc_attr($order) . "' data-order-amount='" . esc_attr($order_amount) . "'>微信全额退款</button>";
+                        $response_html .= "<button id='wx-order-btn' class='button button-primary refund ' data-order-id='" . esc_attr($order) . "' data-order-amount='" . esc_attr($order_amount) . "'>" . esc_html__('微信全额退款', 'npcink-pay-refund') . '</button>';
                     }
             Npcink_Pay_Refund_Admin_Audit::payment_success(array('html' => $response_html));
         }
@@ -419,7 +419,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 					$recorded = self::sync_refund_status($order_id, $pending_result['data']);
 					if (false === $recorded) {
 						Npcink_Pay_Refund_Admin_Audit::payment_error(array(
-							'message' => self::local_recording_error_message(),
+							'message' => self::local_recording_error_message($order_id),
 							'provider_status' => 'SUCCESS',
 							'reconciliation_required' => true,
 						), 500);
@@ -523,7 +523,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
                     $response_html = self::render_refund_query_html($data);
                     if (false === $recorded) {
                         Npcink_Pay_Refund_Admin_Audit::payment_error(array(
-                            'message' => self::local_recording_error_message(),
+                            'message' => self::local_recording_error_message($order),
                             'provider_status' => 'SUCCESS',
                             'reconciliation_required' => true,
                         ), 500);
@@ -594,7 +594,7 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
 			if (false === $recorded) {
 				$message = in_array($data->status, array('CLOSED', 'ABNORMAL'), true)
 					? __('微信退款已进入终态，但新的退款尝试号保存失败。订单继续锁定，请检查数据库后再处理。', 'npcink-pay-refund')
-					: self::local_recording_error_message();
+					: self::local_recording_error_message($order);
                 Npcink_Pay_Refund_Admin_Audit::payment_error(array(
                     'message' => $message,
                     'provider_status' => sanitize_text_field($data->status),
@@ -718,8 +718,11 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Wx')) {
             );
         }
 
-        public static function local_recording_error_message()
+        public static function local_recording_error_message($order_id = '')
         {
+            if ('' !== $order_id && Npcink_Pay_Refund_Admin_Public::has_refund_record($order_id, '微信')) {
+                return __('微信退款已成功且已在本地记账，但待处理状态尚未清理。请重新查询核对，勿重复退款。', 'npcink-pay-refund');
+            }
             return __('微信退款已成功，但本地退款记录保存失败。订单已锁定等待管理员对账，请勿重复退款。', 'npcink-pay-refund');
         }
 

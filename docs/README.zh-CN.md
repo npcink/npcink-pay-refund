@@ -35,6 +35,7 @@
 
 - [1.3.10 审查处置、开发复盘与原候选验收](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md)
 - [退款审查后续维护与操作日志](AUDIT-FOLLOWUP.zh-CN.md)
+- [1.3.11 维护候选：规模基准、限流设计与人工验收](MAINTENANCE-CANDIDATE-1.3.11.zh-CN.md)
 - [1.3.9 收尾、剩余边界与开发复盘](CLOSEOUT-AND-RETROSPECTIVE-1.3.9.zh-CN.md)
 - [1.3.9 正式发布与制品核对记录](RELEASE-1.3.9.zh-CN.md)
 - [项目改造历史与当前状态](PROJECT-HISTORY.zh-CN.md)

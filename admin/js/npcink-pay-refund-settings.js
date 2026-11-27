@@ -1,6 +1,16 @@
 //下载数据库文件
 jQuery(document).ready(function ($) {
-  var refundSettings = window.npcinkPayRefundSettings || {};
+  var refundSettings = window.npcinkPayRefundSettings;
+  if (!refundSettings || !refundSettings.strings) { return; }
+  var strings = refundSettings.strings;
+
+  function format(key) {
+    var args = arguments;
+    return strings[key].replace(/%([1-9][0-9]*)\$s/g, function (placeholder, index) {
+      return Number(index) < args.length ? String(args[Number(index)]) : placeholder;
+    });
+  }
+
   var $downloadButton = $("#npcink-pay-refund-download");
 
   // 使用 AJAX 请求获取数据库表数据
@@ -32,28 +42,28 @@ jQuery(document).ready(function ($) {
           ? response.data.rows
           : [];
         if (data.length === 0) {
-          showSettingsNotice("暂无数据可供下载。");
+          showSettingsNotice(strings.noDownloadRows);
           return;
         }
         if (response && response.success && response.data && response.data.truncated) {
-          showSettingsNotice("退款记录较多，本次仅导出最新 " + response.data.limit + " 条。", "warning");
+          showSettingsNotice(format("downloadLimited", response.data.limit), "warning");
         }
         
 
         // 定义自定义列名的映射对象
         const columnMapping = {
-          id: "退款编号",
-          n_amount: "退款金额",
-          n_time: "退款时间",
-          n_order: "订单号",
-          n_user: "操作员工",
-          n_type: "类型",
-          n_reason: "退款原因",
+          id: strings.csvId,
+          n_amount: strings.csvAmount,
+          n_time: strings.csvTime,
+          n_order: strings.csvOrder,
+          n_user: strings.csvUser,
+          n_type: strings.csvType,
+          n_reason: strings.csvReason,
         };
 
         // 将数据转换为 CSV 格式，并应用自定义列名
         const csvData = convertToCSV(data, columnMapping);
-        const csvFileName = "退款订单记录表.csv";
+        const csvFileName = strings.csvFilename;
 
         const blob = new Blob(["\uFEFF", csvData], { type: "text/csv;charset=utf-8" });
         const url = URL.createObjectURL(blob);
@@ -66,7 +76,7 @@ jQuery(document).ready(function ($) {
         URL.revokeObjectURL(url);
       },
       error: function () {
-        showSettingsNotice("退款记录下载失败，请稍后重试。");
+        showSettingsNotice(strings.downloadFailed);
       },
     });
   });
@@ -98,10 +108,7 @@ jQuery(document).ready(function ($) {
             $("<td>", { colspan: 4 }).append(
               $("<p>", {
                 class: "description npcink-pay-refund-user-empty",
-                text:
-                  refundSettings.strings && refundSettings.strings.emptySelected
-                    ? refundSettings.strings.emptySelected
-                    : "尚未添加退款专员。",
+                text: strings.emptySelected,
               })
             )
           )
@@ -116,7 +123,7 @@ jQuery(document).ready(function ($) {
       if (!users.length) {
         $("<p>", {
           class: "description npcink-pay-refund-user-search-message",
-          text: refundSettings.strings && refundSettings.strings.noUsers ? refundSettings.strings.noUsers : "没有找到可添加用户。",
+          text: strings.noUsers,
         }).appendTo($refundUserResults);
         return;
       }
@@ -126,10 +133,10 @@ jQuery(document).ready(function ($) {
       });
       var $thead = $("<thead>").append(
         $("<tr>")
-          .append($("<th>", { text: "姓名" }))
-          .append($("<th>", { text: "账号" }))
-          .append($("<th>", { text: "角色" }))
-          .append($("<th>", { class: "npcink-pay-refund-user-action-column", text: "操作" }))
+          .append($("<th>", { text: strings.name }))
+          .append($("<th>", { text: strings.account }))
+          .append($("<th>", { text: strings.role }))
+          .append($("<th>", { class: "npcink-pay-refund-user-action-column", text: strings.action }))
       );
       var $tbody = $("<tbody>");
 
@@ -139,7 +146,7 @@ jQuery(document).ready(function ($) {
 
         $("<tr>")
           .append($("<td>").append($("<strong>", { text: user.name })))
-          .append($("<td>", { text: "账号：" + user.login + " · ID：" + user.id }))
+          .append($("<td>", { text: format("accountWithId", user.login, user.id) }))
           .append($("<td>", { text: (user.roles || []).join("、") }))
           .append(
             $("<td>").append(
@@ -147,10 +154,7 @@ jQuery(document).ready(function ($) {
                 type: "button",
                 class: "button npcink-pay-refund-add-refund-user",
                 disabled: isSelected,
-                text:
-                  isSelected && refundSettings.strings && refundSettings.strings.alreadySelected
-                    ? refundSettings.strings.alreadySelected
-                    : "添加",
+                text: isSelected ? strings.alreadySelected : strings.add,
               }).data("user", user)
             )
           )
@@ -175,14 +179,14 @@ jQuery(document).ready(function ($) {
         )
         .append($("<strong>", { text: user.name }))
         .appendTo($row);
-      $("<td>", { text: "账号：" + user.login + " · ID：" + user.id }).appendTo($row);
+      $("<td>", { text: format("accountWithId", user.login, user.id) }).appendTo($row);
       $("<td>", { text: (user.roles || []).join("、") }).appendTo($row);
       $("<td>")
         .append(
           $("<button>", {
             type: "button",
             class: "button npcink-pay-refund-remove-refund-user",
-            text: "移除",
+            text: strings.remove,
           })
         )
         .appendTo($row);
@@ -209,9 +213,7 @@ jQuery(document).ready(function ($) {
           $("<p>", {
             class: "description npcink-pay-refund-user-search-message",
             text:
-              refundSettings.strings && refundSettings.strings.typeToSearch
-                ? refundSettings.strings.typeToSearch
-                : "请输入关键字搜索。",
+              strings.typeToSearch,
           })
         );
         return;
@@ -221,7 +223,7 @@ jQuery(document).ready(function ($) {
       $refundUserResults.empty().append(
         $("<p>", {
           class: "description npcink-pay-refund-user-search-message",
-          text: refundSettings.strings && refundSettings.strings.searching ? refundSettings.strings.searching : "正在搜索...",
+          text: strings.searching,
         })
       );
 
@@ -245,10 +247,7 @@ jQuery(document).ready(function ($) {
           $refundUserResults.empty().append(
             $("<p>", {
               class: "description npcink-pay-refund-user-search-message",
-              text:
-                refundSettings.strings && refundSettings.strings.searchFailed
-                  ? refundSettings.strings.searchFailed
-                  : "搜索失败，请稍后重试。",
+              text: strings.searchFailed,
             })
           );
         })
@@ -300,11 +299,11 @@ jQuery(document).ready(function ($) {
 
     $button
       .prop("disabled", true)
-      .text(getSettingsString("checkingConfig", "正在检测配置..."));
+      .text(strings.checkingConfig);
     $result.empty().append(
       $("<p>", {
         class: "description",
-        text: getSettingsString("checkingConfig", "正在检测配置..."),
+        text: strings.checkingConfig,
       })
     );
 
@@ -328,7 +327,7 @@ jQuery(document).ready(function ($) {
           $result,
           response && response.data && response.data.message
             ? response.data.message
-            : getSettingsString("checkConfigFailed", "配置检测失败，请稍后重试。")
+            : strings.checkConfigFailed
         );
       })
       .fail(function (xhr) {
@@ -338,19 +337,13 @@ jQuery(document).ready(function ($) {
           xhr.responseJSON.data &&
           xhr.responseJSON.data.message
             ? xhr.responseJSON.data.message
-            : getSettingsString("checkConfigFailed", "配置检测失败，请稍后重试。");
+            : strings.checkConfigFailed;
         renderPaymentCheckError($result, message);
       })
       .always(function () {
         $button.prop("disabled", false).text(originalText);
       });
   });
-
-  function getSettingsString(key, fallback) {
-    return refundSettings.strings && refundSettings.strings[key]
-      ? refundSettings.strings[key]
-      : fallback;
-  }
 
   function renderPaymentCheckError($container, message) {
     $container.empty().append(
@@ -366,7 +359,7 @@ jQuery(document).ready(function ($) {
     var $notice = $("<div>", {
       class: "notice " + (isOk ? "notice-success" : "notice-error") + " inline",
     }).append(
-      $("<p>").append($("<strong>", { text: data.message || (isOk ? "检测通过。" : "检测未通过。") }))
+      $("<p>").append($("<strong>", { text: data.message || (isOk ? strings.checkPassed : strings.checkBlocked) }))
     );
 
     var $table = $("<table>", {
@@ -377,9 +370,9 @@ jQuery(document).ready(function ($) {
     $("<thead>")
       .append(
         $("<tr>")
-          .append($("<th>", { text: "状态" }))
-          .append($("<th>", { text: "项目" }))
-          .append($("<th>", { text: "说明" }))
+          .append($("<th>", { text: strings.status }))
+          .append($("<th>", { text: strings.item }))
+          .append($("<th>", { text: strings.details }))
       )
       .appendTo($table);
 
@@ -390,7 +383,7 @@ jQuery(document).ready(function ($) {
           $("<td>").append(
             $("<span>", {
               class: "npcink-pay-refund-status-badge npcink-pay-refund-status-" + status,
-              text: status === "ok" ? "通过" : "阻塞",
+              text: status === "ok" ? strings.pass : strings.blocked,
             })
           )
         )
@@ -403,7 +396,7 @@ jQuery(document).ready(function ($) {
     $container.empty().append($notice);
     if (items.length) {
       var $details = $("<details>", { class: "npcink-pay-refund-disclosure" }).prop("open", !isOk);
-      $details.append($("<summary>", { text: isOk ? "查看检测明细" : "查看需处理项目" }), $table);
+      $details.append($("<summary>", { text: isOk ? strings.viewChecks : strings.viewBlocked }), $table);
       $container.append($details);
     }
   }

@@ -398,9 +398,9 @@ if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {
             }
             $table = esc_sql($wpdb->options);
             $prefixes = array(
-                'npcink_pay_refund_uncertain_' => array('uncertain', '支付宝待确认'),
-                'npcink_pay_refund_pending_wx_' => array('wechat_pending', '微信待查询'),
-                'npcink_pay_refund_reconcile_' => array('reconciliation', '退款已成功，本站记录待补记'),
+                'npcink_pay_refund_uncertain_' => array('uncertain', __('支付宝待确认', 'npcink-pay-refund')),
+                'npcink_pay_refund_pending_wx_' => array('wechat_pending', __('微信待查询', 'npcink-pay-refund')),
+                'npcink_pay_refund_reconcile_' => array('reconciliation', __('退款已成功，本站记录待补记', 'npcink-pay-refund')),
             );
             $names = array_keys($prefixes);
             $owner_like = '%' . $wpdb->esc_like('s:9:"n_user_id";i:' . get_current_user_id() . ';') . '%';

@@ -139,6 +139,13 @@ npcink_test_case('refund windows distinguish invalid or future times from expire
     npcink_test_assert_same('支付时间已超过 7 天的退款窗口，未执行退款。', Npcink_Pay_Refund_Admin_Public::refund_window_error(time() - 8 * 86400), 'Report only expired payments as expired');
 });
 
+npcink_test_case('legacy zero window is not interpreted as unlimited', function () {
+    update_option('npcink_pay_refund_config', array('refund' => array('window_days' => 0)));
+    npcink_test_assert_same(7, Npcink_Pay_Refund_Admin_Public::refund_window_days(), 'Keep the legacy default for an invalid stored zero');
+    update_option('npcink_pay_refund_config', array('refund' => array('window_days' => 1)));
+    npcink_test_assert_same(1, Npcink_Pay_Refund_Admin_Public::refund_window_days(), 'One day remains the shortest supported window');
+});
+
 npcink_test_case('Alipay closed and finished trades do not claim a refund', function () {
     npcink_test_assert_same('交易已关闭', Npcink_Pay_Refund_Admin_Zfb::trade_status_label('TRADE_CLOSED'), 'Closed trades are not proof of a refund');
     npcink_test_assert_same('交易已结束，不可退款', Npcink_Pay_Refund_Admin_Zfb::trade_status_label('TRADE_FINISHED'), 'Finished trades are known and not refundable');
