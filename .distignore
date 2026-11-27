@@ -20,6 +20,7 @@ admin/sdk/
 admin/sdk/guzz/
 docs/
 README.md
+/AGENTS.md
 vendor/alipaysdk/easysdk/csharp/
 vendor/alipaysdk/easysdk/java/
 vendor/alipaysdk/easysdk/kernel/csharp/

@@ -257,6 +257,14 @@ composer verify
 
 [PR #6](https://github.com/npcink/npcink-pay-refund/pull/6) 合入后台视觉整改（`0cd3fd2`）。[PR #7](https://github.com/npcink/npcink-pay-refund/pull/7) 合入国际化、微信记账后状态清理恢复和零值回归（`b5c84d7`）；两组主线 CI 通过。2026-11-27 将独立冻结的 ZIP 发布为 [GitHub 预发布](RELEASE-1.3.11.zh-CN.md)，没有改动 WordPress.org，也没有替换原 1.3.10 ZIP。性能基准、限流设计和待验收事项见 [1.3.11 维护候选](MAINTENANCE-CANDIDATE-1.3.11.zh-CN.md)。开发与 Git 收尾可以独立完成，不等于生产验收完成。
 
+## 2026-11-27 文档入口与代码导航收尾
+
+复核 1.3.10 文档审查时，以当前 `main` 和发布记录区分旧快照与实际状态。保留三份入口的分工：[根 README](../README.md) 负责安装和开发入口，[中文指南](README.zh-CN.md) 负责日常使用、代码地图和验证命令，`readme.txt` 继续只服务 WordPress.org。新增 [AGENTS.md](../AGENTS.md) 作为接手指引，并通过打包规则和验证脚本将其排除在安装 ZIP 外。
+
+按现有图片内容校正四张中文截图说明；[1.3.8 整改记录](AUDIT-REMEDIATION-1.3.8.zh-CN.md) 的 67 处本机证据链接固定到原提交，不改当时的结论。仅清理微信加载和后台共享类的误导注释，不重排目录、不改变支付逻辑、钩子或数据契约。
+
+本地 PHP 回归（48 项）、权限变异（15/15）、文档链接和打包排除规则已核对。原 1.3.10 正式版和 1.3.11 预发布 ZIP 未重建、未替换，SHA-256 均不变。1.3.11 的桌面 Excel 和两渠道商户验收按维护者决定暂缓，恢复时仍以[该预发布的冻结 ZIP](RELEASE-1.3.11.zh-CN.md#制品与回读)为准；本轮不发布新版本。其他条件性维护项仍按[维护候选记录](MAINTENANCE-CANDIDATE-1.3.11.zh-CN.md)的证据要求重启。
+
 ## 历史归纳
 
 | 阶段 | 留下的维护原则 |

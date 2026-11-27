@@ -71,8 +71,7 @@ class Npcink_Pay_Refund_Admin
 		require_once plugin_dir_path(__FILE__) . 'partials/npcink-pay-refund-admin-config.php';
 		//权限控制文件
 		require_once plugin_dir_path(__FILE__) . 'partials/npcink-pay-refund-admin-authority.php';
-		//微信支付文件
-		//require_once plugin_dir_path(__FILE__) . 'pay/npcink-pay-refund-admin-wxs.php';
+		// 微信支付由插件主文件 npcink-pay-refund.php 在后台分支单独加载并注册。
 		//支付宝支付文件
 		require_once plugin_dir_path(__FILE__) . 'pay/npcink-pay-refund-admin-zfb.php';
 		//公用函数文件
@@ -90,9 +89,6 @@ class Npcink_Pay_Refund_Admin
 		Npcink_Pay_Refund_Admin_Config::run($this->plugin_name, $this->version);
 		//权限控制
 		Npcink_Pay_Refund_Admin_Authority::run();
-
-		//微信支付接口
-		//Npcink_Pay_Refund_Admin_Wx::run();
 
 		//支付宝支付接口
 		Npcink_Pay_Refund_Admin_Zfb::run();
