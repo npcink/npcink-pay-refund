@@ -57,7 +57,7 @@ if grep -E '(^|/)\.git(/|$)' <<< "$ZIP_LIST" >/dev/null; then
 	echo "Release zip contains a Git directory or worktree pointer." >&2
 	exit 1
 fi
-if grep -E "^${PACKAGE_SLUG}/(docs/|README\.md$|vendor/alipaysdk/easysdk/tea/)" <<< "$ZIP_LIST" >/dev/null; then
+if grep -E "^${PACKAGE_SLUG}/(docs/|(README|AGENTS)\.md$|vendor/alipaysdk/easysdk/tea/)" <<< "$ZIP_LIST" >/dev/null; then
 	echo "Release zip contains excluded maintenance documentation or EasySDK Tea sources." >&2
 	exit 1
 fi

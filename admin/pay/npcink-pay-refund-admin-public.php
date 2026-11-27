@@ -5,15 +5,13 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * 为插件提供管理区域视图
- *
- * 该文件用于标记插件面向管理的方面。
+ * 两个支付渠道共用的后台逻辑：订单锁、退款记录和待对账状态。
  *
  * @link       https://www.npc.ink
  * @since      1.0.0
  *
  * @package    Npcink_Pay_Refund
- * @subpackage Npcink_Pay_Refund/admin/partials
+ * @subpackage Npcink_Pay_Refund/admin/pay
  */
 
 if (!class_exists('Npcink_Pay_Refund_Admin_Public')) {

@@ -1,37 +1,59 @@
-此插件免费，QQ 联系方式：1355471563
+# Npcink Pay Refund 中文指南
 
-## 待改进
+这是一个 WordPress 后台退款工具。它查询已有的支付宝、微信支付订单，对符合条件的订单发起全额退款，并记录结果；不创建支付、不处理支付通知、不修改第三方订单状态。
 
-- 历史记录称商户操作者曾手工确认支付宝、微信查询与退款；仓库尚无可追溯到 ZIP 哈希和请求结果的附件，不能据此确认 1.3.8 候选包。
-- 如需 7b2 订单联动，须另行设计；当前版本不修改第三方订单状态。
+## 版本与安装
+
+- **稳定版 1.3.10**：从 WordPress.org 安装或使用 GitHub 正式版附件。支付宝、微信商户验收仅适用于原发布包，见[正式发布记录](RELEASE-1.3.10.zh-CN.md)。
+- **预发布 1.3.11**：仅在 GitHub 提供验收包，尚未发布到 WordPress.org。桌面 Excel 和两渠道商户验收仍待完成，见[预发布记录](RELEASE-1.3.11.zh-CN.md)。
+- 需要 WordPress 6.0 和 PHP 8.1 或更高版本。不要直接安装 GitHub 自动生成的源码包，其中可能缺少支付 SDK 所需的 Composer 依赖。
 
 ## 后台入口
 
-- 配置：`插件 -> 退款配置`，页面 slug 为 `plugins.php?page=npcink_pay_refund_config`
-- 退款操作：`仪表盘 -> 订单退款`，页面 slug 为 `index.php?page=npcink_pay_refund_query`
-- 插件只负责后台订单查询、退款和退款记录，不创建支付、不处理支付通知，也不修改第三方订单状态。
+- **插件 → 退款配置**（`plugins.php?page=npcink_pay_refund_config`）：管理员配置支付渠道和退款专员权限。
+- **仪表盘 → 订单退款**（`index.php?page=npcink_pay_refund_query`）：查询、退款和查看记录。管理员看全部，退款专员只看自己的记录和待处理状态。
+
+## 开发与验证
+
+| 命令 | 用途 |
+| --- | --- |
+| `composer install` | 安装本地开发依赖。 |
+| `composer test` | 运行本地 PHP 回归，不调用真实支付网关。 |
+| `composer verify:local` | 本地门禁，含依赖审计、回归和 ZIP 清单检查，不验证 WordPress/MySQL 集成。 |
+| `composer verify` | 完整门禁，须明确设置 `WP_PATH` 并使用带 `.npcink-refund-test-site` 标记、安装了 Plugin Check 的隔离站点。 |
+| `composer build:zip` | 生成带 Composer 运行依赖的安装包 `build/npcink-pay-refund-版本号.zip`。 |
+
+两个 `verify` 命令都会构建 ZIP，可能覆盖同版本制品；有冻结包时使用独立 checkout。商户验收不由这些命令替代，操作要求见[开发与发布规范](DEVELOPMENT-AND-RELEASE-STANDARDS.zh-CN.md)和[商户联调清单](REFUND-INTEGRATION-CHECKLIST.md)。
+
+## 代码地图
+
+| 要找什么 | 从哪里开始 |
+| --- | --- |
+| 插件启动、微信加载 | [插件主文件](../npcink-pay-refund.php)在后台分支单独加载并启动微信；[Admin 组装器](../admin/class-npcink-pay-refund-admin.php)组装其余后台模块。 |
+| 后台页面、权限、操作日志、卸载 | [admin/partials/](../admin/partials/) 放的是查询、配置、权限、操作日志和卸载模块，并非视图碎片。 |
+| 渠道查询、退款、状态确认 | [支付宝](../admin/pay/npcink-pay-refund-admin-zfb.php)和[微信](../admin/pay/npcink-pay-refund-admin-wx.php)各自封装对应渠道。 |
+| 订单锁、退款记账与对账 | [Admin_Public](../admin/pay/npcink-pay-refund-admin-public.php)是两渠道共用的后台逻辑，不是前台模块；[Activator](../includes/class-npcink-pay-refund-activator.php)负责表结构。 |
+| 后台样式 | 实际加载 [CSS](../admin/css/npcink-pay-refund-admin.css)；当前构建不编译 Less。 |
 
 ## 后台截图
 
-### 订单查询与退款
+以下是早期界面示意，当前布局和控件可能不同。
 
-![订单查询与退款](../assets/screenshot-1.png)
+### 支付宝配置与检测
 
-### 退款结果
+![支付宝配置与检测](../assets/screenshot-1.png)
 
-![退款结果](../assets/screenshot-2.png)
+### 退款专员权限
 
-### 退款记录
+![退款专员权限](../assets/screenshot-2.png)
 
-![退款记录](../assets/screenshot-3.png)
+### 退款操作台与近期记录
 
-### 插件配置与权限
+![退款操作台与近期记录](../assets/screenshot-3.png)
 
-![插件配置与权限](../assets/screenshot-4.png)
+### 退款记录搜索与筛选
 
-当前稳定版为 1.3.10，已使用原商户验收包正式发布到 GitHub 与 WordPress.org，详见 [1.3.10 发布记录](RELEASE-1.3.10.zh-CN.md)。验收只对应原包，不覆盖后续维护代码。此前整改见 [22 项整改记录](AUDIT-REMEDIATION-1.3.8.zh-CN.md)。
-
-1.3.11 仅作 [GitHub 预发布](RELEASE-1.3.11.zh-CN.md)，不是稳定版，也未发布到 WordPress.org。桌面 Excel 和本版精确 ZIP 的两渠道商户验收仍待完成。
+![退款记录搜索与筛选](../assets/screenshot-4.png)
 
 ## 维护文档
 
@@ -42,6 +64,7 @@
 - [1.3.11 GitHub 预发布：精确制品、核验与未完成事项](RELEASE-1.3.11.zh-CN.md)
 - [1.3.9 收尾、剩余边界与开发复盘](CLOSEOUT-AND-RETROSPECTIVE-1.3.9.zh-CN.md)
 - [1.3.9 正式发布与制品核对记录](RELEASE-1.3.9.zh-CN.md)
+- [1.3.8 候选版的 22 项整改记录（历史）](AUDIT-REMEDIATION-1.3.8.zh-CN.md)
 - [项目改造历史与当前状态](PROJECT-HISTORY.zh-CN.md)
 - [1.3.1 开发复盘与维护思路](DEVELOPMENT-SUMMARY-1.3.1.zh-CN.md)
 - [1.3.2 界面压缩与中文状态复盘](DEVELOPMENT-SUMMARY-1.3.2.zh-CN.md)
@@ -67,10 +90,6 @@
 - 退款专员通过独立退款能力操作，不接管其余 WordPress 后台页面
 - 支付密钥可通过 `wp-config.php` 常量注入，常量值优先于数据库配置且不会被设置页写回
 
-## 退款
-
-- 退款专员只能看到自己提交的退款记录，管理员可以查看全部记录
-
 ## 请求与记录契约
 
 - 两个查询框均接受**商户订单号 `out_trade_no`**，原样传入；不接受微信 `transaction_id` 或支付宝 `trade_no`，不自动猜测或改写。例如商户号为 `SHOP-20261105-001` 时输入该完整值。
@@ -84,12 +103,6 @@
 - 同订单请求需要数据库 `GET_LOCK` 支持；获取失败会拒绝操作，不降级为无锁执行。两渠道发送退款请求前再次检查连接持锁状态，失锁时保留原上下文并停止提交。持久化锁以令牌和 CAS 接管/释放。关闭状态保留轻量终态凭据和下一尝试号，卸载清理配置时一并删除。
 - 部署前按开发规范运行 `bin/check-database-locks.php`：业务读写和命名锁须使用同一可写数据库连接。预检仅证明所观察的连接，连接代理或读写路由变化后须重跑；数据库与支付平台之间不存在原子事务，发送后断线仍须按原请求号查询恢复。
 
-## 使用
-
-- 按设置提示填写相关鉴权信息
-- 管理员可直接操作退款；也可以在设置中选择允许操作退款的员工账号。
-- 推荐使用 `composer build:zip` 生成的 `build/npcink-pay-refund-版本号.zip` 安装或发布；不要直接使用源码包安装，否则可能缺少微信支付 SDK 的 `vendor/` 依赖。
-
 ## 后台入口展示
 
 - 订单查询和当前退款结果始终直接展示；未知结果、处理失败与补记失败不会藏进折叠区域。
@@ -98,95 +111,8 @@
 - 已保存密钥只显示“已配置 · 更换密钥”，点击展开空白输入框；首次配置自动展开，留空保留原值。折叠不会清空或禁用表单字段。
 - 旧版链接记录、运行说明和卸载数据选项默认折叠；卸载摘要显示保存的清理选择。未保存清理选择时保留记录、配置和密钥，既有选择不自动变更。配置检测通过时明细折叠，失败时明细展开。
 
-## 更新记录
+## 历史与联系
 
-### 2026
+版本演进见[项目历史](PROJECT-HISTORY.zh-CN.md)和[插件更新记录](../readme.txt)；旧版中文更新日志保留在[历史快照](https://github.com/npcink/npcink-pay-refund/blob/db47f4d08ef29b61e900e6ee0fc670149c1336a1/docs/README.zh-CN.md#更新记录)。
 
-#### 0726
-
-> 1.3.7（安全依赖与退款边界修复候选）
-
-- 将 Guzzle 更新到 7.15.5，并同步升级 Promises 与 PSR-7，消除当前安全公告
-- 移除订单号末尾数字后缀的旧业务静默改写
-- 增加异常退款状态队列、二次退款确认和按操作者隔离退款记录
-- 修复版本一致性测试硬编码 1.3.4 导致的 CI 失败
-- 真实商户退款和新候选包仍由操作者独立验证
-
-> 1.3.5（WordPress.org 首次发布）
-
-- 清理目录安装包中的维护文档和 EasySDK Tea 源规格文件
-- `Contributors` 与实际 WordPress.org 用户名 `muze233` 对齐
-- 发布到 WordPress.org SVN `trunk/` 和 `tags/1.3.5/`（`r3623533`）
-
-#### 0719
-
-> 1.3.4（候选版本）
-
-- 支付宝退款显式携带稳定 `out_request_no`；结果不明时先查询原退款请求，再决定是否按原参数重试
-- 微信在提交退款前保存 pending；只有查询明确返回 `RESOURCE_NOT_EXISTS` 时才允许复用原商户退款单号和原参数重试
-- 后台增加退款对账提示，汇总提供方结果待确认、微信 pending 和本地记录待补记状态
-- 增加 PHP 8.1 / 8.4 GitHub Actions 验证
-- 真实商户退款仍由操作者按联调清单验证，不以本地或 CI 通过代替
-
-#### 0707
-
-> 1.3.2
-
-- 缩小微信退款结果卡片宽度、间距和字号，让后台界面更紧凑
-- 通道状态改为中文展示，不再直接显示 `SUCCESS`、`PROCESSING` 等英文 API 状态码
-
-> 1.3.1
-
-- 增加退款时间窗口设置，替代固定 7 天限制
-- 微信退款 `PROCESSING` 状态改为 pending + 10 秒自动轮询，不再把受理中误判为失败
-- 微信退款成功落库需要 pending 或明确上下文，避免空操作人和空原因记录
-- 微信重复退款保护增加 pending 状态检查，锁过期后也不会直接重复提交
-- 微信和支付宝错误日志改为摘要记录，避免完整支付网关响应体进入日志
-- 卸载时清理微信 pending 和退款锁 option
-- 退款查询结果升级为状态卡片
-- 后台 CSS/JS 资源版本改为插件版本加文件修改时间，解决真实站点旧资源缓存问题
-
-> 1.3.0
-
-- 开发期提高最低运行环境到 WordPress 6.0 / PHP 7.4
-- 增加退款提交前的订单级防重复锁，避免并发或重复点击触发重复退款请求
-- 优化支付宝、微信退款按钮状态，退款请求完成前保持禁用
-- 硬化退款记录查询和卸载删表 SQL
-- 微信支付接入官方 wechatpay/wechatpay SDK，统一处理请求签名和应答签名校验
-- 微信配置新增微信支付公钥 ID / 平台证书序列号、微信支付公钥 / 平台证书字段，用于 API v3 应答验签
-
-> 1.2.0
-
-- 移除 Vite 管理界面资源，改为 WordPress 原生设置页面
-- 支付密钥拆分保存到独立选项，设置页不再回显密钥明文
-- 为退款查询、退款操作和记录下载补充 nonce 与权限校验
-- 优化退款记录导出，限制单次导出数量并处理 CSV 注入风险
-- 为退款记录表补充常用查询索引，并通过版本号触发 schema 升级
-- 支付宝 SDK 改为通过 AJAX 权限校验后延迟加载
-- 微信退款接口改用 WordPress HTTP API 和微信支付 API v3 签名，移除运行时 Guzzle 依赖
-- 更新后台资源版本到 1.2.0，刷新 CSS/JS 缓存
-- 更新翻译模板资源
-
-### 2023
-
-#### 1206
-
-- 优化 JS 资源载入方式，避免与其他文件冲突
-
-#### 0729
-
-- 微信退款输入框添加报错提示信息
-
-#### 0728
-
-> 大更新，需重新设置
-
-- 优化选项获取与保存逻辑，降低心智负担
-- 现在可以自定义退款专员可访问的页面了
-- 添加删除插件时删除数据库选项
-- 添加删除插件时删除插件选项数据的选项
-
-#### 0724
-
-- 微信退款按钮添加定时功能
-- 微信退款按钮前添加提示
+插件免费；项目联系 QQ：1355471563。
