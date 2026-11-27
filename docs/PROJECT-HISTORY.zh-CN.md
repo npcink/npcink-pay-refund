@@ -1,6 +1,6 @@
 # 项目改造历史与当前状态
 
-本文记录 `Npcink Pay Refund` 在 2026-07-08 至 2026-11-27 期间的主要改造决策、验证方式和发布状态。当前交付与未完成验收见 [1.3.11 GitHub 预发布记录](RELEASE-1.3.11.zh-CN.md)。
+本文记录 `Npcink Pay Refund` 在 2026-07-08 至 2026-11-27 期间的主要改造决策、验证方式和发布状态。当前稳定版见 [1.3.10 正式发布记录](RELEASE-1.3.10.zh-CN.md)，未完成验收见 [1.3.11 GitHub 预发布记录](RELEASE-1.3.11.zh-CN.md)。
 
 ## 当前状态
 
@@ -12,12 +12,12 @@
 - 最低 PHP：`8.1`
 - `main` 的插件版本：`1.3.11`
 - GitHub 仓库：`https://github.com/npcink/npcink-pay-refund`
-- 最新稳定 GitHub Release：`v1.3.9`
+- 最新稳定 GitHub Release：[`v1.3.10`](RELEASE-1.3.10.zh-CN.md)
 - GitHub 预发布：[`v1.3.11`](RELEASE-1.3.11.zh-CN.md)，桌面 Excel 和两渠道商户验收待完成。
-- WordPress.org 当前发布版本：`1.3.9`
+- WordPress.org 当前发布版本：`1.3.10`
 - WordPress.org 目录页：`https://wordpress.org/plugins/npcink-pay-refund/`
-- WordPress.org SVN 发布修订：`r3787066`
-- 原 1.3.10 候选：支付宝和微信均由使用者确认通过，未发布；验收只对应 [原候选 ZIP 的哈希](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md#验证与制品)。
+- WordPress.org SVN 发布修订：`r3828629`
+- 1.3.10 正式版使用原商户验收 ZIP；验收不覆盖后续维护代码。
 - 后续维护：`433ad1b` 已进入 GitHub `main` 并通过两组 CI，覆盖权限回归、CSV 和小项清理，未纳入原候选。
 
 当前本地仓库目录是 `/Users/muze/gitee/npcink-pay-refund`。这是本机路径，不影响插件源码、GitHub remote、发布包或 WordPress 安装目录。目录迁移只是个人整理选项，不属于发布、运行或维护要求；当前保持原路径。
@@ -240,15 +240,14 @@ composer verify
 - Gitee remote 不再使用
 - GitHub 仓库为 public
 - `main` 已推送到 GitHub
-- GitHub 最新稳定 tag 和 Release 为 `v1.3.9`
-- `v1.3.9` 源码已合入 `main`，GitHub Release 已附带原始验收 ZIP、SHA-256、文件清单和后续确认记录
-- WordPress.org 已发布 1.3.9；GitHub Release 与 WordPress.org SVN 修订分别记录，不能相互代替
+- GitHub 最新稳定 tag 和 Release 为 `v1.3.10`；标签指向原包源码 `e5a806f`，不是当前 `main`。
+- WordPress.org 已发布 1.3.10；GitHub Release、WordPress.org SVN 修订和目录下载分别回读，不能相互代替。
 
 历史 tag `v1.0.8`、`v1.1.1`、`v1.1.2` 也已随 tags 推送到 GitHub。旧提交历史中仍可能出现旧项目名，这是正常 Git 历史，不建议 rewrite。
 
-## 1.3.10 维护候选
+## 1.3.10 维护候选与正式发布
 
-2026-11-26 复核 1.3.9 独立审查，修复支付宝退款确认、交易状态、查询时区和无效时间提示，更新 HTTP 依赖并改为缺省保留卸载数据。原候选代码 `e5a806f` 已进入 GitHub `main` 并通过 CI。使用者随后确认原 ZIP 的支付宝、微信商户验收通过，未授权发布。逐项结论、验证范围与制品映射见 [1.3.10 收尾记录](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md)。
+2026-11-26 复核 1.3.9 独立审查，修复支付宝退款确认、交易状态、查询时区和无效时间提示，更新 HTTP 依赖并改为缺省保留卸载数据。原候选代码 `e5a806f` 通过 CI，使用者确认原 ZIP 的支付宝、微信商户验收通过。2026-11-27 获授权后正式发布原包，详见 [1.3.10 发布记录](RELEASE-1.3.10.zh-CN.md)。
 
 ## 1.3.10 原候选之后的维护
 

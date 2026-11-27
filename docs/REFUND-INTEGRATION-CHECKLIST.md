@@ -29,7 +29,7 @@ Use this checklist for the first real merchant run. Do not test refunds against 
 
 1.3.9 was published on 2026-11-06 after the user separately confirmed WeChat and Alipay merchant validation for the original package. See RELEASE-1.3.9.zh-CN.md for the exact SHA-256, confirmation scope and remote publication evidence. No order references or amounts were supplied; do not invent them. The historical 1.3.7 manual confirmation remains historical evidence only.
 
-On 2026-11-26, the user confirmed both channels passed merchant validation for the original 1.3.10 candidate. See its [acceptance record](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md#商户验收补记) for the evidence scope. This does not authorize release or sign off on any subsequent code change.
+On 2026-11-26, the user confirmed both channels passed merchant validation for the original 1.3.10 candidate. That exact package was [released separately on 2026-11-27](RELEASE-1.3.10.zh-CN.md). See the [acceptance record](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md#商户验收补记) for the evidence scope; it does not sign off on subsequent code changes.
 
 Record one entry per channel, without secrets or full buyer identifiers:
 

@@ -2,6 +2,8 @@
 
 日期：2026-11-27（Asia/Shanghai）。根据维护者授权，仅发布到 GitHub 项目，供验收使用。未部署到商户站点，未调用真实退款，也未写入 WordPress.org SVN。
 
+> 下文保留 1.3.11 预发布时的回读。当前稳定版见 [1.3.10 正式发布记录](RELEASE-1.3.10.zh-CN.md)；1.3.11 仍不设为 Latest。
+
 ## 制品与回读
 
 - [GitHub `v1.3.11`](https://github.com/npcink/npcink-pay-refund/releases/tag/v1.3.11) 已发布，非草稿，标记为 Pre-release，不设为 Latest。回读 GitHub Latest 仍为 `v1.3.9`；WordPress.org 目录 API 和下载指向 `1.3.9`。
