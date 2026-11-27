@@ -7,7 +7,7 @@ Use this checklist for the first real merchant run. Do not test refunds against 
 - Build package: `composer build:zip`
 - Verify package: `composer verify`
 - To reproduce the original 1.3.10 candidate validation, use the existing `build/npcink-pay-refund-1.3.10.zip` and verify it against the [recorded candidate SHA-256](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md#验证与制品). Do not rebuild it from a later checkout or substitute a source archive. The released 1.3.9 artifact remains unchanged.
-- For the follow-up 1.3.11 candidate, use `build/npcink-pay-refund-1.3.11.zip` with its own manifest and SHA-256. This is an unpublished candidate. Do not carry the original 1.3.10 sign-off forward.
+- For the follow-up 1.3.11 candidate, use the attached ZIP from the [GitHub pre-release record](RELEASE-1.3.11.zh-CN.md) or its frozen local copy. Verify it against its own manifest and SHA-256. This is not a stable or WordPress.org release; do not carry the original 1.3.10 sign-off forward.
 - `composer verify` and `composer verify:local` both build a ZIP and can overwrite a same-version artifact. Run package checks in a separate checkout when the current build directory holds a frozen candidate.
 - Record live results only for the exact versioned ZIP and merchant configuration being tested.
 - For a later release, install the exact versioned ZIP printed by `composer build:zip`; record its version and SHA-256 before testing.
@@ -24,7 +24,7 @@ Use this checklist for the first real merchant run. Do not test refunds against 
 - Confirmed WP-CLI Plugin Check returned `No errors found`.
 - This evidence covers the local WordPress lifecycle only; it does not replace real Alipay or WeChat merchant verification.
 
-## Candidate evidence record (required before release sign-off)
+## Candidate evidence record (required before stable release sign-off)
 
 1.3.9 was published on 2026-11-06 after the user separately confirmed WeChat and Alipay merchant validation for the original package. See RELEASE-1.3.9.zh-CN.md for the exact SHA-256, confirmation scope and remote publication evidence. No order references or amounts were supplied; do not invent them. The historical 1.3.7 manual confirmation remains historical evidence only.
 

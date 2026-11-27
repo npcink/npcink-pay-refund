@@ -31,11 +31,14 @@
 
 1.3.9 已正式发布至 GitHub 与 WordPress.org，精确制品及两渠道验收记录见 [1.3.9 发布记录](RELEASE-1.3.9.zh-CN.md)。原 1.3.10 候选的支付宝和微信商户验收也已由使用者确认通过，但尚未发布；该确认不覆盖后续维护代码。此前整改见 [22 项整改记录](AUDIT-REMEDIATION-1.3.8.zh-CN.md)。
 
+1.3.11 仅作 [GitHub 预发布](RELEASE-1.3.11.zh-CN.md)，不是稳定版，也未发布到 WordPress.org。桌面 Excel 和本版精确 ZIP 的两渠道商户验收仍待完成。
+
 ## 维护文档
 
 - [1.3.10 审查处置、开发复盘与原候选验收](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md)
 - [退款审查后续维护与操作日志](AUDIT-FOLLOWUP.zh-CN.md)
 - [1.3.11 维护候选：规模基准、限流设计与人工验收](MAINTENANCE-CANDIDATE-1.3.11.zh-CN.md)
+- [1.3.11 GitHub 预发布：精确制品、核验与未完成事项](RELEASE-1.3.11.zh-CN.md)
 - [1.3.9 收尾、剩余边界与开发复盘](CLOSEOUT-AND-RETROSPECTIVE-1.3.9.zh-CN.md)
 - [1.3.9 正式发布与制品核对记录](RELEASE-1.3.9.zh-CN.md)
 - [项目改造历史与当前状态](PROJECT-HISTORY.zh-CN.md)

@@ -1,5 +1,7 @@
 # 退款审查后续维护
 
+> 本文记录 `433ad1b` 所在阶段。此后的实现、设计和待验事项见 [1.3.11 维护候选](MAINTENANCE-CANDIDATE-1.3.11.zh-CN.md)；候选已作 [GitHub 预发布](RELEASE-1.3.11.zh-CN.md)。
+
 日期：2026-11-26。本文记录 [1.3.10 审查收尾](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md) 之后的独立维护变更。提交 `433ad1b` 已进入 GitHub `main`，包含权限回归、CSV 与小项清理；它不是此前验收的原候选，不改写原 ZIP 或清单。
 
 | 编号 | 本轮处置 |

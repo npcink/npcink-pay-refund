@@ -1,6 +1,6 @@
 # 项目改造历史与当前状态
 
-本文记录 `Npcink Pay Refund` 在 2026-07-08 至 2026-11-26 期间的主要改造决策、验证方式和发布状态，便于后续维护者或 AI 继续接手。当前结论见 [1.3.10 审查收尾与复盘](CLOSEOUT-AND-RETROSPECTIVE-1.3.10.zh-CN.md)。
+本文记录 `Npcink Pay Refund` 在 2026-07-08 至 2026-11-27 期间的主要改造决策、验证方式和发布状态。当前交付与未完成验收见 [1.3.11 GitHub 预发布记录](RELEASE-1.3.11.zh-CN.md)。
 
 ## 当前状态
 
@@ -10,9 +10,10 @@
 - Text Domain：`npcink-pay-refund`
 - Composer 包名：`npcink/pay-refund`
 - 最低 PHP：`8.1`
-- 当前发布版本：`1.3.9`
+- `main` 的插件版本：`1.3.11`
 - GitHub 仓库：`https://github.com/npcink/npcink-pay-refund`
 - 最新稳定 GitHub Release：`v1.3.9`
+- GitHub 预发布：[`v1.3.11`](RELEASE-1.3.11.zh-CN.md)，桌面 Excel 和两渠道商户验收待完成。
 - WordPress.org 当前发布版本：`1.3.9`
 - WordPress.org 目录页：`https://wordpress.org/plugins/npcink-pay-refund/`
 - WordPress.org SVN 发布修订：`r3787066`
@@ -253,6 +254,10 @@ composer verify
 
 `433ad1b` 把负向权限回归从 5 个支付入口扩到 10 个支付及管理 AJAX 回调，补了 CSV 固定列序、UTF-8 BOM 和边界转义测试，清理旧 CI 触发规则与无用引导，并增加有限的操作日志。未添加硬限流，未改请求号、订单归属或对账策略。详见 [退款审查后续维护](AUDIT-FOLLOWUP.zh-CN.md)。
 
+## 1.3.11 维护与 GitHub 预发布
+
+[PR #6](https://github.com/npcink/npcink-pay-refund/pull/6) 合入后台视觉整改（`0cd3fd2`）。[PR #7](https://github.com/npcink/npcink-pay-refund/pull/7) 合入国际化、微信记账后状态清理恢复和零值回归（`b5c84d7`）；两组主线 CI 通过。2026-11-27 将独立冻结的 ZIP 发布为 [GitHub 预发布](RELEASE-1.3.11.zh-CN.md)，没有改动 WordPress.org，也没有替换原 1.3.10 ZIP。性能基准、限流设计和待验收事项见 [1.3.11 维护候选](MAINTENANCE-CANDIDATE-1.3.11.zh-CN.md)。开发与 Git 收尾可以独立完成，不等于生产验收完成。
+
 ## 历史归纳
 
 | 阶段 | 留下的维护原则 |
@@ -270,9 +275,3 @@ composer verify
 - 后续版本按 `docs/REFUND-INTEGRATION-CHECKLIST.md` 使用精确版本化 ZIP 记录真实商户联调结果
 - 使用现有独立 schema/capability 迁移版本；实际结构验证成功后才推进标记，不直接改 option/table/action 名称
 - 退款成功后自动修改业务订单状态、部分退款、异步任务和多商户配置仍属于后续独立设计，不纳入当前插件边界
-
-## 当前会话收尾（2026-11-26）
-
-- 历史审查、后续权限/CSV/日志维护和本次视觉审计整改均已落入 GitHub `main`；本次合并提交为 `0cd3fd2`，PR #6 已关闭并合并，主分支 CI 两组通过。
-- 本地 `main` 与 `origin/main` 一致，工作树只有主 worktree，没有残留本地或远端主题分支；原 1.3.10 验收 ZIP 的 SHA-256 仍为 `2119d87367d2fda5d31fa06398d2e0afa9b3aa0e5c494d76fcc38a86593f651e`，没有被本次维护代码替换。
-- 可以关闭本次开发会话，但不能把后续维护提交直接视为已发布版本。下一次发布必须重新生成候选、复跑完整验证，并按同一候选重新做商户验收。
